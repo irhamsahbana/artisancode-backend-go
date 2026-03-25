@@ -1,0 +1,74 @@
+package mapper
+
+import (
+	"context"
+
+	"codebase-app/internal/entity/common"
+	"codebase-app/internal/entity/coreentity"
+	"codebase-app/internal/entity/repoentity"
+	"codebase-app/internal/entity/restentity"
+)
+
+func EmployeeFromRepoToCore(ctx context.Context, item repoentity.Employee) coreentity.Employee {
+	uc := common.GetUserContext(ctx)
+	return coreentity.Employee{
+		UserCtx:       uc,
+		ID:            item.ID,
+		TenantID:      item.TenantID,
+		EmployeeNo:    item.EmployeeNo,
+		FullName:      item.FullName,
+		OrgUnitID:     item.OrgUnitID,
+		JobPositionID: item.JobPositionID,
+		LocationID:    item.LocationID,
+		ShiftID:       item.ShiftID,
+		Status:        item.Status,
+		JoinDate:      item.JoinDate,
+	}
+}
+
+func EmployeeFromCoreToRest(item coreentity.Employee) restentity.Employee {
+	return restentity.Employee{
+		ID:            item.ID,
+		EmployeeNo:    item.EmployeeNo,
+		FullName:      item.FullName,
+		OrgUnitID:     item.OrgUnitID,
+		JobPositionID: item.JobPositionID,
+		LocationID:    item.LocationID,
+		ShiftID:       item.ShiftID,
+		Status:        item.Status,
+		JoinDate:      item.JoinDate,
+	}
+}
+
+func EmployeeFromRestCreateToCore(ctx context.Context, req restentity.CreateEmployeeReq) coreentity.Employee {
+	uc := common.GetUserContext(ctx)
+	return coreentity.Employee{
+		UserCtx:       uc,
+		TenantID:      uc.TenantID,
+		EmployeeNo:    req.EmployeeNo,
+		FullName:      req.FullName,
+		OrgUnitID:     req.OrgUnitID,
+		JobPositionID: req.JobPositionID,
+		LocationID:    req.LocationID,
+		ShiftID:       req.ShiftID,
+		Status:        req.Status,
+		JoinDate:      req.JoinDate,
+	}
+}
+
+func EmployeeFromRestUpdateToCore(ctx context.Context, req restentity.UpdateEmployeeReq) coreentity.Employee {
+	uc := common.GetUserContext(ctx)
+	return coreentity.Employee{
+		UserCtx:       uc,
+		ID:            req.ID,
+		TenantID:      uc.TenantID,
+		EmployeeNo:    req.EmployeeNo,
+		FullName:      req.FullName,
+		OrgUnitID:     req.OrgUnitID,
+		JobPositionID: req.JobPositionID,
+		LocationID:    req.LocationID,
+		ShiftID:       req.ShiftID,
+		Status:        req.Status,
+		JoinDate:      req.JoinDate,
+	}
+}

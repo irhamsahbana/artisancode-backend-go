@@ -1,0 +1,58 @@
+package core
+
+import (
+	"codebase-app/internal/entity/coreentity"
+	"codebase-app/internal/infrastructure/tracing"
+	corePorts "codebase-app/internal/ports/core"
+	portsRepo "codebase-app/internal/ports/repository"
+	"context"
+)
+
+type orgUnitCore struct {
+	repo portsRepo.OrgUnitRepository
+}
+
+type OrgUnitCoreConfig struct {
+	Repo portsRepo.OrgUnitRepository
+}
+
+var _ corePorts.OrgUnitCore = &orgUnitCore{}
+
+func NewOrgUnitCore(cfg OrgUnitCoreConfig) *orgUnitCore {
+	return &orgUnitCore{repo: cfg.Repo}
+}
+
+func (c *orgUnitCore) GetOrgUnits(ctx context.Context, filter coreentity.OrgUnitListFilter) ([]coreentity.OrgUnit, int, error) {
+	ctx, span := tracing.StartSpan(ctx, "core.GetOrgUnits")
+	defer span.End()
+
+	return c.repo.GetOrgUnits(ctx, filter)
+}
+
+func (c *orgUnitCore) GetOrgUnit(ctx context.Context, filter coreentity.OrgUnit) (*coreentity.OrgUnit, error) {
+	ctx, span := tracing.StartSpan(ctx, "core.GetOrgUnit")
+	defer span.End()
+
+	return c.repo.GetOrgUnit(ctx, filter)
+}
+
+func (c *orgUnitCore) CreateOrgUnit(ctx context.Context, data coreentity.OrgUnit) (*coreentity.OrgUnit, error) {
+	ctx, span := tracing.StartSpan(ctx, "core.CreateOrgUnit")
+	defer span.End()
+
+	return c.repo.CreateOrgUnit(ctx, data)
+}
+
+func (c *orgUnitCore) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit) error {
+	ctx, span := tracing.StartSpan(ctx, "core.UpdateOrgUnit")
+	defer span.End()
+
+	return c.repo.UpdateOrgUnit(ctx, data)
+}
+
+func (c *orgUnitCore) DeleteOrgUnit(ctx context.Context, filter coreentity.OrgUnitDeleteFilter) error {
+	ctx, span := tracing.StartSpan(ctx, "core.DeleteOrgUnit")
+	defer span.End()
+
+	return c.repo.DeleteOrgUnit(ctx, filter)
+}

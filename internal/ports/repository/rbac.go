@@ -1,0 +1,23 @@
+package repository
+
+import (
+	"codebase-app/internal/entity/coreentity"
+	"context"
+)
+
+type RbacRepository interface {
+	GetRoles(ctx context.Context, filter coreentity.RoleListFilter) ([]coreentity.Role, int, error)
+	GetRoleByName(ctx context.Context, name, tenantID string) (*coreentity.Role, error)
+	CreateRole(ctx context.Context, data coreentity.Role) (*coreentity.Role, error)
+	UpdateRole(ctx context.Context, data coreentity.Role) error
+	DeleteRole(ctx context.Context, filter coreentity.RoleDeleteFilter) error
+
+	GetUserRoles(ctx context.Context, filter coreentity.UserRoleFilter) ([]coreentity.Role, error)
+	AssignRole(ctx context.Context, data coreentity.UserRole) error
+	RemoveRole(ctx context.Context, data coreentity.UserRole) error
+
+	HasPermission(ctx context.Context, userID, permission string) (bool, error)
+	GetUserPermissions(ctx context.Context, userID string) ([]coreentity.Permission, error)
+	AssignPermission(ctx context.Context, userID, permissionID string) error
+	RemovePermission(ctx context.Context, userID, permissionID string) error
+}
