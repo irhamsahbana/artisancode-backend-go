@@ -3,24 +3,26 @@ package restentity
 import "codebase-app/pkg/types"
 
 type Company struct {
-	ID     string        `json:"id"`
-	Code   string        `json:"code"`
-	Name   string        `json:"name"`
-	Config CompanyConfig `json:"config"`
+	ID        string        `json:"id"`
+	Code      string        `json:"code"`
+	Name      string        `json:"name"`
+	Config    CompanyConfig `json:"config"`
+	CreatedAt string        `json:"created_at"`
+	UpdatedAt string        `json:"updated_at"`
 }
 
 type CompanyConfig struct {
 	Logo                    *string `json:"logo"`
-	AttendanceRadiusMeters  int      `json:"attendance_radius_meters"`
-	AttendanceCheckInStart  string   `json:"attendance_check_in_start"`
-	AttendanceCheckInEnd   string   `json:"attendance_check_in_end"`
-	AttendanceCheckOutStart string   `json:"attendance_check_out_start"`
-	AttendanceCheckOutEnd   string   `json:"attendance_check_out_end"`
-	LeaveAllowanceAnnual    int      `json:"leave_allowance_annual"`
-	OvertimeRateMultiplier float64   `json:"overtime_rate_multiplier"`
-	Timezone               string    `json:"timezone"`
-	DateFormat             string    `json:"date_format"`
-	TimeFormat             string    `json:"time_format"`
+	AttendanceRadiusMeters  int     `json:"attendance_radius_meters"`
+	AttendanceCheckInStart  string  `json:"attendance_check_in_start"`
+	AttendanceCheckInEnd    string  `json:"attendance_check_in_end"`
+	AttendanceCheckOutStart string  `json:"attendance_check_out_start"`
+	AttendanceCheckOutEnd   string  `json:"attendance_check_out_end"`
+	LeaveAllowanceAnnual    int     `json:"leave_allowance_annual"`
+	OvertimeRateMultiplier  float64 `json:"overtime_rate_multiplier"`
+	Timezone                string  `json:"timezone"`
+	DateFormat              string  `json:"date_format"`
+	TimeFormat              string  `json:"time_format"`
 }
 
 type GetCompaniesReq struct {
@@ -33,7 +35,7 @@ func (r *GetCompaniesReq) SetDefault() {
 }
 
 type GetCompaniesResp struct {
-	Items []Company `json:"items"`
+	Items []Company  `json:"items"`
 	Meta  types.Meta `json:"meta"`
 }
 

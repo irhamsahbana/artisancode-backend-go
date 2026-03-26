@@ -34,12 +34,14 @@ func (r *companyRepo) GetCompanies(ctx context.Context, filter coreentity.Compan
 	defer span.End()
 
 	type dao struct {
-		TotalData int    `db:"total_data"`
-		ID        string `db:"id"`
-		TenantID  string `db:"tenant_id"`
-		Name      string `db:"name"`
-		Code      string `db:"code"`
-		Config    []byte `db:"config"`
+		TotalData int     `db:"total_data"`
+		ID        string  `db:"id"`
+		TenantID  string  `db:"tenant_id"`
+		Name      string  `db:"name"`
+		Code      string  `db:"code"`
+		Config    []byte  `db:"config"`
+		CreatedAt string  `db:"created_at"`
+		UpdatedAt *string `db:"updated_at"`
 	}
 
 	var (
@@ -52,7 +54,7 @@ func (r *companyRepo) GetCompanies(ctx context.Context, filter coreentity.Compan
 	query := `
 		SELECT
 			COUNT(*) OVER() AS total_data,
-			id, tenant_id, name, code, config
+			id, tenant_id, name, code, config, created_at, updated_at
 		FROM org_units
 		WHERE deleted_at IS NULL AND tenant_id = ? AND category = 'company'
 	`
@@ -83,12 +85,19 @@ func (r *companyRepo) GetCompanies(ctx context.Context, filter coreentity.Compan
 				return nil, 0, err
 			}
 		}
+		updatedAt := ""
+		if d.UpdatedAt != nil {
+			updatedAt = *d.UpdatedAt
+		}
+
 		items = append(items, coreentity.Company{
-			ID:       d.ID,
-			TenantID: d.TenantID,
-			Name:     d.Name,
-			Code:     d.Code,
-			Config:   config,
+			ID:        d.ID,
+			TenantID:  d.TenantID,
+			Name:      d.Name,
+			Code:      d.Code,
+			Config:    config,
+			CreatedAt: d.CreatedAt,
+			UpdatedAt: updatedAt,
 		})
 	}
 
@@ -100,15 +109,17 @@ func (r *companyRepo) GetCompany(ctx context.Context, filter coreentity.Company)
 	defer span.End()
 
 	type dao struct {
-		ID       string `db:"id"`
-		TenantID string `db:"tenant_id"`
-		Name     string `db:"name"`
-		Code     string `db:"code"`
-		Config   []byte `db:"config"`
+		ID        string  `db:"id"`
+		TenantID  string  `db:"tenant_id"`
+		Name      string  `db:"name"`
+		Code      string  `db:"code"`
+		Config    []byte  `db:"config"`
+		CreatedAt string  `db:"created_at"`
+		UpdatedAt *string `db:"updated_at"`
 	}
 
 	query := `
-		SELECT id, tenant_id, name, code, config
+		SELECT id, tenant_id, name, code, config, created_at, updated_at
 		FROM org_units
 		WHERE id = ? AND tenant_id = ? AND category = 'company' AND deleted_at IS NULL
 	`
@@ -132,12 +143,19 @@ func (r *companyRepo) GetCompany(ctx context.Context, filter coreentity.Company)
 		}
 	}
 
+	updatedAt := ""
+	if data.UpdatedAt != nil {
+		updatedAt = *data.UpdatedAt
+	}
+
 	result := &coreentity.Company{
-		ID:       data.ID,
-		TenantID: data.TenantID,
-		Name:     data.Name,
-		Code:     data.Code,
-		Config:   config,
+		ID:        data.ID,
+		TenantID:  data.TenantID,
+		Name:      data.Name,
+		Code:      data.Code,
+		Config:    config,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: updatedAt,
 	}
 	return result, nil
 }
