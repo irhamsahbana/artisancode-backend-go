@@ -1,6 +1,10 @@
 package common
 
-import "context"
+import (
+	"context"
+
+	"github.com/rs/zerolog/log"
+)
 
 type UserContextKey string
 
@@ -22,6 +26,8 @@ func GetUserContext(ctx context.Context) UserContext {
 	if uc, ok := ctx.Value(UserContextKeyClaims).(UserContext); ok {
 		return uc
 	}
+
+	log.Ctx(ctx).Warn().Msg("User context not found")
 	return UserContext{}
 }
 

@@ -1,9 +1,11 @@
 package middleware
 
 import (
+	"context"
+	"strings"
+
 	"codebase-app/internal/entity/common"
 	"codebase-app/pkg/jwthandler"
-	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -45,22 +47,8 @@ func Auth(c *fiber.Ctx) error {
 		CompanyID:   claims.CompanyID,
 		CompanyName: claims.CompanyName,
 	}
-	c.Context().SetUserValue(common.UserContextKeyClaims, userCtx)
 
-	return c.Next()
-}
-
-func AuthUserID(c *fiber.Ctx) error {
-	UserID := c.Get("X-User-ID")
-	if UserID == "" {
-		log.Ctx(c.UserContext()).Error().Msg("Unauthorized - Header not set")
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"message": "Unauthorized",
-			"success": false,
-		})
-	}
-
-	c.Context().SetUserValue(common.UserContextKeyClaims, common.UserContext{UserID: UserID})
+	c.SetUserContext(context.WithValue(c.UserContext(), common.UserContextKeyClaims, userCtx))
 
 	return c.Next()
 }

@@ -8,6 +8,7 @@ import (
 
 	"codebase-app/internal/infrastructure"
 	"codebase-app/internal/integration/tokencache"
+	"codebase-app/internal/middleware"
 	companyCore "codebase-app/internal/module/company/core"
 	companyHandler "codebase-app/internal/module/company/handler"
 	companyRepo "codebase-app/internal/module/company/repository"
@@ -81,19 +82,19 @@ func Dependencies(
 	}).Register(app.Group("/users"))
 	companyHandler.NewCompanyHandler(companyHandler.CompanyHandlerConfig{
 		Core: companyCoreInst,
-	}).Register(app.Group("/companies"))
+	}).Register(app.Group("/companies", middleware.Auth))
 	orgunitHandler.NewOrgUnitHandler(orgunitHandler.OrgUnitHandlerConfig{
 		Core: orgUnitCoreInst,
-	}).Register(app.Group("/org-units"))
+	}).Register(app.Group("/org-units", middleware.Auth))
 	jobpositionHandler.NewJobPositionHandler(jobpositionHandler.JobPositionHandlerConfig{
 		Core: jobPositionCoreInst,
-	}).Register(app.Group("/job-positions"))
+	}).Register(app.Group("/job-positions", middleware.Auth))
 	worklocationHandler.NewWorkLocationHandler(worklocationHandler.WorkLocationHandlerConfig{
 		Core: workLocationCoreInst,
-	}).Register(app.Group("/work-locations"))
+	}).Register(app.Group("/work-locations", middleware.Auth))
 	workshiftHandler.NewWorkShiftHandler(workshiftHandler.WorkShiftHandlerConfig{
 		Core: workShiftCoreInst,
-	}).Register(app.Group("/work-shifts"))
+	}).Register(app.Group("/work-shifts", middleware.Auth))
 
 	app.Use(func(c *fiber.Ctx) error {
 		var (

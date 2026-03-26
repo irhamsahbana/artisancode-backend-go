@@ -3,7 +3,7 @@
 # Variables
 GOOSE_CMD := goose
 APP_NAME := app
-APP_PORT := 3000
+APP_PORT := 3939
 
 # Default
 help: ## Show this help message
@@ -24,7 +24,7 @@ seed: ## Run seed (usage: make seed table=rbac)
 
 # Development
 dev: ## Run development server
-	@go run ./cmd/bin/main.go
+	@go run ./cmd/bin/main.go --port=$(APP_PORT)
 
 daemon: ## Run with daemon (pmgo)
 	@pmgo
