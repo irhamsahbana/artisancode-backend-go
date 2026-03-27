@@ -21,20 +21,50 @@ Technical guidance has been split into the `docs/` folder.
 - Ports (interfaces) centralized at `internal/ports/repository` and `internal/ports/core`
 - Explicit mappers in `internal/entity/mapper`
 
-### Core Layer File Split Pattern
-Split `core/core.go` into separate files when functions become complex:
+### File Split Pattern (All Layers)
+
+Every module layer (**repository**, **core**, **handler**) must split functions into separate files — one file per main function. The main struct, config, and constructor stay in the base file.
+
+#### Repository Layer
+
+```
+repository/
+  repo.go                # struct, config, constructor only
+  get_work_shifts.go     # GetWorkShifts
+  get_work_shift.go      # GetWorkShift
+  create_work_shift.go   # CreateWorkShift
+  update_work_shift.go   # UpdateWorkShift
+  delete_work_shift.go   # DeleteWorkShift
+```
+
+#### Core Layer
 
 ```
 core/
-  core.go           # struct, config, constructor only
-  login.go          # Login function + its helpers (if any)
-  refresh_token.go  # RefreshToken function + its helpers (if any)
-  register.go       # RegisterOwner function + its specific helpers
+  core.go                # struct, config, constructor only
+  get_work_shifts.go     # GetWorkShifts
+  get_work_shift.go      # GetWorkShift
+  create_work_shift.go   # CreateWorkShift
+  update_work_shift.go   # UpdateWorkShift
+  delete_work_shift.go   # DeleteWorkShift
+```
+
+#### Handler Layer
+
+```
+handler/
+  handler.go             # struct, config, constructor, Register routes only
+  get_work_shifts.go     # getWorkShifts
+  get_work_shift.go      # getWorkShift
+  create_work_shift.go   # createWorkShift
+  update_work_shift.go   # updateWorkShift
+  delete_work_shift.go   # deleteWorkShift
 ```
 
 **Rules:**
-- Helper functions specific to a main function are placed directly below it in the same file
-- If a core file is simple (no complex functions), keep it as single `core.go`
+- **One main function per file** — no exceptions
+- **Helper functions** specific to a main function are placed directly below it in the same file
+- The base file (`repo.go`, `core.go`, `handler.go`) contains only: struct definition, config struct, constructor, and (for handler) the `Register` method
 - Example: `register.go` contains `RegisterOwner`, `createTenant`, `getOwnerRole`, `createOwnerUser`, `generateAuthTokens`, `sendVerificationEmail`, `buildVerificationEmailBody`
 
 ### Core Layer Rules

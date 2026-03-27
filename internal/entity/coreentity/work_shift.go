@@ -8,6 +8,7 @@ type WorkShift struct {
 	ID                 string
 	TenantID           string
 	Name               string
+	Timezone           string
 	StartTime          string
 	EndTime            string
 	GracePeriodMinutes int
