@@ -101,7 +101,7 @@ func (r *workLocationRepo) GetWorkLocation(ctx context.Context, filter coreentit
 	err := r.db.GetContext(ctx, data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Lokasi kerja tidak ditemukan")
+			return nil, errmsg.NewCustomErrors(404).SetMessage("Work location not found")
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get work location")
 		return nil, err

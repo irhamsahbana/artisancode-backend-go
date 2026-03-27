@@ -133,7 +133,7 @@ func (r *employeeRepo) GetEmployee(ctx context.Context, filter coreentity.Employ
 	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Karyawan tidak ditemukan")
+			return nil, errmsg.NewCustomErrors(404).SetMessage("Employee not found")
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get employee")
 		return nil, err

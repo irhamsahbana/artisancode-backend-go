@@ -81,7 +81,7 @@ func (r *rbacRepo) GetRoleByName(ctx context.Context, name, tenantID string) (*c
 	var item coreentity.Role
 	if err := r.db.GetContext(ctx, &item, r.db.Rebind(query), name, tenantID); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Role tidak ditemukan")
+			return nil, errmsg.NewCustomErrors(404).SetMessage("Role not found")
 		}
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (r *rbacRepo) UpdateRole(ctx context.Context, data coreentity.Role) error {
 		return err
 	}
 	if rowsAffected == 0 {
-		return errmsg.NewCustomErrors(404).SetMessage("Role tidak ditemukan")
+		return errmsg.NewCustomErrors(404).SetMessage("Role not found")
 	}
 	return nil
 }
@@ -148,7 +148,7 @@ func (r *rbacRepo) DeleteRole(ctx context.Context, filter coreentity.RoleDeleteF
 		return err
 	}
 	if rowsAffected == 0 {
-		return errmsg.NewCustomErrors(404).SetMessage("Role tidak ditemukan")
+		return errmsg.NewCustomErrors(404).SetMessage("Role not found")
 	}
 	return nil
 }
@@ -204,7 +204,7 @@ func (r *rbacRepo) RemoveRole(ctx context.Context, data coreentity.UserRole) err
 		return err
 	}
 	if rowsAffected == 0 {
-		return errmsg.NewCustomErrors(404).SetMessage("User role tidak ditemukan")
+		return errmsg.NewCustomErrors(404).SetMessage("User role not found")
 	}
 	return nil
 }

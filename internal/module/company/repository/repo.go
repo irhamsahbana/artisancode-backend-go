@@ -128,7 +128,7 @@ func (r *companyRepo) GetCompany(ctx context.Context, filter coreentity.Company)
 	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Company tidak ditemukan")
+			return nil, errmsg.NewCustomErrors(404).SetMessage("Company not found")
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get company")
 		return nil, err
@@ -213,6 +213,31 @@ func (r *companyRepo) UpdateCompany(ctx context.Context, data coreentity.Company
 		return err
 	}
 	return nil
+}
+
+func (r *companyRepo) ExistsCompanyByCode(ctx context.Context, tenantID string, code string, excludeID string) (bool, error) {
+	ctx, span := tracing.StartSpan(ctx, "repo.ExistsCompanyByCode")
+	defer span.End()
+
+	query := `
+		SELECT COUNT(*) FROM org_units
+		WHERE deleted_at IS NULL AND tenant_id = ? AND category = 'company' AND code = ?
+	`
+	args := []any{tenantID, code}
+
+	if excludeID != "" {
+		query += ` AND id != ?`
+		args = append(args, excludeID)
+	}
+
+	var count int
+	err := r.db.GetContext(ctx, &count, r.db.Rebind(query), args...)
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenant_id": tenantID, "code": code}).Msg("Failed to check company code existence")
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
 func (r *companyRepo) DeleteCompany(ctx context.Context, filter coreentity.CompanyDeleteFilter) error {

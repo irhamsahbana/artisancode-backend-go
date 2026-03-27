@@ -97,7 +97,7 @@ func (r *jobPositionRepo) GetJobPosition(ctx context.Context, filter coreentity.
 	err := r.db.GetContext(ctx, data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Jabatan tidak ditemukan")
+			return nil, errmsg.NewCustomErrors(404).SetMessage("Job position not found")
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get job position")
 		return nil, err

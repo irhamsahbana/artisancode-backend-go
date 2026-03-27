@@ -11,4 +11,5 @@ type CompanyRepository interface {
 	CreateCompany(ctx context.Context, data coreentity.Company) (*coreentity.Company, error)
 	UpdateCompany(ctx context.Context, data coreentity.Company) error
 	DeleteCompany(ctx context.Context, filter coreentity.CompanyDeleteFilter) error
+	ExistsCompanyByCode(ctx context.Context, tenantID string, code string, excludeID string) (bool, error)
 }

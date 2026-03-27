@@ -36,20 +36,6 @@ func (c *companyCore) GetCompany(ctx context.Context, filter coreentity.Company)
 	return c.repo.GetCompany(ctx, filter)
 }
 
-func (c *companyCore) CreateCompany(ctx context.Context, data coreentity.Company) (*coreentity.Company, error) {
-	ctx, span := tracing.StartSpan(ctx, "core.CreateCompany")
-	defer span.End()
-
-	return c.repo.CreateCompany(ctx, data)
-}
-
-func (c *companyCore) UpdateCompany(ctx context.Context, data coreentity.Company) error {
-	ctx, span := tracing.StartSpan(ctx, "core.UpdateCompany")
-	defer span.End()
-
-	return c.repo.UpdateCompany(ctx, data)
-}
-
 func (c *companyCore) DeleteCompany(ctx context.Context, filter coreentity.CompanyDeleteFilter) error {
 	ctx, span := tracing.StartSpan(ctx, "core.DeleteCompany")
 	defer span.End()
