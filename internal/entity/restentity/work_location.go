@@ -4,6 +4,8 @@ import "codebase-app/pkg/types"
 
 type WorkLocation struct {
 	ID           string   `json:"id"`
+	OrgUnitID    *string  `json:"org_unit_id"`
+	OrgUnitName  *string  `json:"org_unit_name"`
 	Name         string   `json:"name"`
 	Address      *string  `json:"address"`
 	Timezone     string   `json:"timezone"`
@@ -13,7 +15,8 @@ type WorkLocation struct {
 }
 
 type GetWorkLocationsReq struct {
-	Q string `query:"q" validate:"omitempty,min=2"`
+	Q         string  `query:"q" validate:"omitempty,min=2"`
+	OrgUnitID *string `query:"org_unit_id" validate:"omitempty,uuidv7"`
 	types.MetaQuery
 }
 
@@ -36,6 +39,7 @@ type GetWorkLocationResp struct {
 
 type CreateWorkLocationReq struct {
 	Name         string   `json:"name" validate:"required,min=2"`
+	OrgUnitID    *string  `json:"org_unit_id" validate:"omitempty,uuidv7"`
 	Address      *string  `json:"address"`
 	Timezone     string   `json:"timezone" validate:"required,min=3,max=64"`
 	Latitude     *float64 `json:"latitude"`
@@ -50,6 +54,7 @@ type CreateWorkLocationResp struct {
 type UpdateWorkLocationReq struct {
 	ID           string   `params:"id" validate:"required"`
 	Name         string   `json:"name" validate:"required,min=2"`
+	OrgUnitID    *string  `json:"org_unit_id" validate:"omitempty,uuidv7"`
 	Address      *string  `json:"address"`
 	Timezone     string   `json:"timezone" validate:"required,min=3,max=64"`
 	Latitude     *float64 `json:"latitude"`

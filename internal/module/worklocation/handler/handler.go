@@ -43,20 +43,21 @@ func (h *workLocationHandler) getWorkLocations(c *fiber.Ctx) error {
 	)
 
 	if err := c.QueryParser(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse query params")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse query params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
 	req.SetDefault()
 
 	if err := v.Validate(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate query params")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate query params")
 		code, errors := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
 	filter := coreentity.WorkLocationListFilter{
 		TenantID:  common.GetUserContext(ctx).TenantID,
+		OrgUnitID: req.OrgUnitID,
 		Q:         req.Q,
 		Page:      req.Page,
 		Paginate:  req.Paginate,
@@ -95,12 +96,12 @@ func (h *workLocationHandler) getWorkLocation(c *fiber.Ctx) error {
 	)
 
 	if err := c.ParamsParser(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse params")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
 	if err := v.Validate(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate params")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate params")
 		code, errors := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
@@ -130,12 +131,12 @@ func (h *workLocationHandler) createWorkLocation(c *fiber.Ctx) error {
 	)
 
 	if err := c.BodyParser(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse request body")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
 	if err := v.Validate(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate request body")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
 		code, errors := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
@@ -159,17 +160,17 @@ func (h *workLocationHandler) updateWorkLocation(c *fiber.Ctx) error {
 	)
 
 	if err := c.ParamsParser(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse params")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
 	if err := c.BodyParser(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse request body")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
 	if err := v.Validate(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate request body")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
 		code, errors := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
@@ -192,12 +193,12 @@ func (h *workLocationHandler) deleteWorkLocation(c *fiber.Ctx) error {
 	)
 
 	if err := c.ParamsParser(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse params")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 
 	if err := v.Validate(req); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate params")
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate params")
 		code, errors := errmsg.Errors(err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}

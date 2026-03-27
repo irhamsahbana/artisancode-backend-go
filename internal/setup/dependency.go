@@ -71,7 +71,8 @@ func Dependencies(
 		Repo: jobPositionRepository,
 	})
 	workLocationCoreInst := worklocationCore.NewWorkLocationCore(worklocationCore.WorkLocationCoreConfig{
-		Repo: workLocationRepository,
+		Repo:        workLocationRepository,
+		OrgUnitRepo: orgUnitRepository,
 	})
 	workShiftCoreInst := workshiftCore.NewWorkShiftCore(workshiftCore.WorkShiftCoreConfig{
 		Repo: workShiftRepository,

@@ -5,28 +5,14 @@ import (
 
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
-	"codebase-app/internal/entity/repoentity"
 	"codebase-app/internal/entity/restentity"
 )
-
-func WorkLocationFromRepoToCore(ctx context.Context, item repoentity.WorkLocation) coreentity.WorkLocation {
-	uc := common.GetUserContext(ctx)
-	return coreentity.WorkLocation{
-		UserCtx:      uc,
-		ID:           item.ID,
-		TenantID:     item.TenantID,
-		Name:         item.Name,
-		Address:      item.Address,
-		Timezone:     item.Timezone,
-		Latitude:     item.Latitude,
-		Longitude:    item.Longitude,
-		RadiusMeters: item.RadiusMeters,
-	}
-}
 
 func WorkLocationFromCoreToRest(item coreentity.WorkLocation) restentity.WorkLocation {
 	return restentity.WorkLocation{
 		ID:           item.ID,
+		OrgUnitID:    item.OrgUnitID,
+		OrgUnitName:  item.OrgUnitName,
 		Name:         item.Name,
 		Address:      item.Address,
 		Timezone:     item.Timezone,
@@ -42,6 +28,7 @@ func WorkLocationFromRestCreateToCore(ctx context.Context, req restentity.Create
 		UserCtx:      uc,
 		TenantID:     uc.TenantID,
 		Name:         req.Name,
+		OrgUnitID:    req.OrgUnitID,
 		Address:      req.Address,
 		Timezone:     req.Timezone,
 		Latitude:     req.Latitude,
@@ -57,6 +44,7 @@ func WorkLocationFromRestUpdateToCore(ctx context.Context, req restentity.Update
 		ID:           req.ID,
 		TenantID:     uc.TenantID,
 		Name:         req.Name,
+		OrgUnitID:    req.OrgUnitID,
 		Address:      req.Address,
 		Timezone:     req.Timezone,
 		Latitude:     req.Latitude,

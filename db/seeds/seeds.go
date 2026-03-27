@@ -31,6 +31,12 @@ func (s *Seed) run(table string) {
 		s.rbacSeed()
 	case "org_unit":
 		s.orgUnitSeed()
+	case "job_position":
+		s.jobPositionSeed()
+	case "work_location":
+		s.workLocationSeed()
+	case "work_shift":
+		s.workShiftSeed()
 	case "template":
 		s.rbacSeed()
 		s.orgUnitSeed()
@@ -43,6 +49,9 @@ func (s *Seed) run(table string) {
 		s.orgUnitSeed()
 		s.tenantSeed()
 		s.ownerUserSeed()
+		s.jobPositionSeed()
+		s.workLocationSeed()
+		s.workShiftSeed()
 	default:
 		log.Warn().Str("table", table).Msg("No seed to run")
 	}

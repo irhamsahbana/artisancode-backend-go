@@ -3,6 +3,7 @@
 CREATE TABLE IF NOT EXISTS work_locations (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
     tenant_id UUID NOT NULL,
+    org_unit_id UUID,
     name VARCHAR(255) NOT NULL,
     address TEXT,
     timezone VARCHAR(64) NOT NULL,
@@ -13,8 +14,11 @@ CREATE TABLE IF NOT EXISTS work_locations (
     updated_at TIMESTAMP WITH TIME ZONE,
     deleted_at TIMESTAMP WITH TIME ZONE,
 
-    FOREIGN KEY (tenant_id) REFERENCES tenants (id)
+    FOREIGN KEY (tenant_id) REFERENCES tenants (id),
+    FOREIGN KEY (org_unit_id) REFERENCES org_units (id),
+    CONSTRAINT work_locations_name_unique UNIQUE (tenant_id, name)
 );
+
 -- +goose StatementEnd
 
 -- +goose Down

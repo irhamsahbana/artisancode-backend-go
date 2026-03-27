@@ -7,6 +7,8 @@ type WorkLocation struct {
 
 	ID           string
 	TenantID     string
+	OrgUnitID    *string
+	OrgUnitName  *string
 	Name         string
 	Address      *string
 	Timezone     string
@@ -16,10 +18,11 @@ type WorkLocation struct {
 }
 
 type WorkLocationListFilter struct {
-	TenantID string
-	Q        string
-	Page     int
-	Paginate int
+	TenantID  string
+	OrgUnitID *string
+	Q         string
+	Page      int
+	Paginate  int
 }
 
 type WorkLocationDeleteFilter struct {
