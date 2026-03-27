@@ -15,9 +15,13 @@ type rbacCore struct {
 
 var _ corePorts.RbacCore = &rbacCore{}
 
-func NewRbacCore(repo repository.RbacRepository) *rbacCore {
+type RbacCoreConfig struct {
+	Repo repository.RbacRepository
+}
+
+func NewRbacCore(cfg RbacCoreConfig) *rbacCore {
 	return &rbacCore{
-		repo: repo,
+		repo: cfg.Repo,
 	}
 }
 
@@ -82,6 +86,34 @@ func (c *rbacCore) HasPermission(ctx context.Context, userID, permission string)
 	defer span.End()
 
 	return c.repo.HasPermission(ctx, userID, permission)
+}
+
+func (c *rbacCore) GetRoleWithPermissions(ctx context.Context, roleID, tenantID string) (*coreentity.Role, error) {
+	ctx, span := tracing.StartSpan(ctx, "core.GetRoleWithPermissions")
+	defer span.End()
+
+	return c.repo.GetRoleWithPermissions(ctx, roleID, tenantID)
+}
+
+func (c *rbacCore) SetRolePermissions(ctx context.Context, roleID, tenantID string, permissionIDs []string) error {
+	ctx, span := tracing.StartSpan(ctx, "core.SetRolePermissions")
+	defer span.End()
+
+	return c.repo.SetRolePermissions(ctx, roleID, tenantID, permissionIDs)
+}
+
+func (c *rbacCore) GetPermissions(ctx context.Context, filter coreentity.PermissionListFilter) ([]coreentity.Permission, int, error) {
+	ctx, span := tracing.StartSpan(ctx, "core.GetPermissions")
+	defer span.End()
+
+	return c.repo.GetPermissions(ctx, filter)
+}
+
+func (c *rbacCore) GetPermissionsByRoleID(ctx context.Context, roleID string) ([]coreentity.Permission, error) {
+	ctx, span := tracing.StartSpan(ctx, "core.GetPermissionsByRoleID")
+	defer span.End()
+
+	return c.repo.GetPermissionsByRoleID(ctx, roleID)
 }
 
 func (c *rbacCore) GetUserPermissions(ctx context.Context, userID string) ([]coreentity.Permission, error) {

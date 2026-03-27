@@ -18,6 +18,9 @@ import (
 	orgunitCore "codebase-app/internal/module/orgunit/core"
 	orgunitHandler "codebase-app/internal/module/orgunit/handler"
 	orgunitRepo "codebase-app/internal/module/orgunit/repository"
+	rbacCore "codebase-app/internal/module/rbac/core"
+	rbacHandler "codebase-app/internal/module/rbac/handler"
+	rbacRepo "codebase-app/internal/module/rbac/repository"
 	userCore "codebase-app/internal/module/user/core"
 	userHandler "codebase-app/internal/module/user/handler"
 	userRepo "codebase-app/internal/module/user/repository"
@@ -54,6 +57,9 @@ func Dependencies(
 	workShiftRepository := workshiftRepo.NewWorkShiftRepository(workshiftRepo.WorkShiftRepositoryConfig{
 		DB: db,
 	})
+	rbacRepository := rbacRepo.NewRbacRepository(rbacRepo.RbacRepositoryConfig{
+		DB: db,
+	})
 
 	tokenCache := tokencache.NewTokenCache(time.Hour*24*7, time.Minute*10)
 
@@ -77,6 +83,9 @@ func Dependencies(
 	workShiftCoreInst := workshiftCore.NewWorkShiftCore(workshiftCore.WorkShiftCoreConfig{
 		Repo: workShiftRepository,
 	})
+	rbacCoreInst := rbacCore.NewRbacCore(rbacCore.RbacCoreConfig{
+		Repo: rbacRepository,
+	})
 
 	userHandler.NewUserHandler(userHandler.UserHandlerConfig{
 		Core: userCoreInst,
@@ -96,6 +105,9 @@ func Dependencies(
 	workshiftHandler.NewWorkShiftHandler(workshiftHandler.WorkShiftHandlerConfig{
 		Core: workShiftCoreInst,
 	}).Register(app.Group("/work-shifts", middleware.Auth))
+	rbacHandler.NewRbacHandler(rbacHandler.RbacHandlerConfig{
+		Core: rbacCoreInst,
+	}).Register(app.Group("/role-and-permissions", middleware.Auth))
 
 	app.Use(func(c *fiber.Ctx) error {
 		var (

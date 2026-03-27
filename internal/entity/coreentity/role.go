@@ -3,11 +3,11 @@ package coreentity
 import "codebase-app/internal/entity/common"
 
 type Role struct {
-	UserCtx common.UserContext
+	UserCtx common.UserContext `db:"-"`
 
-	ID       string
-	TenantID *string
-	Name     string
+	ID       string  `db:"id"`
+	TenantID *string `db:"tenant_id"`
+	Name     string  `db:"name"`
 }
 
 type RoleListFilter struct {
@@ -34,8 +34,16 @@ type UserRoleFilter struct {
 }
 
 type Permission struct {
-	ID   string
-	Name string
+	ID          string `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
+}
+
+type PermissionListFilter struct {
+	TenantID string
+	Q        string
+	Page     int
+	Paginate int
 }
 
 type UserPermission struct {
