@@ -14,7 +14,7 @@ func LoginReqToCore(ctx context.Context, req restentity.LoginReq) coreentity.Use
 		UserCtx:  uc,
 		Email:    req.Email,
 		Password: req.Password,
-		TenantID: req.TenantID,
+		TenantCode: req.TenantCode,
 	}
 }
 

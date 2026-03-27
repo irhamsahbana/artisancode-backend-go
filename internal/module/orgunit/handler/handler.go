@@ -29,10 +29,32 @@ func NewOrgUnitHandler(cfg OrgUnitHandlerConfig) *orgUnitHandler {
 
 func (h *orgUnitHandler) Register(router fiber.Router) {
 	router.Get("/", h.getOrgUnits)
+	router.Get("/tree/:companyId", h.getOrgUnitTree)
 	router.Get("/:id", h.getOrgUnit)
 	router.Post("/", h.createOrgUnit)
 	router.Put("/:id", h.updateOrgUnit)
 	router.Delete("/:id", h.deleteOrgUnit)
+}
+
+func (h *orgUnitHandler) getOrgUnitTree(c *fiber.Ctx) error {
+	var (
+		ctx       = c.UserContext()
+		companyID = c.Params("companyId")
+		userCtx   = common.GetUserContext(ctx)
+	)
+
+	if !userCtx.CanAccessCompany(companyID) {
+		return c.Status(fiber.StatusForbidden).JSON(response.Error("You don't have access to this company"))
+	}
+
+	tree, err := h.core.GetOrgUnitTree(ctx, userCtx.TenantID, companyID)
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Str("company_id", companyID).Msg("Failed to get org unit tree")
+		code, errors := errmsg.Errors[error](err)
+		return c.Status(code).JSON(response.Error(errors))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.Success(tree, ""))
 }
 
 func (h *orgUnitHandler) getOrgUnits(c *fiber.Ctx) error {

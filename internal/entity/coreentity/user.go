@@ -14,6 +14,7 @@ type User struct {
 	Password     string
 	RefreshToken string
 	TenantID     string
+	TenantCode   string
 	TenantName   string
 	CompanyID    *string
 	CompanyName  *string

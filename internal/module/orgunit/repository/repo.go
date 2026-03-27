@@ -111,7 +111,8 @@ func (r *orgUnitRepo) GetOrgUnit(ctx context.Context, filter coreentity.OrgUnit)
 	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Org unit tidak ditemukan")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Org unit not found")
+			return nil, errmsg.NewCustomErrors(404).SetMessage("Org unit not found")
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get org unit")
 		return nil, err
@@ -164,6 +165,65 @@ func (r *orgUnitRepo) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 		return err
 	}
 	return nil
+}
+
+func (r *orgUnitRepo) GetAllOrgUnitsByCompany(ctx context.Context, tenantID string, companyID string) ([]coreentity.OrgUnit, error) {
+	ctx, span := tracing.StartSpan(ctx, "repo.GetAllOrgUnitsByCompany")
+	defer span.End()
+	payload := map[string]any{
+		"tenant_id":  tenantID,
+		"company_id": companyID,
+	}
+
+	type dao struct {
+		ID       string  `db:"id"`
+		TenantID string  `db:"tenant_id"`
+		Name     string  `db:"name"`
+		ParentID *string `db:"parent_id"`
+		Category string  `db:"category"`
+	}
+
+	var (
+		data  = make([]dao, 0)
+		items = make([]coreentity.OrgUnit, 0)
+	)
+
+	// Recursive CTE to get all children of company org unit
+	query := `
+		WITH RECURSIVE org_unit_hierarchy AS (
+			SELECT id, tenant_id, name, parent_id, category
+			FROM org_units
+			WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
+
+			UNION ALL
+
+			SELECT ou.id, ou.tenant_id, ou.name, ou.parent_id, ou.category
+			FROM org_units ou
+			INNER JOIN org_unit_hierarchy oh ON ou.parent_id = oh.id
+			WHERE ou.deleted_at IS NULL
+		)
+		SELECT id, tenant_id, name, parent_id, category
+		FROM org_unit_hierarchy
+		ORDER BY name ASC
+	`
+
+	err := r.db.SelectContext(ctx, &data, r.db.Rebind(query), companyID, tenantID)
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to query all org units for company")
+		return nil, err
+	}
+
+	for _, d := range data {
+		items = append(items, coreentity.OrgUnit{
+			ID:       d.ID,
+			TenantID: d.TenantID,
+			Name:     d.Name,
+			ParentID: d.ParentID,
+			Category: d.Category,
+		})
+	}
+
+	return items, nil
 }
 
 func (r *orgUnitRepo) DeleteOrgUnit(ctx context.Context, filter coreentity.OrgUnitDeleteFilter) error {

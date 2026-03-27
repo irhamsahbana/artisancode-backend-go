@@ -24,3 +24,10 @@ type OrgUnitDeleteFilter struct {
 	TenantID string
 	ID       string
 }
+
+type OrgUnitTreeNode struct {
+	ID       string            `json:"id"`
+	Name     string            `json:"name"`
+	Category string            `json:"category"`
+	Children []OrgUnitTreeNode `json:"children"`
+}

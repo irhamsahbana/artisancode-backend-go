@@ -20,7 +20,7 @@ func (c *userCore) Login(ctx context.Context, user coreentity.User) (*coreentity
 	ctx, span := tracing.StartSpan(ctx, "core.Login")
 	defer span.End()
 
-	foundUser, err := c.repo.FindActiveUserByEmailAndTenant(ctx, user.Email, user.TenantID)
+	foundUser, err := c.repo.FindActiveUserByEmailAndTenant(ctx, user.Email, user.TenantCode)
 	if err != nil {
 		return nil, err
 	}

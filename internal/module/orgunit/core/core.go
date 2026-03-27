@@ -47,12 +47,21 @@ func (c *orgUnitCore) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 	ctx, span := tracing.StartSpan(ctx, "core.UpdateOrgUnit")
 	defer span.End()
 
+	// Check if org unit exists before updating
+	_, err := c.repo.GetOrgUnit(ctx, coreentity.OrgUnit{
+		TenantID: data.TenantID,
+		ID:       data.ID,
+	})
+	if err != nil {
+		return err
+	}
+
 	return c.repo.UpdateOrgUnit(ctx, data)
 }
 
-func (c *orgUnitCore) DeleteOrgUnit(ctx context.Context, filter coreentity.OrgUnitDeleteFilter) error {
-	ctx, span := tracing.StartSpan(ctx, "core.DeleteOrgUnit")
+func (c *orgUnitCore) GetAllOrgUnitsByCompany(ctx context.Context, tenantID string, companyID string) ([]coreentity.OrgUnit, error) {
+	ctx, span := tracing.StartSpan(ctx, "core.GetAllOrgUnitsByCompany")
 	defer span.End()
 
-	return c.repo.DeleteOrgUnit(ctx, filter)
+	return c.repo.GetAllOrgUnitsByCompany(ctx, tenantID, companyID)
 }
