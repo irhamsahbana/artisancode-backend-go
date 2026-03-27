@@ -36,13 +36,6 @@ func (c *orgUnitCore) GetOrgUnit(ctx context.Context, filter coreentity.OrgUnit)
 	return c.repo.GetOrgUnit(ctx, filter)
 }
 
-func (c *orgUnitCore) CreateOrgUnit(ctx context.Context, data coreentity.OrgUnit) (*coreentity.OrgUnit, error) {
-	ctx, span := tracing.StartSpan(ctx, "core.CreateOrgUnit")
-	defer span.End()
-
-	return c.repo.CreateOrgUnit(ctx, data)
-}
-
 func (c *orgUnitCore) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit) error {
 	ctx, span := tracing.StartSpan(ctx, "core.UpdateOrgUnit")
 	defer span.End()

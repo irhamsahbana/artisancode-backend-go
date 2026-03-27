@@ -15,6 +15,7 @@ func OrgUnitFromRepoToCore(ctx context.Context, item repoentity.OrgUnit) coreent
 		UserCtx:  uc,
 		ID:       item.ID,
 		TenantID: item.TenantID,
+		Code:     item.Code,
 		Name:     item.Name,
 		ParentID: item.ParentID,
 		Category: item.Category,
@@ -24,6 +25,7 @@ func OrgUnitFromRepoToCore(ctx context.Context, item repoentity.OrgUnit) coreent
 func OrgUnitFromCoreToRest(item coreentity.OrgUnit) restentity.OrgUnit {
 	return restentity.OrgUnit{
 		ID:       item.ID,
+		Code:     item.Code,
 		Name:     item.Name,
 		ParentID: item.ParentID,
 		Category: item.Category,
@@ -35,6 +37,7 @@ func OrgUnitFromRestCreateToCore(ctx context.Context, req restentity.CreateOrgUn
 	return coreentity.OrgUnit{
 		UserCtx:  uc,
 		TenantID: uc.TenantID,
+		Code:     req.Code,
 		Name:     req.Name,
 		ParentID: req.ParentID,
 		Category: req.Category,
@@ -47,6 +50,7 @@ func OrgUnitFromRestUpdateToCore(ctx context.Context, req restentity.UpdateOrgUn
 		UserCtx:  uc,
 		ID:       req.ID,
 		TenantID: uc.TenantID,
+		Code:     req.Code,
 		Name:     req.Name,
 		ParentID: req.ParentID,
 		Category: req.Category,

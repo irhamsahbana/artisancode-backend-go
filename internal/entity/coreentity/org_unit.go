@@ -7,6 +7,7 @@ type OrgUnit struct {
 
 	ID       string
 	TenantID string
+	Code     string
 	Name     string
 	ParentID *string
 	Category string
@@ -27,6 +28,7 @@ type OrgUnitDeleteFilter struct {
 
 type OrgUnitTreeNode struct {
 	ID       string            `json:"id"`
+	Code     string            `json:"code"`
 	Name     string            `json:"name"`
 	Category string            `json:"category"`
 	Children []OrgUnitTreeNode `json:"children"`

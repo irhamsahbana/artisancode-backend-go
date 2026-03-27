@@ -12,4 +12,5 @@ type OrgUnitRepository interface {
 	CreateOrgUnit(ctx context.Context, data coreentity.OrgUnit) (*coreentity.OrgUnit, error)
 	UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit) error
 	DeleteOrgUnit(ctx context.Context, filter coreentity.OrgUnitDeleteFilter) error
+	ExistsOrgUnitByCode(ctx context.Context, tenantID string, code string) (bool, error)
 }

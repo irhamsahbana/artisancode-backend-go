@@ -36,6 +36,7 @@ func (r *orgUnitRepo) GetOrgUnits(ctx context.Context, filter coreentity.OrgUnit
 		TotalData int     `db:"total_data"`
 		ID        string  `db:"id"`
 		TenantID  string  `db:"tenant_id"`
+		Code      string  `db:"code"`
 		Name      string  `db:"name"`
 		ParentID  *string `db:"parent_id"`
 		Category  string  `db:"category"`
@@ -51,7 +52,7 @@ func (r *orgUnitRepo) GetOrgUnits(ctx context.Context, filter coreentity.OrgUnit
 	query := `
 		SELECT
 			COUNT(*) OVER() AS total_data,
-			id, tenant_id, name, parent_id, category
+			id, tenant_id, code, name, parent_id, category
 		FROM org_units
 		WHERE deleted_at IS NULL AND tenant_id = ?
 	`
@@ -81,6 +82,7 @@ func (r *orgUnitRepo) GetOrgUnits(ctx context.Context, filter coreentity.OrgUnit
 		items = append(items, coreentity.OrgUnit{
 			ID:       d.ID,
 			TenantID: d.TenantID,
+			Code:     d.Code,
 			Name:     d.Name,
 			ParentID: d.ParentID,
 			Category: d.Category,
@@ -97,13 +99,14 @@ func (r *orgUnitRepo) GetOrgUnit(ctx context.Context, filter coreentity.OrgUnit)
 	var data struct {
 		ID       string  `db:"id"`
 		TenantID string  `db:"tenant_id"`
+		Code     string  `db:"code"`
 		Name     string  `db:"name"`
 		ParentID *string `db:"parent_id"`
 		Category string  `db:"category"`
 	}
 
 	query := `
-		SELECT id, tenant_id, name, parent_id, category
+		SELECT id, tenant_id, code, name, parent_id, category
 		FROM org_units
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
@@ -121,6 +124,7 @@ func (r *orgUnitRepo) GetOrgUnit(ctx context.Context, filter coreentity.OrgUnit)
 	result := &coreentity.OrgUnit{
 		ID:       data.ID,
 		TenantID: data.TenantID,
+		Code:     data.Code,
 		Name:     data.Name,
 		ParentID: data.ParentID,
 		Category: data.Category,
@@ -133,13 +137,13 @@ func (r *orgUnitRepo) CreateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 	defer span.End()
 
 	query := `
-		INSERT INTO org_units (tenant_id, name, parent_id, category)
-		VALUES (?, ?, ?, ?)
+		INSERT INTO org_units (tenant_id, code, name, parent_id, category)
+		VALUES (?, ?, ?, ?, ?)
 		RETURNING id
 	`
 
 	var id string
-	err := r.db.GetContext(ctx, &id, r.db.Rebind(query), data.TenantID, data.Name, data.ParentID, data.Category)
+	err := r.db.GetContext(ctx, &id, r.db.Rebind(query), data.TenantID, data.Code, data.Name, data.ParentID, data.Category)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create org unit")
 		return nil, err
@@ -155,11 +159,11 @@ func (r *orgUnitRepo) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 
 	query := `
 		UPDATE org_units
-		SET name = ?, parent_id = ?, category = ?, updated_at = NOW()
+		SET code = ?, name = ?, parent_id = ?, category = ?, updated_at = NOW()
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	_, err := r.db.ExecContext(ctx, r.db.Rebind(query), data.Name, data.ParentID, data.Category, data.ID, data.TenantID)
+	_, err := r.db.ExecContext(ctx, r.db.Rebind(query), data.Code, data.Name, data.ParentID, data.Category, data.ID, data.TenantID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to update org unit")
 		return err
@@ -178,6 +182,7 @@ func (r *orgUnitRepo) GetAllOrgUnitsByCompany(ctx context.Context, tenantID stri
 	type dao struct {
 		ID       string  `db:"id"`
 		TenantID string  `db:"tenant_id"`
+		Code     string  `db:"code"`
 		Name     string  `db:"name"`
 		ParentID *string `db:"parent_id"`
 		Category string  `db:"category"`
@@ -191,18 +196,18 @@ func (r *orgUnitRepo) GetAllOrgUnitsByCompany(ctx context.Context, tenantID stri
 	// Recursive CTE to get all children of company org unit
 	query := `
 		WITH RECURSIVE org_unit_hierarchy AS (
-			SELECT id, tenant_id, name, parent_id, category
+			SELECT id, tenant_id, code, name, parent_id, category
 			FROM org_units
 			WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 
 			UNION ALL
 
-			SELECT ou.id, ou.tenant_id, ou.name, ou.parent_id, ou.category
+			SELECT ou.id, ou.tenant_id, ou.code, ou.name, ou.parent_id, ou.category
 			FROM org_units ou
 			INNER JOIN org_unit_hierarchy oh ON ou.parent_id = oh.id
 			WHERE ou.deleted_at IS NULL
 		)
-		SELECT id, tenant_id, name, parent_id, category
+		SELECT id, tenant_id, code, name, parent_id, category
 		FROM org_unit_hierarchy
 		ORDER BY name ASC
 	`
@@ -217,6 +222,7 @@ func (r *orgUnitRepo) GetAllOrgUnitsByCompany(ctx context.Context, tenantID stri
 		items = append(items, coreentity.OrgUnit{
 			ID:       d.ID,
 			TenantID: d.TenantID,
+			Code:     d.Code,
 			Name:     d.Name,
 			ParentID: d.ParentID,
 			Category: d.Category,
@@ -224,6 +230,29 @@ func (r *orgUnitRepo) GetAllOrgUnitsByCompany(ctx context.Context, tenantID stri
 	}
 
 	return items, nil
+}
+
+func (r *orgUnitRepo) ExistsOrgUnitByCode(ctx context.Context, tenantID string, code string) (bool, error) {
+	ctx, span := tracing.StartSpan(ctx, "repo.ExistsOrgUnitByCode")
+	defer span.End()
+
+	var exists bool
+	query := `
+		SELECT EXISTS(
+			SELECT 1 FROM org_units
+			WHERE tenant_id = ? AND code = ? AND deleted_at IS NULL
+		)
+	`
+
+	err := r.db.GetContext(ctx, &exists, r.db.Rebind(query), tenantID, code)
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenant_id": tenantID, "code": code}).
+			Msg("Failed to check org unit code existence")
+		return false, err
+	}
+
+	return exists, nil
 }
 
 func (r *orgUnitRepo) DeleteOrgUnit(ctx context.Context, filter coreentity.OrgUnitDeleteFilter) error {
