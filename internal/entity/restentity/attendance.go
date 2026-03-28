@@ -67,3 +67,24 @@ type CheckAttendanceReq struct {
 type CheckAttendanceResp struct {
 	ID string `json:"id"`
 }
+
+type GetAttendanceSummaryTodayResp struct {
+	AttendanceDate string  `json:"attendance_date"`
+	CheckedIn      bool    `json:"checked_in"`
+	CheckedOut     bool    `json:"checked_out"`
+	CheckInLogID   *string `json:"check_in_log_id"`
+	CheckOutLogID  *string `json:"check_out_log_id"`
+	LastLogType    *string `json:"last_log_type"`
+	LastLoggedAt   *string `json:"last_logged_at"`
+	CanCheckIn     bool    `json:"can_check_in"`
+	CanCheckOut    bool    `json:"can_check_out"`
+}
+
+type GetAttendancePolicyResp struct {
+	Timezone                string `json:"timezone"`
+	AttendanceRadiusMeters  int    `json:"attendance_radius_meters"`
+	AttendanceCheckInStart  string `json:"attendance_check_in_start"`
+	AttendanceCheckInEnd    string `json:"attendance_check_in_end"`
+	AttendanceCheckOutStart string `json:"attendance_check_out_start"`
+	AttendanceCheckOutEnd   string `json:"attendance_check_out_end"`
+}

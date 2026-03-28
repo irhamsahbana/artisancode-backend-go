@@ -8,15 +8,18 @@ import (
 var _ corePorts.AttendanceCore = &attendanceCore{}
 
 type attendanceCore struct {
-	repo portsRepo.AttendanceRepository
+	repo        portsRepo.AttendanceRepository
+	companyRepo portsRepo.CompanyRepository
 }
 
 type AttendanceCoreConfig struct {
-	Repo portsRepo.AttendanceRepository
+	Repo        portsRepo.AttendanceRepository
+	CompanyRepo portsRepo.CompanyRepository
 }
 
 func NewAttendanceCore(cfg AttendanceCoreConfig) *attendanceCore {
 	return &attendanceCore{
-		repo: cfg.Repo,
+		repo:        cfg.Repo,
+		companyRepo: cfg.CompanyRepo,
 	}
 }

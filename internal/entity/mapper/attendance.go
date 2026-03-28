@@ -46,3 +46,28 @@ func AttendanceActionFromRest(ctx context.Context, req restentity.CheckAttendanc
 		Notes:      req.Notes,
 	}
 }
+
+func AttendanceSummaryFromCoreToRest(item coreentity.AttendanceSummary) restentity.GetAttendanceSummaryTodayResp {
+	return restentity.GetAttendanceSummaryTodayResp{
+		AttendanceDate: item.AttendanceDate,
+		CheckedIn:      item.CheckedIn,
+		CheckedOut:     item.CheckedOut,
+		CheckInLogID:   item.CheckInLogID,
+		CheckOutLogID:  item.CheckOutLogID,
+		LastLogType:    item.LastLogType,
+		LastLoggedAt:   item.LastLoggedAt,
+		CanCheckIn:     item.CanCheckIn,
+		CanCheckOut:    item.CanCheckOut,
+	}
+}
+
+func AttendancePolicyFromCoreToRest(item coreentity.AttendancePolicy) restentity.GetAttendancePolicyResp {
+	return restentity.GetAttendancePolicyResp{
+		Timezone:                item.Timezone,
+		AttendanceRadiusMeters:  item.AttendanceRadiusMeters,
+		AttendanceCheckInStart:  item.AttendanceCheckInStart,
+		AttendanceCheckInEnd:    item.AttendanceCheckInEnd,
+		AttendanceCheckOutStart: item.AttendanceCheckOutStart,
+		AttendanceCheckOutEnd:   item.AttendanceCheckOutEnd,
+	}
+}

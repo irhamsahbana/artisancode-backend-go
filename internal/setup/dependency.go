@@ -21,6 +21,9 @@ import (
 	jobpositionCore "codebase-app/internal/module/jobposition/core"
 	jobpositionHandler "codebase-app/internal/module/jobposition/handler"
 	jobpositionRepo "codebase-app/internal/module/jobposition/repository"
+	meCore "codebase-app/internal/module/me/core"
+	meHandler "codebase-app/internal/module/me/handler"
+	meRepo "codebase-app/internal/module/me/repository"
 	orgunitCore "codebase-app/internal/module/orgunit/core"
 	orgunitHandler "codebase-app/internal/module/orgunit/handler"
 	orgunitRepo "codebase-app/internal/module/orgunit/repository"
@@ -61,6 +64,9 @@ func Dependencies(
 		DB: db,
 	})
 	workShiftRepository := workshiftRepo.NewWorkShiftRepository(workshiftRepo.WorkShiftRepositoryConfig{
+		DB: db,
+	})
+	meRepository := meRepo.NewMeRepository(meRepo.MeRepositoryConfig{
 		DB: db,
 	})
 	rbacRepository := rbacRepo.NewRbacRepository(rbacRepo.RbacRepositoryConfig{
@@ -104,7 +110,11 @@ func Dependencies(
 		UserRepo: userRepository,
 	})
 	attendanceCoreInst := attendanceCore.NewAttendanceCore(attendanceCore.AttendanceCoreConfig{
-		Repo: attendanceRepository,
+		Repo:        attendanceRepository,
+		CompanyRepo: companyRepository,
+	})
+	meCoreInst := meCore.NewMeCore(meCore.MeCoreConfig{
+		Repo: meRepository,
 	})
 	userHandler.NewUserHandler(userHandler.UserHandlerConfig{
 		Core: userCoreInst,
@@ -127,9 +137,15 @@ func Dependencies(
 	employeeHandler.NewEmployeeHandler(employeeHandler.EmployeeHandlerConfig{
 		Core: employeeCoreInst,
 	}).Register(app.Group("/employees", middleware.Auth))
-	attendanceHandler.NewAttendanceHandler(attendanceHandler.AttendanceHandlerConfig{
+	attendanceHandlerInst := attendanceHandler.NewAttendanceHandler(attendanceHandler.AttendanceHandlerConfig{
 		Core: attendanceCoreInst,
-	}).Register(app.Group("/attendance-logs", middleware.Auth))
+	})
+	attendanceHandlerInst.Register(app.Group("/attendance-logs", middleware.Auth))
+	attendanceHandlerInst.RegisterSummary(app.Group("/attendance-summary", middleware.Auth))
+	attendanceHandlerInst.RegisterPolicy(app.Group("/attendance-policy", middleware.Auth))
+	meHandler.NewMeHandler(meHandler.MeHandlerConfig{
+		Core: meCoreInst,
+	}).Register(app.Group("/me", middleware.Auth))
 	rbacHandler.NewRbacHandler(rbacHandler.RbacHandlerConfig{
 		Core: rbacCoreInst,
 	}).Register(app.Group("/role-and-permissions", middleware.Auth))

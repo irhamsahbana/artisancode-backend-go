@@ -13,3 +13,4 @@ This documentation splits engineering guidance into smaller files for more effic
 - [Error Handling](./error_handling.md) - Error types, status codes, per-layer patterns
 - [Handler Pattern](./handler_pattern.md) - CRUD handler boilerplate, pagination, log levels
 - [Parameter Convention](./parameter_convention.md) - Value vs pointer, filter structs, mapper naming
+- [Mobile Attendance V1](./mobile_attendance_v1.md) - Mobile readiness scope, endpoint contracts, and backlog

@@ -11,7 +11,7 @@ func (c *attendanceCore) GetAttendanceLogs(ctx context.Context, filter coreentit
 	ctx, span := tracing.StartSpan(ctx, "core.GetAttendanceLogs")
 	defer span.End()
 
-	if !filter.UserCtx.IsOwner() {
+	if !filter.UserCtx.HasRole("owner") {
 		employee, err := c.repo.GetEmployeeByUserID(ctx, filter.TenantID, filter.UserCtx.UserID)
 		if err != nil {
 			return []coreentity.AttendanceLog{}, 0, nil

@@ -58,3 +58,28 @@ type AttendanceLogAction struct {
 	DeviceName *string
 	Notes      *string
 }
+
+type AttendanceSummary struct {
+	UserCtx common.UserContext
+
+	AttendanceDate string
+	CheckedIn      bool
+	CheckedOut     bool
+	CheckInLogID   *string
+	CheckOutLogID  *string
+	LastLogType    *string
+	LastLoggedAt   *string
+	CanCheckIn     bool
+	CanCheckOut    bool
+}
+
+type AttendancePolicy struct {
+	UserCtx common.UserContext
+
+	Timezone                string
+	AttendanceRadiusMeters  int
+	AttendanceCheckInStart  string
+	AttendanceCheckInEnd    string
+	AttendanceCheckOutStart string
+	AttendanceCheckOutEnd   string
+}

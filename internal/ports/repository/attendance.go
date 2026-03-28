@@ -12,4 +12,5 @@ type AttendanceRepository interface {
 	CreateAttendanceLog(ctx context.Context, data coreentity.AttendanceLog) (*coreentity.AttendanceLog, error)
 	ExistsAttendanceByTypeOnDate(ctx context.Context, tenantID, employeeID, attendanceDate, attendanceType string) (bool, error)
 	GetEmployeeByUserID(ctx context.Context, tenantID, userID string) (*coreentity.Employee, error)
+	GetCompanyByUserID(ctx context.Context, tenantID, userID string) (*coreentity.Company, error)
 }
