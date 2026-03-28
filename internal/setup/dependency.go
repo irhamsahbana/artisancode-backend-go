@@ -9,6 +9,9 @@ import (
 	"codebase-app/internal/infrastructure"
 	"codebase-app/internal/integration/tokencache"
 	"codebase-app/internal/middleware"
+	attendanceCore "codebase-app/internal/module/attendance/core"
+	attendanceHandler "codebase-app/internal/module/attendance/handler"
+	attendanceRepo "codebase-app/internal/module/attendance/repository"
 	companyCore "codebase-app/internal/module/company/core"
 	companyHandler "codebase-app/internal/module/company/handler"
 	companyRepo "codebase-app/internal/module/company/repository"
@@ -65,6 +68,9 @@ func Dependencies(
 	})
 
 	tokenCache := tokencache.NewTokenCache(time.Hour*24*7, time.Minute*10)
+	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.AttendanceRepositoryConfig{
+		DB: db,
+	})
 
 	userCoreInst := userCore.NewUserCore(userCore.UserCoreConfig{
 		Repo:       userRepository,
@@ -97,6 +103,9 @@ func Dependencies(
 		Repo:     employeeRepository,
 		UserRepo: userRepository,
 	})
+	attendanceCoreInst := attendanceCore.NewAttendanceCore(attendanceCore.AttendanceCoreConfig{
+		Repo: attendanceRepository,
+	})
 	userHandler.NewUserHandler(userHandler.UserHandlerConfig{
 		Core: userCoreInst,
 	}).Register(app.Group("/users"))
@@ -118,6 +127,9 @@ func Dependencies(
 	employeeHandler.NewEmployeeHandler(employeeHandler.EmployeeHandlerConfig{
 		Core: employeeCoreInst,
 	}).Register(app.Group("/employees", middleware.Auth))
+	attendanceHandler.NewAttendanceHandler(attendanceHandler.AttendanceHandlerConfig{
+		Core: attendanceCoreInst,
+	}).Register(app.Group("/attendance-logs", middleware.Auth))
 	rbacHandler.NewRbacHandler(rbacHandler.RbacHandlerConfig{
 		Core: rbacCoreInst,
 	}).Register(app.Group("/role-and-permissions", middleware.Auth))
