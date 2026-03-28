@@ -17,8 +17,8 @@ func (r *employeeRepo) CreateEmployee(ctx context.Context, data coreentity.Emplo
 	query := `
 		INSERT INTO employees (
 			tenant_id, employee_no, full_name, user_id, org_unit_id, job_position_id,
-			location_id, shift_id, status, join_date
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			location_id, shift_id, email, status, join_date
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
 	`
 	var id string
@@ -31,6 +31,7 @@ func (r *employeeRepo) CreateEmployee(ctx context.Context, data coreentity.Emplo
 		data.JobPositionID,
 		data.LocationID,
 		data.ShiftID,
+		data.Email,
 		data.Status,
 		data.JoinDate,
 	)

@@ -21,6 +21,7 @@ func (r *employeeRepo) GetEmployee(ctx context.Context, filter coreentity.Employ
 		TenantID      string  `db:"tenant_id"`
 		EmployeeNo    string  `db:"employee_no"`
 		FullName      string  `db:"full_name"`
+		Email         sql.NullString `db:"email"`
 		UserID        *string `db:"user_id"`
 		OrgUnitID     *string `db:"org_unit_id"`
 		JobPositionID *string `db:"job_position_id"`
@@ -31,7 +32,7 @@ func (r *employeeRepo) GetEmployee(ctx context.Context, filter coreentity.Employ
 	}
 
 	query := `
-		SELECT id, tenant_id, employee_no, full_name, user_id, org_unit_id, job_position_id,
+		SELECT id, tenant_id, employee_no, full_name, email, user_id, org_unit_id, job_position_id,
 			location_id, shift_id, status, join_date
 		FROM employees
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
@@ -51,6 +52,7 @@ func (r *employeeRepo) GetEmployee(ctx context.Context, filter coreentity.Employ
 		TenantID:      data.TenantID,
 		EmployeeNo:    data.EmployeeNo,
 		FullName:      data.FullName,
+		Email:         nullableStringToValue(data.Email),
 		UserID:        data.UserID,
 		OrgUnitID:     data.OrgUnitID,
 		JobPositionID: data.JobPositionID,

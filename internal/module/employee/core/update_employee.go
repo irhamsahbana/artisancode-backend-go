@@ -15,6 +15,14 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 	ctx, span := tracing.StartSpan(ctx, "core.UpdateEmployee")
 	defer span.End()
 
+	existing, err := c.repo.GetEmployee(ctx, coreentity.Employee{
+		TenantID: data.TenantID,
+		ID:       data.ID,
+	})
+	if err != nil {
+		return err
+	}
+
 	// Validate unique employee_no per tenant (exclude self)
 	exists, err := c.repo.ExistsByEmployeeNo(ctx, data.TenantID, data.EmployeeNo, data.ID)
 	if err != nil {
@@ -28,5 +36,33 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 		return errmsg.NewCustomErrors(400).SetMessage("Employee number already exists in this tenant")
 	}
 
-	return c.repo.UpdateEmployee(ctx, data)
+	emailChanged := existing.Email != data.Email
+	if emailChanged {
+		emailExists, err := c.userRepo.ExistsActiveUserByEmail(ctx, data.Email)
+		if err != nil {
+			return err
+		}
+		if emailExists {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
+				"email": data.Email,
+			}).Msg("Email already registered")
+			return errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
+		}
+	}
+
+	data.UserID = existing.UserID
+
+	err = c.repo.UpdateEmployee(ctx, data)
+	if err != nil {
+		return err
+	}
+
+	if emailChanged && existing.UserID != nil {
+		err = c.userRepo.UpdateUserEmail(ctx, *existing.UserID, data.TenantID, data.Email)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

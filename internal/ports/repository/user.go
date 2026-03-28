@@ -12,6 +12,7 @@ type UserRepository interface {
 	ExistsActiveUserByEmail(ctx context.Context, email string) (bool, error)
 	GetRoleByName(ctx context.Context, roleName, tenantID string) (*coreentity.Role, error)
 	InsertUser(ctx context.Context, user coreentity.User) (string, error)
+	UpdateUserEmail(ctx context.Context, userID, tenantID, email string) error
 
 	InitializeTenant(ctx context.Context, tenantID string, companyName string) (string, error)
 }

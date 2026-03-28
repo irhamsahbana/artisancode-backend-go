@@ -17,7 +17,7 @@ func (r *employeeRepo) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 	query := `
 		UPDATE employees
 		SET employee_no = ?, full_name = ?, user_id = ?, org_unit_id = ?,
-			job_position_id = ?, location_id = ?, shift_id = ?,
+			job_position_id = ?, location_id = ?, shift_id = ?, email = ?,
 			status = ?, join_date = ?, updated_at = NOW()
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
@@ -30,6 +30,7 @@ func (r *employeeRepo) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 		data.JobPositionID,
 		data.LocationID,
 		data.ShiftID,
+		data.Email,
 		data.Status,
 		data.JoinDate,
 		data.ID,
