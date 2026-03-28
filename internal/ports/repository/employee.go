@@ -11,4 +11,5 @@ type EmployeeRepository interface {
 	CreateEmployee(ctx context.Context, data coreentity.Employee) (*coreentity.Employee, error)
 	UpdateEmployee(ctx context.Context, data coreentity.Employee) error
 	DeleteEmployee(ctx context.Context, filter coreentity.EmployeeDeleteFilter) error
+	ExistsByEmployeeNo(ctx context.Context, tenantID, employeeNo, excludeID string) (bool, error)
 }

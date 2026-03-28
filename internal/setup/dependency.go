@@ -12,6 +12,9 @@ import (
 	companyCore "codebase-app/internal/module/company/core"
 	companyHandler "codebase-app/internal/module/company/handler"
 	companyRepo "codebase-app/internal/module/company/repository"
+	employeeCore "codebase-app/internal/module/employee/core"
+	employeeHandler "codebase-app/internal/module/employee/handler"
+	employeeRepo "codebase-app/internal/module/employee/repository"
 	jobpositionCore "codebase-app/internal/module/jobposition/core"
 	jobpositionHandler "codebase-app/internal/module/jobposition/handler"
 	jobpositionRepo "codebase-app/internal/module/jobposition/repository"
@@ -83,10 +86,17 @@ func Dependencies(
 	workShiftCoreInst := workshiftCore.NewWorkShiftCore(workshiftCore.WorkShiftCoreConfig{
 		Repo: workShiftRepository,
 	})
+	employeeRepository := employeeRepo.NewEmployeeRepository(employeeRepo.EmployeeRepositoryConfig{
+		DB: db,
+	})
 	rbacCoreInst := rbacCore.NewRbacCore(rbacCore.RbacCoreConfig{
 		Repo: rbacRepository,
 	})
 
+	employeeCoreInst := employeeCore.NewEmployeeCore(employeeCore.EmployeeCoreConfig{
+		Repo:     employeeRepository,
+		UserRepo: userRepository,
+	})
 	userHandler.NewUserHandler(userHandler.UserHandlerConfig{
 		Core: userCoreInst,
 	}).Register(app.Group("/users"))
@@ -105,6 +115,9 @@ func Dependencies(
 	workshiftHandler.NewWorkShiftHandler(workshiftHandler.WorkShiftHandlerConfig{
 		Core: workShiftCoreInst,
 	}).Register(app.Group("/work-shifts", middleware.Auth))
+	employeeHandler.NewEmployeeHandler(employeeHandler.EmployeeHandlerConfig{
+		Core: employeeCoreInst,
+	}).Register(app.Group("/employees", middleware.Auth))
 	rbacHandler.NewRbacHandler(rbacHandler.RbacHandlerConfig{
 		Core: rbacCoreInst,
 	}).Register(app.Group("/role-and-permissions", middleware.Auth))

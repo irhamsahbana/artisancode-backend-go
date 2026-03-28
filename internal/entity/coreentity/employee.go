@@ -9,6 +9,8 @@ type Employee struct {
 	TenantID      string
 	EmployeeNo    string
 	FullName      string
+	Email         string
+	UserID        *string
 	OrgUnitID     *string
 	JobPositionID *string
 	LocationID    *string
