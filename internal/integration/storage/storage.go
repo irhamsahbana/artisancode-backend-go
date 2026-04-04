@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/config"
 	integrationPorts "codebase-app/internal/ports/integration"
@@ -87,13 +88,42 @@ func (s *storage) UploadFile(ctx context.Context, req *coreentity.UploadFileReq)
 	}, nil
 }
 
+func (s *storage) PresignUploadURL(ctx context.Context, req *coreentity.PresignUploadURLReq) (*coreentity.PresignUploadURLResp, error) {
+	if req.Filename == "" {
+		return nil, errmsg.NewCustomErrors(400).Add("filename", "filename is required.")
+	}
+
+	input := &s3.PutObjectInput{
+		Bucket: aws.String(config.Envs.Storage.Bucket),
+		Key:    aws.String(req.Filename),
+	}
+	if req.ContentType != "" {
+		input.ContentType = aws.String(req.ContentType)
+	}
+
+	ps, err := s.presignClient.PresignPutObject(ctx, input, s3.WithPresignExpires(15*time.Minute))
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("error while presigning upload file")
+		return nil, err
+	}
+
+	return &coreentity.PresignUploadURLResp{
+		Filename: req.Filename,
+		URL:      ps.URL,
+		Method:   "PUT",
+		Headers: map[string]string{
+			"Content-Type": req.ContentType,
+		},
+	}, nil
+}
+
 func (s *storage) DeleteFile(ctx context.Context, req *coreentity.DeleteFileReq) error {
 	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(config.Envs.Storage.Bucket),
 		Key:    aws.String(req.Filename),
 	})
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any("payload", req).Msg("error while deleting file")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("error while deleting file")
 		return err
 	}
 
@@ -132,7 +162,7 @@ func (s *storage) GetFileURL(ctx context.Context, filter coreentity.FileFilter) 
 		Key:    aws.String(filename),
 	}, s3.WithPresignExpires(15*time.Minute))
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any("filter", filter).Msg("error while presigning file")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("error while presigning file")
 		return "", err
 	}
 

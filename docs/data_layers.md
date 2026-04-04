@@ -5,6 +5,7 @@
 - `restentity` for stable HTTP payloads across modules.
 - `repoentity` for DB scan results with `db` tags.
 - `coreentity` for internal domain models used by core/repository layers.
+- Shared domain enums/constants live in `internal/entity/common/enum.go` and should be reused instead of repeating raw string literals such as statuses, sources, and types.
 
 ## Core Entity Structure
 
@@ -151,6 +152,7 @@ func EmployeeFromRestCreateToCore(ctx context.Context, req restentity.CreateEmpl
 - `restentity` structs must NOT have `TenantID` field
 - `restentity` is for HTTP request/response only
 - All tenant scoping is handled via context
+- If a field represents a constrained domain value backed by shared constants, mapper/core/repository code should use the constant from `common` and only convert to `string` at the boundary when the struct field type still uses `string`
 
 ## Mapping Rules
 

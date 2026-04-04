@@ -76,13 +76,13 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 		query += ` AND al.employee_id = ?`
 		args = append(args, *filter.EmployeeID)
 	}
-	if filter.Type != "" {
+	if filter.Type != nil {
 		query += ` AND al.type = ?`
-		args = append(args, filter.Type)
+		args = append(args, string(*filter.Type))
 	}
-	if filter.Source != "" {
+	if filter.Source != nil {
 		query += ` AND al.source = ?`
-		args = append(args, filter.Source)
+		args = append(args, string(*filter.Source))
 	}
 	if filter.AttendanceDay != nil {
 		query += ` AND al.attendance_date = ?`
@@ -119,9 +119,9 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 			EmployeeNo:     d.EmployeeNo,
 			EmployeeName:   d.EmployeeName,
 			AttendanceDate: d.AttendanceDate.Format("2006-01-02"),
-			Type:           d.Type,
-			Source:         d.Source,
-			Status:         d.Status,
+			Type:           common.AttendanceType(d.Type),
+			Source:         common.AttendanceSource(d.Source),
+			Status:         common.AttendanceStatus(d.Status),
 			LoggedAt:       d.LoggedAt.Format(time.RFC3339),
 			Latitude:       nullableFloatToPtr(d.Latitude),
 			Longitude:      nullableFloatToPtr(d.Longitude),

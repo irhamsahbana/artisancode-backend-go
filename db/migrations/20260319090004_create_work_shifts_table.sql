@@ -14,6 +14,10 @@ CREATE TABLE IF NOT EXISTS work_shifts (
 
     FOREIGN KEY (tenant_id) REFERENCES tenants (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_work_shifts_tenant_id_active
+    ON work_shifts (tenant_id)
+    WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down

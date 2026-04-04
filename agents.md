@@ -77,6 +77,7 @@ handler/
 - Tenant scope uses `tenant_id`
 - Foreign keys must validate as `uuidv7`
 - `restentity` structs must NOT have `TenantID` - extract from `common.GetUserContext(ctx)`
+- Domain string values that already have typed constants in `internal/entity/common/enum.go` must use those constants in code paths, not hardcoded string literals
 
 ### Handler to Core Communication
 Handler must use mappers to convert `restentity` to `coreentity` before calling core, and map core responses back to `restentity`:

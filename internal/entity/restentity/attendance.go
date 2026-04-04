@@ -55,13 +55,14 @@ type GetAttendanceLogResp struct {
 }
 
 type CheckAttendanceReq struct {
-	LoggedAt   string   `json:"logged_at" validate:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
-	Latitude   *float64 `json:"latitude"`
-	Longitude  *float64 `json:"longitude"`
-	Address    *string  `json:"address"`
-	DeviceID   *string  `json:"device_id" validate:"omitempty,max=255"`
-	DeviceName *string  `json:"device_name" validate:"omitempty,max=255"`
-	Notes      *string  `json:"notes" validate:"omitempty,max=1000"`
+	LoggedAt     string   `json:"logged_at" validate:"omitempty,datetime=2006-01-02T15:04:05Z07:00"`
+	Latitude     *float64 `json:"latitude"`
+	Longitude    *float64 `json:"longitude"`
+	Address      *string  `json:"address"`
+	DeviceID     *string  `json:"device_id" validate:"omitempty,max=255"`
+	DeviceName   *string  `json:"device_name" validate:"omitempty,max=255"`
+	Notes        *string  `json:"notes" validate:"omitempty,max=1000"`
+	SelfieFileID string   `json:"selfie_file_id" validate:"required,uuidv7"`
 }
 
 type CheckAttendanceResp struct {

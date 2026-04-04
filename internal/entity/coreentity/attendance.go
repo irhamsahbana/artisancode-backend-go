@@ -11,9 +11,9 @@ type AttendanceLog struct {
 	EmployeeNo     string
 	EmployeeName   string
 	AttendanceDate string
-	Type           string
-	Source         string
-	Status         string
+	Type           common.AttendanceType
+	Source         common.AttendanceSource
+	Status         common.AttendanceStatus
 	LoggedAt       string
 	Latitude       *float64
 	Longitude      *float64
@@ -30,8 +30,8 @@ type AttendanceLogListFilter struct {
 	TenantID      string
 	EmployeeID    *string
 	Q             string
-	Type          string
-	Source        string
+	Type          *common.AttendanceType
+	Source        *common.AttendanceSource
 	AttendanceDay *string
 	DateFrom      *string
 	DateTo        *string
@@ -47,16 +47,17 @@ type AttendanceLogDetailFilter struct {
 }
 
 type AttendanceLogAction struct {
-	UserCtx    common.UserContext
-	TenantID   string
-	Type       string
-	LoggedAt   string
-	Latitude   *float64
-	Longitude  *float64
-	Address    *string
-	DeviceID   *string
-	DeviceName *string
-	Notes      *string
+	UserCtx      common.UserContext
+	TenantID     string
+	Type         common.AttendanceType
+	LoggedAt     string
+	Latitude     *float64
+	Longitude    *float64
+	Address      *string
+	DeviceID     *string
+	DeviceName   *string
+	Notes        *string
+	SelfieFileID string
 }
 
 type AttendanceSummary struct {
@@ -67,7 +68,7 @@ type AttendanceSummary struct {
 	CheckedOut     bool
 	CheckInLogID   *string
 	CheckOutLogID  *string
-	LastLogType    *string
+	LastLogType    *common.AttendanceType
 	LastLoggedAt   *string
 	CanCheckIn     bool
 	CanCheckOut    bool

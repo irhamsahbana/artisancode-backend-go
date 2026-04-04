@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (tenant_id) REFERENCES tenants (id),
     FOREIGN KEY (company_id) REFERENCES org_units (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_users_tenant_id_active
+    ON users (tenant_id)
+    WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down

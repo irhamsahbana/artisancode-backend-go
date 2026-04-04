@@ -25,3 +25,19 @@ type UploadFileResp struct {
 type DeleteFileReq struct {
 	FileName string `json:"filename" validate:"required"`
 }
+
+type CreateUploadURLReq struct {
+	Filename         string           `json:"filename" validate:"required,max=255"`
+	OriginalFilename *string          `json:"original_filename" validate:"omitempty,max=255"`
+	ContentType      string           `json:"content_type" validate:"required,max=255"`
+	Folder           common.S3Folder  `json:"folder" validate:"required"`
+	IsPublic         bool             `json:"is_public"`
+}
+
+type CreateUploadURLResp struct {
+	FileID   string            `json:"file_id"`
+	ObjectKey string           `json:"object_key"`
+	UploadURL string           `json:"upload_url"`
+	Method    string           `json:"method"`
+	Headers   map[string]string `json:"headers"`
+}

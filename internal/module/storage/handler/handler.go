@@ -3,6 +3,7 @@ package handler
 import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
+	"codebase-app/internal/entity/restentity"
 	"codebase-app/internal/middleware"
 	corePorts "codebase-app/internal/ports/core"
 	"codebase-app/pkg/errmsg"
@@ -10,6 +11,8 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+
+	"codebase-app/internal/adapter"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -28,10 +31,11 @@ func NewStorageHandler(core corePorts.StorageCore) *storageHandler {
 
 func (h *storageHandler) Register(router fiber.Router) {
 	protected := router.Group("/", middleware.Auth)
+	protected.Post("/upload-url", h.createUploadURL)
 	protected.Post("/upload", h.uploadFile)
-	protected.Delete("/:filename", h.deleteFile)
+	protected.Delete("/*", h.deleteFile)
 	protected.Get("/", h.listFiles)
-	router.Get("/private/:filename", middleware.ValidateSignedURL, h.getPrivateFile)
+	router.Get("/private/*", middleware.ValidateSignedURL, h.getPrivateFile)
 }
 
 func (h *storageHandler) uploadFile(c *fiber.Ctx) error {
@@ -74,10 +78,12 @@ func (h *storageHandler) uploadFile(c *fiber.Ctx) error {
 func (h *storageHandler) deleteFile(c *fiber.Ctx) error {
 	var (
 		ctx      = c.UserContext()
-		filename = c.Params("filename")
+		filename = c.Params("*")
+		uc       = common.GetUserContext(ctx)
 	)
 
 	req := &coreentity.DeleteFileReq{
+		TenantID: uc.TenantID,
 		Filename: filename,
 	}
 
@@ -105,10 +111,12 @@ func (h *storageHandler) listFiles(c *fiber.Ctx) error {
 func (h *storageHandler) getPrivateFile(c *fiber.Ctx) error {
 	var (
 		ctx      = c.UserContext()
-		filename = c.Params("filename")
+		filename = c.Params("*")
 		tenantID = c.Query("tenant_id")
 		folder   = c.Query("folder")
 	)
+
+	filename = "private/" + filename
 
 	filter := coreentity.FileFilter{
 		TenantID: tenantID,
@@ -135,4 +143,48 @@ func parseBool(value string) bool {
 		return false
 	}
 	return result
+}
+
+func (h *storageHandler) createUploadURL(c *fiber.Ctx) error {
+	var (
+		ctx = c.UserContext()
+		req = new(restentity.CreateUploadURLReq)
+		v   = adapter.Adapters.Validator
+		uc  = common.GetUserContext(ctx)
+	)
+
+	if err := c.BodyParser(req); err != nil {
+		log.Ctx(ctx).Warn().Err(err).Msg("Invalid request body")
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
+	}
+
+	if err := v.Validate(req); err != nil {
+		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
+		code, errors := errmsg.Errors(err, req)
+		return c.Status(code).JSON(response.Error(errors))
+	}
+
+	item, err := h.core.CreateUploadURL(ctx, coreentity.PresignUploadURLReq{
+		UserCtx:          uc,
+		TenantID:         uc.TenantID,
+		CreatedBy:        uc.UserID,
+		Filename:         req.Filename,
+		OriginalFilename: req.OriginalFilename,
+		ContentType:      req.ContentType,
+		Folder:           req.Folder,
+		IsPublic:         req.IsPublic,
+	})
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Msg("Failed to create upload URL")
+		code, errors := errmsg.Errors[error](err)
+		return c.Status(code).JSON(response.Error(errors))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.Success(restentity.CreateUploadURLResp{
+		FileID:    item.FileID,
+		ObjectKey: item.Filename,
+		UploadURL: item.URL,
+		Method:    item.Method,
+		Headers:   item.Headers,
+	}, ""))
 }

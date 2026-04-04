@@ -12,6 +12,10 @@ CREATE TABLE IF NOT EXISTS permissions (
     CONSTRAINT permissions_tenant_id_name_unique UNIQUE (tenant_id, name),
     FOREIGN KEY (tenant_id) REFERENCES tenants (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_permissions_tenant_id_active
+    ON permissions (tenant_id)
+    WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down

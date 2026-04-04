@@ -66,3 +66,8 @@ type UpdateItemReq struct {
 | `min=N` | Minimum length (string) or value (number) |
 | `max=N` | Maximum length (string) or value (number) |
 | `oneof=a b c` | Must be one of listed values |
+
+## Domain Constants
+
+- When a request or response field maps to a known domain enum such as attendance `type`, `source`, or `status`, define and reuse the canonical constant in `internal/entity/common/enum.go`.
+- Validation may still use `oneof=...` at the HTTP boundary, but handler/core/repository code should avoid repeating the same raw strings once a shared constant exists.

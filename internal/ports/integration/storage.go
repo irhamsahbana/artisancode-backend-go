@@ -9,6 +9,7 @@ import (
 
 type StorageContract interface {
 	UploadFile(ctx context.Context, req *coreentity.UploadFileReq) (*coreentity.UploadFileResp, error)
+	PresignUploadURL(ctx context.Context, req *coreentity.PresignUploadURLReq) (*coreentity.PresignUploadURLResp, error)
 	DeleteFile(ctx context.Context, req *coreentity.DeleteFileReq) error
 	ListFiles(ctx context.Context) ([]types.Object, error)
 	GetFileURL(ctx context.Context, filter coreentity.FileFilter) (string, error)

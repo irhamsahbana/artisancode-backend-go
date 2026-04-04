@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS attendance_logs (
 
 CREATE INDEX IF NOT EXISTS idx_attendance_logs_tenant_employee_date
     ON attendance_logs (tenant_id, employee_id, attendance_date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_attendance_logs_tenant_id_active
+    ON attendance_logs (tenant_id)
+    WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down

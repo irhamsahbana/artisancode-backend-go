@@ -28,8 +28,13 @@ type Config struct {
 		LocalStoragePrivatePath string `env:"LOCAL_STORAGE_PRIVATE_PATH" env-default:"./storage/private"`
 	}
 	Instrumentation struct {
-		Enabled      bool   `env:"INSTRUMENTATION_ENABLED" env-default:"false"`
-		OtlpEndpoint string `env:"INSTRUMENTATION_OTLP_ENDPOINT" env-default:"localhost:4317"`
+		Enabled              bool   `env:"INSTRUMENTATION_ENABLED" env-default:"false"`
+		OtlpEndpoint         string `env:"INSTRUMENTATION_OTLP_ENDPOINT" env-default:"localhost:4317"`
+		OtlpHeaders          string `env:"INSTRUMENTATION_OTLP_HEADERS"`
+		OtlpInsecure         bool   `env:"INSTRUMENTATION_OTLP_INSECURE" env-default:"true"`
+		MetricsBasicAuthUser string `env:"INSTRUMENTATION_METRICS_BASIC_AUTH_USER"`
+		MetricsBasicAuthPass string `env:"INSTRUMENTATION_METRICS_BASIC_AUTH_PASS"`
+		Debug                bool   `env:"INSTRUMENTATION_DEBUG" env-default:"false"`
 	}
 	DB struct {
 		ConnectionTimeout int `env:"DB_CONN_TIMEOUT" env-default:"30" env-description:"database timeout in seconds"`

@@ -16,10 +16,10 @@ func (c *attendanceCore) CheckIn(ctx context.Context, data coreentity.Attendance
 	ctx, span := tracing.StartSpan(ctx, "core.CheckIn")
 	defer span.End()
 
-	return c.createAttendanceLog(ctx, data, "check_in")
+	return c.createAttendanceLog(ctx, data, common.AttendanceTypeCheckIn)
 }
 
-func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentity.AttendanceLogAction, attendanceType string) (*coreentity.AttendanceLog, error) {
+func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentity.AttendanceLogAction, attendanceType common.AttendanceType) (*coreentity.AttendanceLog, error) {
 	eventTime, err := resolveAttendanceTime(data.LoggedAt)
 	if err != nil {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Invalid attendance timestamp")
@@ -32,29 +32,48 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 	}
 
 	attendanceDate := eventTime.Format("2006-01-02")
-	exists, err := c.repo.ExistsAttendanceByTypeOnDate(ctx, data.TenantID, employee.ID, attendanceDate, attendanceType)
+	exists, err := c.repo.ExistsAttendanceByTypeOnDate(ctx, data.TenantID, employee.ID, attendanceDate, string(attendanceType))
 	if err != nil {
 		return nil, err
 	}
 	if exists {
 		message := "Check in already recorded for today"
-		if attendanceType == "check_out" {
+		if attendanceType == common.AttendanceTypeCheckOut {
 			message = "Check out already recorded for today"
 		}
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg(message)
 		return nil, errmsg.NewCustomErrors(400).SetMessage(message)
 	}
 
-	if attendanceType == "check_out" {
-		hasCheckIn, err := c.repo.ExistsAttendanceByTypeOnDate(ctx, data.TenantID, employee.ID, attendanceDate, "check_in")
+	if attendanceType == common.AttendanceTypeCheckOut {
+		hasCheckIn, err := c.repo.ExistsAttendanceByTypeOnDate(ctx, data.TenantID, employee.ID, attendanceDate, string(common.AttendanceTypeCheckIn))
 		if err != nil {
 			return nil, err
 		}
 		if !hasCheckIn {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Check out attempted without a corresponding check in")
 			return nil, errmsg.NewCustomErrors(400).SetMessage("Check in must be recorded before check out")
 		}
 	}
 
-	return c.repo.CreateAttendanceLog(ctx, coreentity.AttendanceLog{
+	file, err := c.storageRepo.GetFile(ctx, coreentity.FileFilter{
+		TenantID: data.TenantID,
+		ID:       data.SelfieFileID,
+	})
+	if err != nil {
+		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to get selfie file for attendance log")
+		return nil, errmsg.NewCustomErrors(400).SetMessage("Selfie file not found")
+	}
+	if file.Folder != common.S3FolderAttendanceFace {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Invalid selfie file folder")
+		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid selfie file")
+	}
+	if file.Status != common.FileStatusPending {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Selfie file is no longer pending")
+		return nil, errmsg.NewCustomErrors(400).SetMessage("Selfie file is no longer available")
+	}
+
+	item, err := c.repo.CreateAttendanceLog(ctx, coreentity.AttendanceLog{
 		UserCtx:        data.UserCtx,
 		TenantID:       data.TenantID,
 		EmployeeID:     employee.ID,
@@ -62,8 +81,8 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 		EmployeeName:   employee.FullName,
 		AttendanceDate: attendanceDate,
 		Type:           attendanceType,
-		Source:         "mobile",
-		Status:         "recorded",
+		Source:         common.AttendanceSourceMobile,
+		Status:         common.AttendanceStatusRecorded,
 		LoggedAt:       eventTime.Format(time.RFC3339),
 		Latitude:       data.Latitude,
 		Longitude:      data.Longitude,
@@ -72,6 +91,30 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 		DeviceName:     data.DeviceName,
 		Notes:          data.Notes,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = c.storageRepo.CreateFileLink(ctx, coreentity.CreateStorageFileLinkReq{
+		TenantID:      data.TenantID,
+		StorageFileID: data.SelfieFileID,
+		ResourceType:  "attendance_log",
+		ResourceID:    item.ID,
+		FieldName:     "selfie",
+		SortOrder:     1,
+	})
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create storage file link for attendance log")
+		return nil, err
+	}
+
+	err = c.storageRepo.MarkFileAttached(ctx, data.TenantID, data.SelfieFileID)
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to mark storage file attached for attendance log")
+		return nil, err
+	}
+
+	return item, nil
 }
 
 func resolveAttendanceTime(value string) (time.Time, error) {

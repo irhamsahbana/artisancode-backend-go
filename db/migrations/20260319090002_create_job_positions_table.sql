@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS job_positions (
 
     FOREIGN KEY (tenant_id) REFERENCES tenants (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_job_positions_tenant_id_active
+    ON job_positions (tenant_id)
+    WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down

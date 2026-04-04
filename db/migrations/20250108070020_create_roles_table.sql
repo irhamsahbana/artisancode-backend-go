@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS roles (
     CONSTRAINT roles_tenant_id_name_unique UNIQUE (tenant_id, name),
     FOREIGN KEY (tenant_id) REFERENCES tenants (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_roles_tenant_id_active
+    ON roles (tenant_id)
+    WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down

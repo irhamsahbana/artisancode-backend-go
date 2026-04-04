@@ -16,6 +16,14 @@ CREATE TABLE IF NOT EXISTS org_units (
     FOREIGN KEY (tenant_id) REFERENCES tenants (id),
     FOREIGN KEY (parent_id) REFERENCES org_units (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_org_units_tenant_id_active
+    ON org_units (tenant_id)
+    WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_org_units_tenant_id_category_active
+    ON org_units (tenant_id, category)
+    WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down

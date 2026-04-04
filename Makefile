@@ -1,4 +1,4 @@
-.PHONY: migrate restore create-migration seed dev daemon ws build build-dev build-staging build-production lint-fix lint-ci nats commit help
+.PHONY: migrate restore create-migration seed dev daemon ws build build-dev build-staging build-production lint-fix lint-ci nats commit help test-storage-upload cleanup-storage-orphans
 
 # Variables
 GOOSE_CMD := goose
@@ -25,6 +25,12 @@ seed: ## Run seed (usage: make seed table=rbac)
 # Development
 dev: ## Run development server
 	@go run ./cmd/bin/main.go --port=$(APP_PORT)
+
+test-storage-upload: ## Test storage presigned upload (usage: AUTH_TOKEN=xxx make test-storage-upload [file=./path.jpg])
+	@./scripts/test_storage_upload.sh $(file)
+
+cleanup-storage-orphans: ## Clean expired pending storage files (usage: make cleanup-storage-orphans [limit=100])
+	@go run ./cmd/bin/main.go cronjob --task=cleanup-expired-storage-files --limit=$(or $(limit),100)
 
 daemon: ## Run with daemon (pmgo)
 	@pmgo

@@ -65,6 +65,9 @@ func RunServer(cmd *flag.FlagSet, args []string) {
 	if envs.Instrumentation.Enabled {
 		tp, traceErr := infraTracing.InitTracer(&infraTracing.Config{
 			Endpoint:   envs.Instrumentation.OtlpEndpoint,
+			Headers:    envs.Instrumentation.OtlpHeaders,
+			Insecure:   envs.Instrumentation.OtlpInsecure,
+			Debug:      envs.Instrumentation.Debug,
 			AppName:    envs.App.Name,
 			AppVersion: envs.App.Version,
 			AppEnv:     envs.App.Environtment,

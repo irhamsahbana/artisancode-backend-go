@@ -27,6 +27,14 @@ CREATE TABLE IF NOT EXISTS employees (
     UNIQUE (tenant_id, employee_no),
     UNIQUE (tenant_id, email)
 );
+
+CREATE INDEX IF NOT EXISTS idx_employees_tenant_id_active
+    ON employees (tenant_id)
+    WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_employees_tenant_id_user_id_active
+    ON employees (tenant_id, user_id)
+    WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down

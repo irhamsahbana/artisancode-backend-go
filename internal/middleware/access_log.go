@@ -19,7 +19,7 @@ func WithAccessLog(logger zerolog.Logger) fiber.Handler {
 		// get request id from context
 		requestId, _ := c.Context().UserValue("request_id").(string)
 
-		infrastructure.AccessLogger.Info().Ctx(c.Context()).
+		infrastructure.AccessLogger.Info().Ctx(c.UserContext()).
 			Str("method", c.Method()).
 			Str("path", c.Path()).
 			Any("query", c.Queries()).

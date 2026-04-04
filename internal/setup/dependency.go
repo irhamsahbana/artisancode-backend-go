@@ -30,6 +30,9 @@ import (
 	rbacCore "codebase-app/internal/module/rbac/core"
 	rbacHandler "codebase-app/internal/module/rbac/handler"
 	rbacRepo "codebase-app/internal/module/rbac/repository"
+	storageCore "codebase-app/internal/module/storage/core"
+	storageHandler "codebase-app/internal/module/storage/handler"
+	storageRepo "codebase-app/internal/module/storage/repository"
 	userCore "codebase-app/internal/module/user/core"
 	userHandler "codebase-app/internal/module/user/handler"
 	userRepo "codebase-app/internal/module/user/repository"
@@ -77,6 +80,9 @@ func Dependencies(
 	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.AttendanceRepositoryConfig{
 		DB: db,
 	})
+	storageRepository := storageRepo.NewStorageRepository(storageRepo.StorageRepositoryConfig{
+		DB: db,
+	})
 
 	userCoreInst := userCore.NewUserCore(userCore.UserCoreConfig{
 		Repo:       userRepository,
@@ -112,7 +118,9 @@ func Dependencies(
 	attendanceCoreInst := attendanceCore.NewAttendanceCore(attendanceCore.AttendanceCoreConfig{
 		Repo:        attendanceRepository,
 		CompanyRepo: companyRepository,
+		StorageRepo: storageRepository,
 	})
+	storageCoreInst := storageCore.NewStorageCore(s3, storageRepository)
 	meCoreInst := meCore.NewMeCore(meCore.MeCoreConfig{
 		Repo: meRepository,
 	})
@@ -146,6 +154,7 @@ func Dependencies(
 	meHandler.NewMeHandler(meHandler.MeHandlerConfig{
 		Core: meCoreInst,
 	}).Register(app.Group("/me", middleware.Auth))
+	storageHandler.NewStorageHandler(storageCoreInst).Register(app.Group("/storage"))
 	rbacHandler.NewRbacHandler(rbacHandler.RbacHandlerConfig{
 		Core: rbacCoreInst,
 	}).Register(app.Group("/role-and-permissions", middleware.Auth))

@@ -19,6 +19,10 @@ CREATE TABLE IF NOT EXISTS work_locations (
     CONSTRAINT work_locations_name_unique UNIQUE (tenant_id, name)
 );
 
+CREATE INDEX IF NOT EXISTS idx_work_locations_tenant_id_active
+    ON work_locations (tenant_id)
+    WHERE deleted_at IS NULL;
+
 -- +goose StatementEnd
 
 -- +goose Down

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 )
@@ -53,16 +54,16 @@ func (c *attendanceCore) GetAttendanceSummaryToday(ctx context.Context, filter c
 
 	for _, item := range logs {
 		if summary.LastLogType == nil {
-			summary.LastLogType = stringPtr(item.Type)
+			summary.LastLogType = attendanceTypePtr(item.Type)
 			summary.LastLoggedAt = stringPtr(item.LoggedAt)
 		}
 
-		if item.Type == "check_in" && summary.CheckInLogID == nil {
+		if item.Type == common.AttendanceTypeCheckIn && summary.CheckInLogID == nil {
 			summary.CheckedIn = true
 			summary.CheckInLogID = stringPtr(item.ID)
 		}
 
-		if item.Type == "check_out" && summary.CheckOutLogID == nil {
+		if item.Type == common.AttendanceTypeCheckOut && summary.CheckOutLogID == nil {
 			summary.CheckedOut = true
 			summary.CheckOutLogID = stringPtr(item.ID)
 		}
@@ -75,6 +76,11 @@ func (c *attendanceCore) GetAttendanceSummaryToday(ctx context.Context, filter c
 }
 
 func stringPtr(value string) *string {
+	result := value
+	return &result
+}
+
+func attendanceTypePtr(value common.AttendanceType) *common.AttendanceType {
 	result := value
 	return &result
 }

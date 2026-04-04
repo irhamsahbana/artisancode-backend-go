@@ -15,9 +15,9 @@ func AttendanceLogFromCoreToRest(item coreentity.AttendanceLog) restentity.Atten
 		EmployeeNo:     item.EmployeeNo,
 		EmployeeName:   item.EmployeeName,
 		AttendanceDate: item.AttendanceDate,
-		Type:           item.Type,
-		Source:         item.Source,
-		Status:         item.Status,
+		Type:           string(item.Type),
+		Source:         string(item.Source),
+		Status:         string(item.Status),
 		LoggedAt:       item.LoggedAt,
 		Latitude:       item.Latitude,
 		Longitude:      item.Longitude,
@@ -34,31 +34,56 @@ func AttendanceActionFromRest(ctx context.Context, req restentity.CheckAttendanc
 	uc := common.GetUserContext(ctx)
 
 	return coreentity.AttendanceLogAction{
-		UserCtx:    uc,
-		TenantID:   uc.TenantID,
-		Type:       actionType,
-		LoggedAt:   req.LoggedAt,
-		Latitude:   req.Latitude,
-		Longitude:  req.Longitude,
-		Address:    req.Address,
-		DeviceID:   req.DeviceID,
-		DeviceName: req.DeviceName,
-		Notes:      req.Notes,
+		UserCtx:      uc,
+		TenantID:     uc.TenantID,
+		Type:         common.AttendanceType(actionType),
+		LoggedAt:     req.LoggedAt,
+		Latitude:     req.Latitude,
+		Longitude:    req.Longitude,
+		Address:      req.Address,
+		DeviceID:     req.DeviceID,
+		DeviceName:   req.DeviceName,
+		Notes:        req.Notes,
+		SelfieFileID: req.SelfieFileID,
 	}
 }
 
 func AttendanceSummaryFromCoreToRest(item coreentity.AttendanceSummary) restentity.GetAttendanceSummaryTodayResp {
+	var lastLogType *string
+	if item.LastLogType != nil {
+		value := string(*item.LastLogType)
+		lastLogType = &value
+	}
+
 	return restentity.GetAttendanceSummaryTodayResp{
 		AttendanceDate: item.AttendanceDate,
 		CheckedIn:      item.CheckedIn,
 		CheckedOut:     item.CheckedOut,
 		CheckInLogID:   item.CheckInLogID,
 		CheckOutLogID:  item.CheckOutLogID,
-		LastLogType:    item.LastLogType,
+		LastLogType:    lastLogType,
 		LastLoggedAt:   item.LastLoggedAt,
 		CanCheckIn:     item.CanCheckIn,
 		CanCheckOut:    item.CanCheckOut,
 	}
+}
+
+func AttendanceTypePtrFromString(value string) *common.AttendanceType {
+	if value == "" {
+		return nil
+	}
+
+	result := common.AttendanceType(value)
+	return &result
+}
+
+func AttendanceSourcePtrFromString(value string) *common.AttendanceSource {
+	if value == "" {
+		return nil
+	}
+
+	result := common.AttendanceSource(value)
+	return &result
 }
 
 func AttendancePolicyFromCoreToRest(item coreentity.AttendancePolicy) restentity.GetAttendancePolicyResp {
