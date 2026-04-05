@@ -16,19 +16,20 @@ func (r *employeeRepo) GetEmployees(ctx context.Context, filter coreentity.Emplo
 	defer span.End()
 
 	type dao struct {
-		TotalData     int     `db:"total_data"`
-		ID            string  `db:"id"`
-		TenantID      string  `db:"tenant_id"`
-		EmployeeNo    string  `db:"employee_no"`
-		FullName      string  `db:"full_name"`
-		Email         sql.NullString `db:"email"`
-		UserID        *string `db:"user_id"`
-		OrgUnitID     *string `db:"org_unit_id"`
-		JobPositionID *string `db:"job_position_id"`
-		LocationID    *string `db:"location_id"`
-		ShiftID       *string `db:"shift_id"`
-		Status        string  `db:"status"`
-		JoinDate      *string `db:"join_date"`
+		TotalData        int            `db:"total_data"`
+		ID               string         `db:"id"`
+		TenantID         string         `db:"tenant_id"`
+		EmployeeNo       string         `db:"employee_no"`
+		FullName         string         `db:"full_name"`
+		Email            sql.NullString `db:"email"`
+		UserID           *string        `db:"user_id"`
+		OrgUnitID        *string        `db:"org_unit_id"`
+		JobPositionID    *string        `db:"job_position_id"`
+		LocationID       *string        `db:"location_id"`
+		ShiftID          *string        `db:"shift_id"`
+		Status           string         `db:"status"`
+		JoinDate         *string        `db:"join_date"`
+		JoinDateTimezone *string        `db:"join_date_timezone"`
 	}
 
 	var (
@@ -42,7 +43,7 @@ func (r *employeeRepo) GetEmployees(ctx context.Context, filter coreentity.Emplo
 		SELECT
 			COUNT(*) OVER() AS total_data,
 			id, tenant_id, employee_no, full_name, email, user_id, org_unit_id, job_position_id,
-			location_id, shift_id, status, join_date
+			location_id, shift_id, status, join_date, join_date_timezone
 		FROM employees
 		WHERE deleted_at IS NULL AND tenant_id = ?
 	`
@@ -73,18 +74,19 @@ func (r *employeeRepo) GetEmployees(ctx context.Context, filter coreentity.Emplo
 	for _, d := range data {
 		total = d.TotalData
 		items = append(items, coreentity.Employee{
-			ID:            d.ID,
-			TenantID:      d.TenantID,
-			EmployeeNo:    d.EmployeeNo,
-			FullName:      d.FullName,
-			Email:         nullableStringToValue(d.Email),
-			UserID:        d.UserID,
-			OrgUnitID:     d.OrgUnitID,
-			JobPositionID: d.JobPositionID,
-			LocationID:    d.LocationID,
-			ShiftID:       d.ShiftID,
-			Status:        d.Status,
-			JoinDate:      d.JoinDate,
+			ID:               d.ID,
+			TenantID:         d.TenantID,
+			EmployeeNo:       d.EmployeeNo,
+			FullName:         d.FullName,
+			Email:            nullableStringToValue(d.Email),
+			UserID:           d.UserID,
+			OrgUnitID:        d.OrgUnitID,
+			JobPositionID:    d.JobPositionID,
+			LocationID:       d.LocationID,
+			ShiftID:          d.ShiftID,
+			Status:           d.Status,
+			JoinDate:         d.JoinDate,
+			JoinDateTimezone: d.JoinDateTimezone,
 		})
 	}
 

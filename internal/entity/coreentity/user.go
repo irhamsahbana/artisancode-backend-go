@@ -19,3 +19,16 @@ type User struct {
 	CompanyID    *string
 	CompanyName  *string
 }
+
+type UserListFilter struct {
+	TenantID string
+	Q        string
+	Page     int
+	Paginate int
+}
+
+type UserDeleteFilter struct {
+	UserCtx  common.UserContext
+	TenantID string
+	ID       string
+}

@@ -17,8 +17,8 @@ func (r *employeeRepo) CreateEmployee(ctx context.Context, data coreentity.Emplo
 	query := `
 		INSERT INTO employees (
 			tenant_id, employee_no, full_name, user_id, org_unit_id, job_position_id,
-			location_id, shift_id, email, status, join_date
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			location_id, shift_id, email, status, join_date, join_date_timezone
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
 	`
 	var id string
@@ -34,6 +34,7 @@ func (r *employeeRepo) CreateEmployee(ctx context.Context, data coreentity.Emplo
 		data.Email,
 		data.Status,
 		data.JoinDate,
+		data.JoinDateTimezone,
 	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create employee")

@@ -5,18 +5,20 @@ import "codebase-app/internal/entity/common"
 type Employee struct {
 	UserCtx common.UserContext
 
-	ID            string
-	TenantID      string
-	EmployeeNo    string
-	FullName      string
-	Email         string
-	UserID        *string
-	OrgUnitID     *string
-	JobPositionID *string
-	LocationID    *string
-	ShiftID       *string
-	Status        string
-	JoinDate      *string
+	ID               string
+	TenantID         string
+	EmployeeNo       string
+	FullName         string
+	Email            string
+	Password         string
+	UserID           *string
+	OrgUnitID        *string
+	JobPositionID    *string
+	LocationID       *string
+	ShiftID          *string
+	Status           string
+	JoinDate         *string
+	JoinDateTimezone *string
 }
 
 type EmployeeListFilter struct {

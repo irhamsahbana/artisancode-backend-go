@@ -16,6 +16,15 @@ func (c *employeeCore) CreateEmployee(ctx context.Context, data coreentity.Emplo
 	ctx, span := tracing.StartSpan(ctx, "core.CreateEmployee")
 	defer span.End()
 
+	err := normalizeEmployeeJoinDate(&data)
+	if err != nil {
+		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, map[string]any{
+			"join_date":          data.JoinDate,
+			"join_date_timezone": data.JoinDateTimezone,
+		}).Msg("Invalid join date payload")
+		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid join date or join date timezone")
+	}
+
 	// Validate unique employee_no per tenant
 	exists, err := c.repo.ExistsByEmployeeNo(ctx, data.TenantID, data.EmployeeNo, "")
 	if err != nil {
@@ -63,8 +72,12 @@ func (c *employeeCore) createEmployeeUser(ctx context.Context, data coreentity.E
 	}
 
 	// Generate random password
-	randomPassword := pkg.GeneratePassword(12)
-	hashed, err := hashPassword(randomPassword)
+	plainPassword := data.Password
+	if plainPassword == "" {
+		plainPassword = pkg.GeneratePassword(12)
+	}
+
+	hashed, err := hashPassword(plainPassword)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to hash password")
 		return "", errmsg.NewCustomErrors(500).SetMessage("Failed to create user account")

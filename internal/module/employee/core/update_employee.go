@@ -15,6 +15,15 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 	ctx, span := tracing.StartSpan(ctx, "core.UpdateEmployee")
 	defer span.End()
 
+	err := normalizeEmployeeJoinDate(&data)
+	if err != nil {
+		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, map[string]any{
+			"join_date":          data.JoinDate,
+			"join_date_timezone": data.JoinDateTimezone,
+		}).Msg("Invalid join date payload")
+		return errmsg.NewCustomErrors(400).SetMessage("Invalid join date or join date timezone")
+	}
+
 	existing, err := c.repo.GetEmployee(ctx, coreentity.Employee{
 		TenantID: data.TenantID,
 		ID:       data.ID,
@@ -59,6 +68,19 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 
 	if emailChanged && existing.UserID != nil {
 		err = c.userRepo.UpdateUserEmail(ctx, *existing.UserID, data.TenantID, data.Email)
+		if err != nil {
+			return err
+		}
+	}
+
+	if data.Password != "" && existing.UserID != nil {
+		hashedPassword, err := hashPassword(data.Password)
+		if err != nil {
+			log.Ctx(ctx).Error().Err(err).Msg("Failed to hash password")
+			return errmsg.NewCustomErrors(500).SetMessage("Failed to update employee password")
+		}
+
+		err = c.userRepo.UpdateUserPassword(ctx, *existing.UserID, data.TenantID, hashedPassword)
 		if err != nil {
 			return err
 		}
