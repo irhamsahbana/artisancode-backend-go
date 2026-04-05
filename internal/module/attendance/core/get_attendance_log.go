@@ -19,5 +19,15 @@ func (c *attendanceCore) GetAttendanceLog(ctx context.Context, filter coreentity
 		filter.EmployeeID = &employee.ID
 	}
 
-	return c.repo.GetAttendanceLog(ctx, filter)
+	item, err := c.repo.GetAttendanceLog(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.attachAttendanceLogSelfie(ctx, item)
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
 }

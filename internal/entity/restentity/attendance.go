@@ -16,6 +16,8 @@ type AttendanceLog struct {
 	DeviceID       *string  `json:"device_id"`
 	DeviceName     *string  `json:"device_name"`
 	Notes          *string  `json:"notes"`
+	SelfieFileID   *string  `json:"selfie_file_id"`
+	SelfieURL      *string  `json:"selfie_url"`
 	CreatedAt      string   `json:"created_at"`
 	UpdatedAt      *string  `json:"updated_at"`
 }

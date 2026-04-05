@@ -21,6 +21,8 @@ type AttendanceLog struct {
 	DeviceID       *string
 	DeviceName     *string
 	Notes          *string
+	SelfieFileID   *string
+	SelfieURL      *string
 	CreatedAt      string
 	UpdatedAt      *string
 }

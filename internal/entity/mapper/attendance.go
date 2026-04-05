@@ -25,6 +25,8 @@ func AttendanceLogFromCoreToRest(item coreentity.AttendanceLog) restentity.Atten
 		DeviceID:       item.DeviceID,
 		DeviceName:     item.DeviceName,
 		Notes:          item.Notes,
+		SelfieFileID:   item.SelfieFileID,
+		SelfieURL:      item.SelfieURL,
 		CreatedAt:      item.CreatedAt,
 		UpdatedAt:      item.UpdatedAt,
 	}

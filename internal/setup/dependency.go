@@ -119,6 +119,7 @@ func Dependencies(
 		Repo:        attendanceRepository,
 		CompanyRepo: companyRepository,
 		StorageRepo: storageRepository,
+		S3:          s3,
 	})
 	storageCoreInst := storageCore.NewStorageCore(s3, storageRepository)
 	meCoreInst := meCore.NewMeCore(meCore.MeCoreConfig{

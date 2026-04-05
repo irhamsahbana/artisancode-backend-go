@@ -84,6 +84,13 @@ type StorageFileLink struct {
 	CreatedAt     string
 }
 
+type StorageFileLinkFilter struct {
+	TenantID     string
+	ResourceType string
+	ResourceID   string
+	FieldName    string
+}
+
 type CreateStorageFileLinkReq struct {
 	TenantID      string
 	StorageFileID string
