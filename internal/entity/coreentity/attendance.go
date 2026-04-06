@@ -92,6 +92,7 @@ type OwnerAttendanceDashboardFilter struct {
 
 	TenantID  string
 	Date      string
+	Timezone  string
 	TrendDays int
 }
 

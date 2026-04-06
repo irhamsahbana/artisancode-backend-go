@@ -37,6 +37,7 @@ func (h *attendanceHandler) getOwnerAttendanceDashboard(c *fiber.Ctx) error {
 		UserCtx:   common.GetUserContext(ctx),
 		TenantID:  common.GetUserContext(ctx).TenantID,
 		Date:      *req.Date,
+		Timezone:  req.Timezone,
 		TrendDays: req.TrendDays,
 	}
 

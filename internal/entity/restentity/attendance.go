@@ -94,6 +94,7 @@ type GetAttendancePolicyResp struct {
 
 type GetOwnerAttendanceDashboardReq struct {
 	Date      *string `query:"date" validate:"omitempty,datetime=2006-01-02"`
+	Timezone  string  `query:"timezone" validate:"required,timezone"`
 	TrendDays int     `query:"trend_days" validate:"omitempty,oneof=7 14 30"`
 }
 
