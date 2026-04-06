@@ -98,3 +98,43 @@ func AttendancePolicyFromCoreToRest(item coreentity.AttendancePolicy) restentity
 		AttendanceCheckOutEnd:   item.AttendanceCheckOutEnd,
 	}
 }
+
+func OwnerAttendanceDashboardFromCoreToRest(item coreentity.OwnerAttendanceDashboard) restentity.GetOwnerAttendanceDashboardResp {
+	exceptions := make([]restentity.OwnerAttendanceDashboardExceptionResp, 0, len(item.TodayExceptions))
+	for _, exception := range item.TodayExceptions {
+		exceptions = append(exceptions, restentity.OwnerAttendanceDashboardExceptionResp{
+			EmployeeID:     exception.EmployeeID,
+			EmployeeNo:     exception.EmployeeNo,
+			EmployeeName:   exception.EmployeeName,
+			ShiftName:      exception.ShiftName,
+			FirstCheckInAt: exception.FirstCheckInAt,
+			LastCheckOutAt: exception.LastCheckOutAt,
+			ExceptionType:  exception.ExceptionType,
+		})
+	}
+
+	trend := make([]restentity.OwnerAttendanceDashboardDailyTrendResp, 0, len(item.DailyTrend))
+	for _, day := range item.DailyTrend {
+		trend = append(trend, restentity.OwnerAttendanceDashboardDailyTrendResp{
+			AttendanceDate:       day.AttendanceDate,
+			CheckedInCount:       day.CheckedInCount,
+			CheckedOutCount:      day.CheckedOutCount,
+			LateCheckInCount:     day.LateCheckInCount,
+			MissingCheckOutCount: day.MissingCheckOutCount,
+		})
+	}
+
+	return restentity.GetOwnerAttendanceDashboardResp{
+		AttendanceDate: item.AttendanceDate,
+		Summary: restentity.OwnerAttendanceDashboardSummaryResp{
+			ActiveEmployeeCount:  item.Summary.ActiveEmployeeCount,
+			CheckedInCount:       item.Summary.CheckedInCount,
+			CheckedOutCount:      item.Summary.CheckedOutCount,
+			PendingCheckInCount:  item.Summary.PendingCheckInCount,
+			PendingCheckOutCount: item.Summary.PendingCheckOutCount,
+			LateCheckInCount:     item.Summary.LateCheckInCount,
+		},
+		TodayExceptions: exceptions,
+		DailyTrend:      trend,
+	}
+}

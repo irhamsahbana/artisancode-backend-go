@@ -86,3 +86,53 @@ type AttendancePolicy struct {
 	AttendanceCheckOutStart string
 	AttendanceCheckOutEnd   string
 }
+
+type OwnerAttendanceDashboardFilter struct {
+	UserCtx common.UserContext
+
+	TenantID  string
+	Date      string
+	TrendDays int
+}
+
+type OwnerAttendanceDashboard struct {
+	UserCtx common.UserContext
+
+	AttendanceDate  string
+	Summary         OwnerAttendanceDashboardSummary
+	TodayExceptions []OwnerAttendanceDashboardException
+	DailyTrend      []OwnerAttendanceDashboardDailyTrend
+}
+
+type OwnerAttendanceDashboardSummary struct {
+	UserCtx common.UserContext
+
+	ActiveEmployeeCount  int
+	CheckedInCount       int
+	CheckedOutCount      int
+	PendingCheckInCount  int
+	PendingCheckOutCount int
+	LateCheckInCount     int
+}
+
+type OwnerAttendanceDashboardException struct {
+	UserCtx common.UserContext
+
+	EmployeeID     string
+	EmployeeNo     string
+	EmployeeName   string
+	ShiftName      *string
+	FirstCheckInAt *string
+	LastCheckOutAt *string
+	ExceptionType  string
+}
+
+type OwnerAttendanceDashboardDailyTrend struct {
+	UserCtx common.UserContext
+
+	AttendanceDate       string
+	CheckedInCount       int
+	CheckedOutCount      int
+	LateCheckInCount     int
+	MissingCheckOutCount int
+}

@@ -13,4 +13,5 @@ type AttendanceCore interface {
 	CheckOut(ctx context.Context, data coreentity.AttendanceLogAction) (*coreentity.AttendanceLog, error)
 	GetAttendanceSummaryToday(ctx context.Context, filter coreentity.SelfFilter) (*coreentity.AttendanceSummary, error)
 	GetAttendancePolicy(ctx context.Context, filter coreentity.SelfFilter) (*coreentity.AttendancePolicy, error)
+	GetOwnerAttendanceDashboard(ctx context.Context, filter coreentity.OwnerAttendanceDashboardFilter) (*coreentity.OwnerAttendanceDashboard, error)
 }

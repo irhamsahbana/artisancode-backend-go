@@ -27,6 +27,7 @@ func (h *attendanceHandler) Register(router fiber.Router) {
 
 func (h *attendanceHandler) RegisterSummary(router fiber.Router) {
 	router.Get("/today", h.getAttendanceSummaryToday)
+	router.Get("/owner-dashboard", h.getOwnerAttendanceDashboard)
 }
 
 func (h *attendanceHandler) RegisterPolicy(router fiber.Router) {

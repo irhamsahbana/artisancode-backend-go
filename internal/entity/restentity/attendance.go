@@ -91,3 +91,52 @@ type GetAttendancePolicyResp struct {
 	AttendanceCheckOutStart string `json:"attendance_check_out_start"`
 	AttendanceCheckOutEnd   string `json:"attendance_check_out_end"`
 }
+
+type GetOwnerAttendanceDashboardReq struct {
+	Date      *string `query:"date" validate:"omitempty,datetime=2006-01-02"`
+	TrendDays int     `query:"trend_days" validate:"omitempty,oneof=7 14 30"`
+}
+
+func (r *GetOwnerAttendanceDashboardReq) SetDefault() {
+	if r.Date == nil || *r.Date == "" {
+		today := TodayDate()
+		r.Date = &today
+	}
+	if r.TrendDays == 0 {
+		r.TrendDays = 7
+	}
+}
+
+type GetOwnerAttendanceDashboardResp struct {
+	AttendanceDate  string                                   `json:"attendance_date"`
+	Summary         OwnerAttendanceDashboardSummaryResp      `json:"summary"`
+	TodayExceptions []OwnerAttendanceDashboardExceptionResp  `json:"today_exceptions"`
+	DailyTrend      []OwnerAttendanceDashboardDailyTrendResp `json:"daily_trend"`
+}
+
+type OwnerAttendanceDashboardSummaryResp struct {
+	ActiveEmployeeCount  int `json:"active_employee_count"`
+	CheckedInCount       int `json:"checked_in_count"`
+	CheckedOutCount      int `json:"checked_out_count"`
+	PendingCheckInCount  int `json:"pending_check_in_count"`
+	PendingCheckOutCount int `json:"pending_check_out_count"`
+	LateCheckInCount     int `json:"late_check_in_count"`
+}
+
+type OwnerAttendanceDashboardExceptionResp struct {
+	EmployeeID     string  `json:"employee_id"`
+	EmployeeNo     string  `json:"employee_no"`
+	EmployeeName   string  `json:"employee_name"`
+	ShiftName      *string `json:"shift_name"`
+	FirstCheckInAt *string `json:"first_check_in_at"`
+	LastCheckOutAt *string `json:"last_check_out_at"`
+	ExceptionType  string  `json:"exception_type"`
+}
+
+type OwnerAttendanceDashboardDailyTrendResp struct {
+	AttendanceDate       string `json:"attendance_date"`
+	CheckedInCount       int    `json:"checked_in_count"`
+	CheckedOutCount      int    `json:"checked_out_count"`
+	LateCheckInCount     int    `json:"late_check_in_count"`
+	MissingCheckOutCount int    `json:"missing_check_out_count"`
+}
