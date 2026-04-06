@@ -88,6 +88,15 @@ func AttendanceSourcePtrFromString(value string) *common.AttendanceSource {
 	return &result
 }
 
+func AttendanceStatusPtrFromString(value string) *common.AttendanceStatus {
+	if value == "" {
+		return nil
+	}
+
+	result := common.AttendanceStatus(value)
+	return &result
+}
+
 func AttendancePolicyFromCoreToRest(item coreentity.AttendancePolicy) restentity.GetAttendancePolicyResp {
 	return restentity.GetAttendancePolicyResp{
 		Timezone:                item.Timezone,

@@ -28,17 +28,23 @@ type AttendanceLog struct {
 }
 
 type AttendanceLogListFilter struct {
-	UserCtx       common.UserContext
-	TenantID      string
-	EmployeeID    *string
-	Q             string
-	Type          *common.AttendanceType
-	Source        *common.AttendanceSource
-	AttendanceDay *string
-	DateFrom      *string
-	DateTo        *string
-	Page          int
-	Paginate      int
+	UserCtx        common.UserContext
+	TenantID       string
+	EmployeeID     *string
+	Q              string
+	Type           *common.AttendanceType
+	Source         *common.AttendanceSource
+	Status         *common.AttendanceStatus
+	SelfieStatus   *string
+	OrgUnitID      *string
+	BranchID       *string
+	WorkLocationID *string
+	ExceptionType  *string
+	AttendanceDay  *string
+	DateFrom       *string
+	DateTo         *string
+	Page           int
+	Paginate       int
 }
 
 type AttendanceLogDetailFilter struct {

@@ -35,17 +35,23 @@ func (h *attendanceHandler) getAttendanceLogs(c *fiber.Ctx) error {
 	}
 
 	filter := coreentity.AttendanceLogListFilter{
-		UserCtx:       common.GetUserContext(ctx),
-		TenantID:      common.GetUserContext(ctx).TenantID,
-		EmployeeID:    req.EmployeeID,
-		Q:             req.Q,
-		Type:          mapper.AttendanceTypePtrFromString(req.Type),
-		Source:        mapper.AttendanceSourcePtrFromString(req.Source),
-		AttendanceDay: req.AttendanceDay,
-		DateFrom:      req.DateFrom,
-		DateTo:        req.DateTo,
-		Page:          req.Page,
-		Paginate:      req.Limit,
+		UserCtx:        common.GetUserContext(ctx),
+		TenantID:       common.GetUserContext(ctx).TenantID,
+		EmployeeID:     req.EmployeeID,
+		Q:              req.Q,
+		Type:           mapper.AttendanceTypePtrFromString(req.Type),
+		Source:         mapper.AttendanceSourcePtrFromString(req.Source),
+		Status:         mapper.AttendanceStatusPtrFromString(req.Status),
+		SelfieStatus:   stringPtrFromValue(req.SelfieStatus),
+		OrgUnitID:      req.OrgUnitID,
+		BranchID:       req.BranchID,
+		WorkLocationID: req.WorkLocationID,
+		ExceptionType:  stringPtrFromValue(req.ExceptionType),
+		AttendanceDay:  req.AttendanceDay,
+		DateFrom:       req.DateFrom,
+		DateTo:         req.DateTo,
+		Page:           req.Page,
+		Paginate:       req.Limit,
 	}
 
 	items, total, err := h.core.GetAttendanceLogs(ctx, filter)
@@ -71,4 +77,12 @@ func (h *attendanceHandler) getAttendanceLogs(c *fiber.Ctx) error {
 		Items:      restItems,
 		Pagination: restentity.NewPaginationResp(meta),
 	}, ""))
+}
+
+func stringPtrFromValue(value string) *string {
+	if value == "" {
+		return nil
+	}
+
+	return &value
 }

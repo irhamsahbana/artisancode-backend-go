@@ -23,15 +23,21 @@ type AttendanceLog struct {
 }
 
 type GetAttendanceLogsReq struct {
-	Q             string  `query:"q" validate:"omitempty,min=2"`
-	EmployeeID    *string `query:"employee_id" validate:"omitempty,uuidv7"`
-	Type          string  `query:"type" validate:"omitempty,oneof=check_in check_out"`
-	Source        string  `query:"source" validate:"omitempty,oneof=mobile web"`
-	AttendanceDay *string `query:"attendance_date" validate:"omitempty,datetime=2006-01-02"`
-	DateFrom      *string `query:"date_from" validate:"omitempty,datetime=2006-01-02"`
-	DateTo        *string `query:"date_to" validate:"omitempty,datetime=2006-01-02"`
-	Page          int     `query:"page" validate:"omitempty,min=1"`
-	Limit         int     `query:"limit" validate:"omitempty,min=1"`
+	Q              string  `query:"q" validate:"omitempty,min=2"`
+	EmployeeID     *string `query:"employee_id" validate:"omitempty,uuidv7"`
+	Type           string  `query:"type" validate:"omitempty,oneof=check_in check_out"`
+	Source         string  `query:"source" validate:"omitempty,oneof=mobile web"`
+	Status         string  `query:"status" validate:"omitempty,oneof=recorded"`
+	SelfieStatus   string  `query:"selfie_status" validate:"omitempty,oneof=with_photo without_photo"`
+	OrgUnitID      *string `query:"org_unit_id" validate:"omitempty,uuidv7"`
+	BranchID       *string `query:"branch_id" validate:"omitempty,uuidv7"`
+	WorkLocationID *string `query:"work_location_id" validate:"omitempty,uuidv7"`
+	ExceptionType  string  `query:"exception_type" validate:"omitempty,oneof=late_check_in missing_check_out missing_check_in"`
+	AttendanceDay  *string `query:"attendance_date" validate:"omitempty,datetime=2006-01-02"`
+	DateFrom       *string `query:"date_from" validate:"omitempty,datetime=2006-01-02"`
+	DateTo         *string `query:"date_to" validate:"omitempty,datetime=2006-01-02"`
+	Page           int     `query:"page" validate:"omitempty,min=1"`
+	Limit          int     `query:"limit" validate:"omitempty,min=1"`
 }
 
 func (r *GetAttendanceLogsReq) SetDefault() {

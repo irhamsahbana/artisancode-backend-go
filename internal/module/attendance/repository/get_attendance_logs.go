@@ -46,6 +46,18 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 	)
 
 	query := `
+		WITH daily_attendance AS (
+			SELECT
+				day_logs.employee_id,
+				day_logs.attendance_date,
+				MIN(CASE WHEN day_logs.type = 'check_in' THEN timezone(COALESCE(day_wl.timezone, 'UTC'), day_logs.logged_at) END) AS first_check_in_local,
+				MAX(CASE WHEN day_logs.type = 'check_out' THEN timezone(COALESCE(day_wl.timezone, 'UTC'), day_logs.logged_at) END) AS last_check_out_local
+			FROM attendance_logs day_logs
+			INNER JOIN employees day_employee ON day_employee.id = day_logs.employee_id AND day_employee.deleted_at IS NULL
+			LEFT JOIN work_locations day_wl ON day_wl.id = day_employee.location_id AND day_wl.deleted_at IS NULL
+			WHERE day_logs.deleted_at IS NULL AND day_logs.tenant_id = ?
+			GROUP BY day_logs.employee_id, day_logs.attendance_date
+		)
 		SELECT
 			COUNT(*) OVER() AS total_data,
 			al.id,
@@ -68,9 +80,12 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 			al.updated_at
 		FROM attendance_logs al
 		INNER JOIN employees e ON e.id = al.employee_id AND e.deleted_at IS NULL
+		LEFT JOIN work_shifts ws ON ws.id = e.shift_id AND ws.deleted_at IS NULL
+		LEFT JOIN work_locations wl ON wl.id = e.location_id AND wl.deleted_at IS NULL
+		LEFT JOIN daily_attendance da ON da.employee_id = al.employee_id AND da.attendance_date = al.attendance_date
 		WHERE al.deleted_at IS NULL AND al.tenant_id = ?
 	`
-	args = append(args, filter.TenantID)
+	args = append(args, filter.TenantID, filter.TenantID)
 
 	if filter.EmployeeID != nil {
 		query += ` AND al.employee_id = ?`
@@ -83,6 +98,72 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 	if filter.Source != nil {
 		query += ` AND al.source = ?`
 		args = append(args, string(*filter.Source))
+	}
+	if filter.Status != nil {
+		query += ` AND al.status = ?`
+		args = append(args, string(*filter.Status))
+	}
+	if filter.SelfieStatus != nil {
+		if *filter.SelfieStatus == "with_photo" {
+			query += ` AND EXISTS (
+				SELECT 1
+				FROM storage_file_links sfl
+				WHERE sfl.tenant_id = al.tenant_id
+					AND sfl.resource_type = 'attendance_log'
+					AND sfl.resource_id = al.id
+					AND sfl.field_name = 'selfie'
+			)`
+		}
+		if *filter.SelfieStatus == "without_photo" {
+			query += ` AND NOT EXISTS (
+				SELECT 1
+				FROM storage_file_links sfl
+				WHERE sfl.tenant_id = al.tenant_id
+					AND sfl.resource_type = 'attendance_log'
+					AND sfl.resource_id = al.id
+					AND sfl.field_name = 'selfie'
+			)`
+		}
+	}
+	if filter.OrgUnitID != nil {
+		query += ` AND e.org_unit_id IS NOT NULL AND EXISTS (
+			WITH RECURSIVE org_unit_ancestors AS (
+				SELECT ou.id, ou.parent_id
+				FROM org_units ou
+				WHERE ou.id = e.org_unit_id AND ou.deleted_at IS NULL
+
+				UNION ALL
+
+				SELECT parent.id, parent.parent_id
+				FROM org_units parent
+				INNER JOIN org_unit_ancestors child ON child.parent_id = parent.id
+				WHERE parent.deleted_at IS NULL
+			)
+			SELECT 1 FROM org_unit_ancestors WHERE id = ?
+		)`
+		args = append(args, *filter.OrgUnitID)
+	}
+	if filter.BranchID != nil {
+		query += ` AND e.org_unit_id IS NOT NULL AND EXISTS (
+			WITH RECURSIVE org_unit_ancestors AS (
+				SELECT ou.id, ou.parent_id
+				FROM org_units ou
+				WHERE ou.id = e.org_unit_id AND ou.deleted_at IS NULL
+
+				UNION ALL
+
+				SELECT parent.id, parent.parent_id
+				FROM org_units parent
+				INNER JOIN org_unit_ancestors child ON child.parent_id = parent.id
+				WHERE parent.deleted_at IS NULL
+			)
+			SELECT 1 FROM org_unit_ancestors WHERE id = ?
+		)`
+		args = append(args, *filter.BranchID)
+	}
+	if filter.WorkLocationID != nil {
+		query += ` AND e.location_id = ?`
+		args = append(args, *filter.WorkLocationID)
 	}
 	if filter.AttendanceDay != nil {
 		query += ` AND al.attendance_date = ?`
@@ -99,6 +180,28 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 	if filter.Q != "" {
 		query += ` AND (e.full_name ILIKE '%' || ? || '%' OR e.employee_no ILIKE '%' || ? || '%')`
 		args = append(args, filter.Q, filter.Q)
+	}
+	if filter.ExceptionType != nil {
+		if *filter.ExceptionType == "late_check_in" {
+			query += ` AND al.type = 'check_in'
+				AND da.first_check_in_local IS NOT NULL
+				AND ws.start_time IS NOT NULL
+				AND ws.start_time <> ''
+				AND da.first_check_in_local::time > (ws.start_time::time + make_interval(mins => COALESCE(ws.grace_period_minutes, 0)))
+				AND timezone(COALESCE(wl.timezone, 'UTC'), al.logged_at) = da.first_check_in_local`
+		}
+		if *filter.ExceptionType == "missing_check_out" {
+			query += ` AND al.type = 'check_in'
+				AND da.first_check_in_local IS NOT NULL
+				AND da.last_check_out_local IS NULL
+				AND timezone(COALESCE(wl.timezone, 'UTC'), al.logged_at) = da.first_check_in_local`
+		}
+		if *filter.ExceptionType == "missing_check_in" {
+			query += ` AND al.type = 'check_out'
+				AND da.first_check_in_local IS NULL
+				AND da.last_check_out_local IS NOT NULL
+				AND timezone(COALESCE(wl.timezone, 'UTC'), al.logged_at) = da.last_check_out_local`
+		}
 	}
 
 	query += ` ORDER BY al.logged_at DESC LIMIT ? OFFSET ?`
