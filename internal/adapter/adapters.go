@@ -35,15 +35,13 @@ type Adapter struct {
 	EmailConsumerCtxNats jetstream.ConsumeContext
 
 	//Driven Adapters
-	Postgres              *sqlx.DB
-	Validator             Validator // *validator.Validator
-	EmailPublisher        jetstream.Publisher
-	ExcelProductPublisher jetstream.Publisher
-	Storage               *s3.Client
-	VenamonGolog          *tele.Bot
-	FirebaseSDK           *firebase.App
-	OpenAISDK             *openai.Client
-	DropboxFiles          files.Client
+	Postgres     *sqlx.DB
+	Validator    Validator // *validator.Validator
+	Storage      *s3.Client
+	VenamonGolog *tele.Bot
+	FirebaseSDK  *firebase.App
+	OpenAISDK    *openai.Client
+	DropboxFiles files.Client
 }
 
 func (a *Adapter) Sync(opts ...Option) {

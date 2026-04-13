@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/infrastructure/config"
 	"context"
 	"time"
@@ -27,9 +28,9 @@ func WithEmailConsumerNats(cctx jetstream.ConsumeContext) Option {
 
 		// create a stream
 		_, err = js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
-			Name:        "crowners-email-service",
-			Description: "Email service stream for crowners app",
-			Subjects:    []string{"crowners.email.>"},
+			Name:        common.MessageStreamEmailService,
+			Description: "Email service stream",
+			Subjects:    []string{common.MessageSubjectEmailAll},
 			MaxBytes:    1024 * 1024 * 1024,  // 1GB
 			MaxAge:      time.Hour * 24 * 14, // 14 days
 		})
@@ -37,15 +38,15 @@ func WithEmailConsumerNats(cctx jetstream.ConsumeContext) Option {
 			log.Fatal().Err(err).Msg("Error while creating nats jetstream stream")
 		}
 
-		stream, err := js.Stream(ctx, "crowners-email-service")
+		stream, err := js.Stream(ctx, common.MessageStreamEmailService)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Error while getting nats jetstream stream")
 		}
 
 		consumer, err := stream.CreateOrUpdateConsumer(ctx, jetstream.ConsumerConfig{
-			Name:        "crowners-email-service-consumer",
-			Durable:     "crowners-email-service-consumer",
-			Description: "Email service consumer for crowners app",
+			Name:        common.MessageConsumerEmailService,
+			Durable:     common.MessageConsumerEmailService,
+			Description: "Email service consumer",
 		})
 		if err != nil {
 			log.Fatal().Err(err).Msg("Error while creating nats jetstream consumer")

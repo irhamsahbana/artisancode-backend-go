@@ -18,7 +18,7 @@ Technical guidance has been split into the `docs/` folder.
 
 ### Module Structure
 - Each module follows `repository/core/handler` structure
-- Ports (interfaces) centralized at `internal/ports/repository` and `internal/ports/core`
+- Ports (interfaces) centralized at `internal/ports/core`, `internal/ports/primary`, `internal/ports/secondary/db`, and `internal/ports/secondary/integration`
 - Explicit mappers in `internal/entity/mapper`
 
 ### File Split Pattern (All Layers)
@@ -71,6 +71,7 @@ handler/
 - Core layer must **never** import `restentity` — it only works with `coreentity`
 - Core functions return `coreentity` types; handler maps to `restentity` via mappers
 - All core functions with `ctx` parameter must have `tracing.StartSpan`
+- Core/helper function span names must follow file path format: `internal:core:<module>:<file_without_extension>:<function>`
 
 ### Entity Conventions
 - Core entities include `UserCtx common.UserContext` as first field
@@ -110,6 +111,7 @@ Mapper files are in `internal/entity/mapper/`:
 ### Repository
 - Use `coreentity` types with filter structs for query parameters
 - All methods must use `tracing.StartSpan` for observability
+- DB Postgres/helper function span names must follow file path format: `internal:framework:secondary:db:postgres:<module>:<file_without_extension>:<function>`
 - Use `r.db.Rebind(query)` consistently for all parameterized queries
 
 ### Error Handling
@@ -164,18 +166,21 @@ log.Ctx(ctx).Warn().Any(common.LogKeyPayload, req).Msg("Invalid request")
 
 ### Tracing
 - All functions with `ctx` parameter should have tracing span using `tracing.StartSpan`
-- Use descriptive span name: `"repo.FunctionName"` for repository, `"core.FunctionName"` for core
+- Span names must follow the file path plus function name
+- Handler format: `internal:framework:primary:http:<module>:<file_without_extension>:<function>`
+- Core format: `internal:core:<module>:<file_without_extension>:<function>`
+- DB Postgres format: `internal:framework:secondary:db:postgres:<module>:<file_without_extension>:<function>`
 
 ```go
-// ✅ Correct - both core and repo have spans
+// ✅ Correct - both core and repo have spans with path-based names
 func (c *employeeCore) GetEmployees(ctx context.Context, filter coreentity.EmployeeListFilter) ([]coreentity.Employee, int, error) {
-    ctx, span := tracing.StartSpan(ctx, "core.GetEmployees")
+    ctx, span := tracing.StartSpan(ctx, "internal:core:employee:get_employees:GetEmployees")
     defer span.End()
     return c.repo.GetEmployees(ctx, filter)
 }
 
 func (r *employeeRepo) GetEmployees(ctx context.Context, filter coreentity.EmployeeListFilter) ([]coreentity.Employee, int, error) {
-    ctx, span := tracing.StartSpan(ctx, "repo.GetEmployees")
+    ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:employee:get_employees:GetEmployees")
     defer span.End()
     // ...
 }

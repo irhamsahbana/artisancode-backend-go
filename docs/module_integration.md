@@ -56,5 +56,5 @@ func NewYourCore(cfg YourCoreConfig) *yourCore {
 
 - Always use interface contracts (`ports`) when injecting cross-module dependencies
 - Never instantiate module dependencies directly inside handlers or core
-- Use centralized ports at `internal/ports/repository` and `internal/ports/core`
+- Use centralized ports at `internal/ports/core`, `internal/ports/primary`, `internal/ports/secondary/db`, and `internal/ports/secondary/integration`
 - Wire all dependencies in `internal/setup/dependency.go`

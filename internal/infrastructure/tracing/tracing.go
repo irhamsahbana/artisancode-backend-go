@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"codebase-app/internal/infrastructure/config"
@@ -177,12 +176,7 @@ func StartSpan(ctx context.Context, name string, opts ...oteltrace.SpanStartOpti
 	ctx, span := otel.Tracer(tracerName).Start(ctx, name, opts...)
 
 	if sc := span.SpanContext(); sc.IsValid() {
-		output := globalLogWriter
-		if output == nil {
-			output = os.Stderr
-		}
-
-		logger := log.Logger.Output(output).With().
+		logger := log.Logger.With().
 			Str("trace_id", sc.TraceID().String()).
 			Str("span_id", sc.SpanID().String()).
 			Logger()

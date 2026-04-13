@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"context"
+	"time"
 
 	infra "codebase-app/internal/infrastructure/config"
 
@@ -14,6 +15,10 @@ import (
 
 func WithStorage() Option {
 	return func(a *Adapter) {
+		if infra.Envs.Storage.Bucket == "" {
+			log.Fatal().Msg("storage bucket is required")
+		}
+
 		s3Config, err := config.LoadDefaultConfig(
 			context.Background(),
 			config.WithRegion(infra.Envs.Storage.Region),
@@ -37,6 +42,16 @@ func WithStorage() Option {
 				o.UsePathStyle = true
 			}
 		})
+
+		verifyCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		_, err = s3Client.HeadBucket(verifyCtx, &s3.HeadBucketInput{
+			Bucket: aws.String(infra.Envs.Storage.Bucket),
+		})
+		if err != nil {
+			log.Fatal().Err(err).Str("bucket", infra.Envs.Storage.Bucket).Msg("failed to verify S3 storage connection")
+		}
 
 		a.Storage = s3Client
 

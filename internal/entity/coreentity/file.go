@@ -42,6 +42,13 @@ type UploadFileReq struct {
 	GeneratePresignedURL bool
 }
 
+type UploadBytesReq struct {
+	Filename    string
+	ContentType string
+	Body        []byte
+	IsPublic    bool
+}
+
 type UploadFileResp struct {
 	Filename string
 	URL      string

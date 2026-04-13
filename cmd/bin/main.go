@@ -15,15 +15,15 @@ import (
 func main() {
 	os.Args = initialize()
 
-	serverCmd := flag.NewFlagSet("server", flag.ExitOnError)
+	httpServerCmd := flag.NewFlagSet("http_server", flag.ExitOnError)
 	seedCmd := flag.NewFlagSet("seed", flag.ExitOnError)
 	consumerCmd := flag.NewFlagSet("consumer", flag.ExitOnError)
 	wsCmd := flag.NewFlagSet("ws", flag.ExitOnError)
 	cronjobCmd := flag.NewFlagSet("cronjob", flag.ExitOnError)
 
 	if len(os.Args) < 2 {
-		log.Info().Msg("No command provided, defaulting to 'server'")
-		cmd.RunServer(serverCmd, os.Args[1:])
+		log.Info().Msg("No command provided, defaulting to 'http_server'")
+		cmd.RunHttpServer(httpServerCmd, os.Args[1:])
 		os.Exit(0)
 	}
 
@@ -32,20 +32,20 @@ func main() {
 		cmd.RunSeed(seedCmd, os.Args[2:])
 	case "consumer":
 		cmd.RunConsumer(consumerCmd, os.Args[2:])
-	case "server":
-		cmd.RunServer(serverCmd, os.Args[2:])
+	case "http_server":
+		cmd.RunHttpServer(httpServerCmd, os.Args[2:])
 	case "cronjob":
 		cmd.RunCronjob(cronjobCmd, os.Args[2:])
 	case "ws":
 		cmd.RunWebsocket(wsCmd, os.Args[2:])
 	default:
-		log.Info().Msg("Invalid command provided, defaulting to 'server' with provided flags")
+		log.Info().Msg("Invalid command provided, defaulting to 'http_server' with provided flags")
 		if os.Args[1][0] == '-' { // check if the first argument is a flag
-			cmd.RunServer(serverCmd, os.Args[1:])
+			cmd.RunHttpServer(httpServerCmd, os.Args[1:])
 			os.Exit(0)
 		}
 
-		cmd.RunServer(serverCmd, os.Args[2:]) // default to server if invalid command and flags are provided
+		cmd.RunHttpServer(httpServerCmd, os.Args[2:]) // default to server if invalid command and flags are provided
 	}
 }
 

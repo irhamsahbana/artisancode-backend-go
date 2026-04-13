@@ -2,10 +2,13 @@ package cmd
 
 import (
 	"codebase-app/internal/adapter"
+	exportJobCore "codebase-app/internal/core/export_job"
+	storageCore "codebase-app/internal/core/storage"
 	"codebase-app/internal/entity/coreentity"
+	attendanceRepo "codebase-app/internal/framework/secondary/db/postgres/attendance"
+	exportJobRepo "codebase-app/internal/framework/secondary/db/postgres/export_job"
+	storageRepo "codebase-app/internal/framework/secondary/db/postgres/storage"
 	storageIntegration "codebase-app/internal/integration/storage"
-	storageCore "codebase-app/internal/module/storage/core"
-	storageRepo "codebase-app/internal/module/storage/repository"
 	"context"
 	"flag"
 	"os"
@@ -34,6 +37,10 @@ func RunCronjob(cmd *flag.FlagSet, args []string) {
 		runCleanupExpiredStorageFiles(*limit)
 		return
 	}
+	if *task == "process-export-jobs" {
+		runProcessExportJobs(*limit)
+		return
+	}
 }
 
 func runCleanupExpiredStorageFiles(limit int) {
@@ -55,6 +62,35 @@ func runCleanupExpiredStorageFiles(limit int) {
 		Int("scanned", resp.Scanned).
 		Int("deleted", resp.Deleted).
 		Msg("Expired storage file cleanup completed")
+}
+
+func runProcessExportJobs(limit int) {
+	exportJobRepository := exportJobRepo.NewExportJobRepository(exportJobRepo.ExportJobRepositoryConfig{
+		DB: adapter.Adapters.Postgres,
+	})
+	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.AttendanceRepositoryConfig{
+		DB: adapter.Adapters.Postgres,
+	})
+	storageRepository := storageRepo.NewStorageRepository(storageRepo.StorageRepositoryConfig{
+		DB: adapter.Adapters.Postgres,
+	})
+	s3 := storageIntegration.NewStorageIntegration(adapter.Adapters.Storage)
+	core := exportJobCore.NewExportJobCore(exportJobCore.ExportJobCoreConfig{
+		Repo:           exportJobRepository,
+		AttendanceRepo: attendanceRepository,
+		StorageRepo:    storageRepository,
+		S3:             s3,
+	})
+
+	resp, err := core.ProcessPendingExportJobs(context.Background(), limit)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to process export jobs")
+		return
+	}
+
+	log.Info().
+		Int("processed", resp.Processed).
+		Msg("Export job processing completed")
 }
 
 // execCommand runs a command with the given arguments and logs the output

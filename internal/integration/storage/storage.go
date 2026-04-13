@@ -1,10 +1,11 @@
 package integration
 
 import (
+	"bytes"
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/config"
-	integrationPorts "codebase-app/internal/ports/integration"
+	integrationPorts "codebase-app/internal/ports/secondary/integration"
 	"codebase-app/pkg"
 	"codebase-app/pkg/errmsg"
 	"context"
@@ -85,6 +86,40 @@ func (s *storage) UploadFile(ctx context.Context, req *coreentity.UploadFileReq)
 	return &coreentity.UploadFileResp{
 		Filename: req.Filename,
 		URL:      url,
+	}, nil
+}
+
+func (s *storage) UploadBytes(ctx context.Context, req *coreentity.UploadBytesReq) (*coreentity.UploadFileResp, error) {
+	if len(req.Body) == 0 {
+		return nil, errmsg.NewCustomErrors(400).Add("body", "body is required.")
+	}
+
+	var acl types.ObjectCannedACL
+	if !req.IsPublic {
+		acl = types.ObjectCannedACLPrivate
+	} else {
+		acl = types.ObjectCannedACLPublicRead
+	}
+
+	input := &s3.PutObjectInput{
+		Bucket: aws.String(config.Envs.Storage.Bucket),
+		Key:    aws.String(req.Filename),
+		Body:   bytes.NewReader(req.Body),
+		ACL:    acl,
+	}
+	if req.ContentType != "" {
+		input.ContentType = aws.String(req.ContentType)
+	}
+
+	result, err := s.uploader.Upload(ctx, input)
+	if err != nil {
+		log.Ctx(ctx).Err(err).Any(common.LogKeyPayload, req).Msg("error while uploading bytes")
+		return nil, err
+	}
+
+	return &coreentity.UploadFileResp{
+		Filename: req.Filename,
+		URL:      result.Location,
 	}, nil
 }
 

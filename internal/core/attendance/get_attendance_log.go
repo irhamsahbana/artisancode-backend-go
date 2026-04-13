@@ -1,0 +1,33 @@
+package core
+
+import (
+	"context"
+
+	"codebase-app/internal/entity/coreentity"
+	"codebase-app/internal/infrastructure/tracing"
+)
+
+func (c *attendanceCore) GetAttendanceLog(ctx context.Context, filter coreentity.AttendanceLogDetailFilter) (*coreentity.AttendanceLog, error) {
+	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:get_attendance_log:GetAttendanceLog")
+	defer span.End()
+
+	if !filter.UserCtx.HasRole("owner") {
+		employee, err := c.repo.GetEmployeeByUserID(ctx, filter.TenantID, filter.UserCtx.UserID)
+		if err != nil {
+			return nil, err
+		}
+		filter.EmployeeID = &employee.ID
+	}
+
+	item, err := c.repo.GetAttendanceLog(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.attachAttendanceLogSelfie(ctx, item)
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}

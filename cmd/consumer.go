@@ -2,66 +2,74 @@ package cmd
 
 import (
 	"codebase-app/internal/adapter"
-	"codebase-app/internal/infrastructure"
+	consumerModule "codebase-app/internal/framework/primary/consumer/natsjestream"
 	"codebase-app/internal/infrastructure/config"
+	infraLogging "codebase-app/internal/infrastructure/logging"
+	infraTracing "codebase-app/internal/infrastructure/tracing"
+	"context"
 	"flag"
-	"os"
-	"os/signal"
 
-	"github.com/nats-io/nats.go/jetstream"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func RunConsumer(cmd *flag.FlagSet, args []string) {
 	envs := config.Envs
-	logLevel, err := zerolog.ParseLevel(envs.App.LogLevel)
-	if err != nil {
-		logLevel = zerolog.InfoLevel
-	}
 
-    adapter.Adapters.Sync(
-        adapter.WithPostgres(),
-    )
-    infrastructure.InitializeLogger(envs.App.Environtment, "consumer.log", logLevel, adapter.Adapters.Postgres)
-
-	log.Info().Msg("Running consumer")
-	var (
-		emailConsumerCtx jetstream.ConsumeContext
+	adapter.Adapters.Sync(
+		adapter.WithPostgres(),
 	)
 
-    adapter.Adapters.Sync(
-        adapter.WithEmailConsumerNats(emailConsumerCtx),
-    )
-
-	EmailConsumer := adapter.Adapters.EmailConsumerNats
-
-	// email consumer
-	cctxEmail, err := EmailConsumer.Consume(func(msg jetstream.Msg) {
-		switch msg.Subject() {
-		case "email.verification":
-			EmailVerificationHandler(msg)
-		case "email.forgot-password":
-			ForgotPasswordHandler(msg)
-		default:
-		}
-	})
-	if err != nil {
-		log.Fatal().Err(err).Msg("consumer::RunConsumer::Error while consuming message")
+	var otlpEndpoint string
+	if envs.Instrumentation.Enabled {
+		otlpEndpoint = envs.Instrumentation.OtlpEndpoint
 	}
 
-	adapter.Adapters.EmailConsumerCtxNats = cctxEmail
+	lp, logWriter, err := infraLogging.InitLogger(&infraLogging.Config{
+		Endpoint:      otlpEndpoint,
+		AppName:       envs.App.Name,
+		AppVersion:    envs.App.Version,
+		AppEnv:        envs.App.Environtment,
+		LogFile:       "consumer.log",
+		AccessLogFile: envs.App.LogFileAccess,
+		LogLevel:      envs.App.LogLevel,
+		DB:            adapter.Adapters.Postgres,
+	})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize logger")
+	}
+	defer func() {
+		if err := lp.Shutdown(context.Background()); err != nil {
+			log.Error().Err(err).Msg("Error shutting down logger provider")
+		}
+	}()
 
-    defer func() {
-        if err := adapter.Adapters.Unsync(); err != nil {
-            log.Fatal().Err(err).Msg("Error while closing database connection")
-        }
-    }()
+	if envs.Instrumentation.Enabled {
+		tp, traceErr := infraTracing.InitTracer(&infraTracing.Config{
+			Endpoint:   envs.Instrumentation.OtlpEndpoint,
+			Headers:    envs.Instrumentation.OtlpHeaders,
+			Insecure:   envs.Instrumentation.OtlpInsecure,
+			Debug:      envs.Instrumentation.Debug,
+			AppName:    envs.App.Name + "-consumer",
+			AppVersion: envs.App.Version,
+			AppEnv:     envs.App.Environtment,
+			LogWriter:  logWriter,
+		})
+		if traceErr != nil {
+			log.Error().Err(traceErr).Msg("Failed to initialize tracer")
+		} else {
+			defer func() {
+				if err := tp.Shutdown(context.Background()); err != nil {
+					log.Error().Err(err).Msg("Error shutting down tracer provider")
+				}
+			}()
+		}
+	}
 
-	// gracefully shutdown the consumer
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
+	log.Info().Msg("Running consumer")
 
-	log.Info().Msg("Consumer gracefully stopped")
+	app := consumerModule.NewApp()
+	err = app.Run(context.Background())
+	if err != nil {
+		log.Fatal().Err(err).Msg("consumer::RunConsumer::Failed to run consumer app")
+	}
 }

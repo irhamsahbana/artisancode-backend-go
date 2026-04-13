@@ -5,6 +5,7 @@ digihub-app
 
 # directories to ignore
 .curl
+.gocache
 .idea
 .vscode
 backups

@@ -1,43 +1,31 @@
 package adapter
 
 import (
-	// "log"
-
+	secondarypostgres "codebase-app/internal/framework/secondary/db/postgres"
 	"codebase-app/internal/infrastructure/config"
-	"time"
 
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
 func WithPostgres() Option {
 	return func(a *Adapter) {
-		dbUser := config.Envs.Postgres.Username
-		dbPassword := config.Envs.Postgres.Password
-		dbName := config.Envs.Postgres.Database
-		dbHost := config.Envs.Postgres.Host
-		dbSSLMode := config.Envs.Postgres.SslMode
-		dbPort := config.Envs.Postgres.Port
-
-		dbMaxPoolSize := config.Envs.DB.MaxOpenCons
-		dbMaxIdleConns := config.Envs.DB.MaxIdleCons
-		dbConnMaxLifetime := config.Envs.DB.ConnMaxLifetime
-
-		connectionString := "user=" + dbUser + " password=" + dbPassword + " host=" + dbHost + " port=" + dbPort + " dbname=" + dbName + " sslmode=" + dbSSLMode + " TimeZone=UTC"
-		db, err := sqlx.Connect("postgres", connectionString)
+		db, err := secondarypostgres.New(secondarypostgres.Config{
+			Username:        config.Envs.Postgres.Username,
+			Password:        config.Envs.Postgres.Password,
+			Database:        config.Envs.Postgres.Database,
+			Host:            config.Envs.Postgres.Host,
+			Port:            config.Envs.Postgres.Port,
+			SSLMode:         config.Envs.Postgres.SslMode,
+			MaxOpenConns:    config.Envs.DB.MaxOpenCons,
+			MaxIdleConns:    config.Envs.DB.MaxIdleCons,
+			ConnMaxLifetime: config.Envs.DB.ConnMaxLifetime,
+		})
 		if err != nil {
 			log.Fatal().Err(err).Msg("Error connecting to Postgres")
 		}
 
-		db.SetMaxOpenConns(dbMaxPoolSize)
-		db.SetMaxIdleConns(dbMaxIdleConns)
-		db.SetConnMaxLifetime(time.Duration(dbConnMaxLifetime) * time.Second)
-
-		// check connection
-		err = db.Ping()
-		if err != nil {
-			log.Fatal().Err(err).Msg("Error connecting to Digihub Postgres")
+		if err := db.Ping(); err != nil {
+			log.Fatal().Err(err).Msg("Error pinging Postgres")
 		}
 
 		a.Postgres = db

@@ -58,8 +58,10 @@ handler/
 
 - Interfaces are centralized at `internal/ports/` (not inside modules).
 - Structure follows domain/capability grouping:
-  - `internal/ports/repository/` - repository interfaces
-  - `internal/ports/core/` - service interfaces
+  - `internal/ports/core/` - service interfaces consumed by primary adapters
+  - `internal/ports/primary/` - contracts specific to primary adapters such as HTTP-facing abstractions
+  - `internal/ports/secondary/db/` - repository interfaces for driven adapters
+  - `internal/ports/secondary/integration/` - integration interfaces for driven adapters
 - Modules implement these interfaces, keeping them decoupled and testable.
 
 ## Mapper

@@ -113,12 +113,18 @@ All repository and core methods should use OpenTelemetry tracing for observabili
 import "codebase-app/internal/infrastructure/tracing"
 
 func (r *repo) GetEmployees(ctx context.Context, filter coreentity.EmployeeListFilter) ([]coreentity.Employee, int, error) {
-    ctx, span := tracing.StartSpan(ctx, "repo.GetEmployees")
+    ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:employee:get_employees:GetEmployees")
     defer span.End()
 
     // ... method implementation
 }
 ```
+
+Span names must follow the source file path plus function name:
+
+- Handler: `internal:framework:primary:http:<module>:<file_without_extension>:<function>`
+- Core: `internal:core:<module>:<file_without_extension>:<function>`
+- DB Postgres: `internal:framework:secondary:db:postgres:<module>:<file_without_extension>:<function>`
 
 ### Tracing Benefits
 

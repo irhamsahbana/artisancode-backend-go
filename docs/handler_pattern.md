@@ -44,6 +44,22 @@ func (h *handler) Register(router fiber.Router) {
 
 ## Handler Function Template
 
+All handler functions that work with `c.UserContext()` should start a span and keep the traced context on Fiber:
+
+```go
+func (h *handler) getItems(c *fiber.Ctx) error {
+    tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:item:get_items:getItems")
+    defer span.End()
+    c.SetUserContext(tracedCtx)
+
+    // ...
+}
+```
+
+Span names must use the file path plus function name format:
+
+- `internal:framework:primary:http:<module>:<file_without_extension>:<function>`
+
 ### List (GET /)
 
 ```go
