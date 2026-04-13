@@ -32,10 +32,15 @@ func RegisterReqToCore(ctx context.Context, req restentity.RegisterReq) coreenti
 
 func RegisterReqToTenant(ctx context.Context, req restentity.RegisterReq) coreentity.Tenant {
 	uc := common.GetUserContext(ctx)
+	preferredLanguage := req.Language
+	if preferredLanguage == "" {
+		preferredLanguage = "id"
+	}
 	return coreentity.Tenant{
-		UserCtx: uc,
-		Name:    req.TenantName,
-		Code:    req.TenantCode,
+		UserCtx:           uc,
+		Name:              req.TenantName,
+		Code:              req.TenantCode,
+		PreferredLanguage: preferredLanguage,
 	}
 }
 

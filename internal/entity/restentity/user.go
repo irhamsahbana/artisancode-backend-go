@@ -1,8 +1,8 @@
 package restentity
 
 type LoginReq struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+	Email      string `json:"email" validate:"required,email"`
+	Password   string `json:"password" validate:"required"`
 	TenantCode string `json:"tenant_code" validate:"required,min=2,max=5"`
 }
 
@@ -28,6 +28,7 @@ type RegisterReq struct {
 	Password   string `json:"password" validate:"required,min=8"`
 	TenantCode string `json:"tenant_code" validate:"required,min=2,max=5,uppercase,alphanum"`
 	TenantName string `json:"tenant_name" validate:"required"`
+	Language   string `json:"language" validate:"omitempty,oneof=id en"`
 }
 
 type RegisterResp struct {

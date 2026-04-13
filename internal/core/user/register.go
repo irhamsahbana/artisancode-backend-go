@@ -74,6 +74,11 @@ func (c *userCore) createTenant(ctx context.Context, tenant coreentity.Tenant) (
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:register:createTenant")
 	defer span.End()
 
+	preferredLanguage := tenant.PreferredLanguage
+	if preferredLanguage == "" {
+		preferredLanguage = "id"
+	}
+
 	tenantID, err := c.repo.InsertTenant(ctx, coreentity.Tenant{
 		Name: tenant.Name,
 		Code: tenant.Code,
@@ -82,7 +87,7 @@ func (c *userCore) createTenant(ctx context.Context, tenant coreentity.Tenant) (
 		return "", err
 	}
 
-	_, err = c.repo.InitializeTenant(ctx, tenantID, tenant.Name)
+	_, err = c.repo.InitializeTenant(ctx, tenantID, tenant.Name, preferredLanguage)
 	if err != nil {
 		return "", err
 	}

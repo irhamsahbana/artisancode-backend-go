@@ -49,7 +49,7 @@ func (r *userRepo) InsertTenant(ctx context.Context, tenant coreentity.Tenant) (
 	return tenantID, nil
 }
 
-func (r *userRepo) InitializeTenant(ctx context.Context, tenantID string, companyName string) (string, error) {
+func (r *userRepo) InitializeTenant(ctx context.Context, tenantID string, companyName string, preferredLanguage string) (string, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:InitializeTenant")
 	defer span.End()
 
@@ -62,7 +62,7 @@ func (r *userRepo) InitializeTenant(ctx context.Context, tenantID string, compan
 	}
 	defer tx.Rollback()
 
-	companyID, err := r.insertDefaultCompany(ctx, tx, tenantID, companyName)
+	companyID, err := r.insertDefaultCompany(ctx, tx, tenantID, companyName, preferredLanguage)
 	if err != nil {
 		return "", err
 	}
@@ -90,11 +90,14 @@ func (r *userRepo) InitializeTenant(ctx context.Context, tenantID string, compan
 	return companyID, nil
 }
 
-func (r *userRepo) insertDefaultCompany(ctx context.Context, tx *sqlx.Tx, tenantID string, companyName string) (string, error) {
+func (r *userRepo) insertDefaultCompany(ctx context.Context, tx *sqlx.Tx, tenantID string, companyName string, preferredLanguage string) (string, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:insertDefaultCompany")
 	defer span.End()
 
 	config := coreentity.DefaultCompanyConfig()
+	if preferredLanguage != "" {
+		config.PreferredLanguage = preferredLanguage
+	}
 	configJSON, err := json.Marshal(config)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "companyName": companyName}).Msg("Failed to marshal company config")

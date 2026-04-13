@@ -21,5 +21,5 @@ type UserRepository interface {
 	UpdateUser(ctx context.Context, data coreentity.User) error
 	DeleteUser(ctx context.Context, filter coreentity.UserDeleteFilter) error
 
-	InitializeTenant(ctx context.Context, tenantID string, companyName string) (string, error)
+	InitializeTenant(ctx context.Context, tenantID string, companyName string, preferredLanguage string) (string, error)
 }
