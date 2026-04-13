@@ -35,8 +35,18 @@ func (e *CustomError) SetMessage(msg string) *CustomError {
 	return e
 }
 
+func (e *CustomError) SetLocalizedMessage(msg LocalizedText) *CustomError {
+	e.Msg = msg.Localize(DefaultLanguage)
+	return e
+}
+
 func (e *CustomError) Add(field, msg string) *CustomError {
 	e.Errors[field] = append(e.Errors[field], msg)
+	return e
+}
+
+func (e *CustomError) AddLocalized(field string, msg LocalizedText) *CustomError {
+	e.Errors[field] = append(e.Errors[field], msg.Localize(DefaultLanguage))
 	return e
 }
 
@@ -52,6 +62,20 @@ func WithMessage(msg string) Option {
 	}
 }
 
-func errorCustomHandler(err *CustomError) (int, *CustomError) {
-	return err.Code, err
+func errorCustomHandler(lang Language, err *CustomError) (int, *CustomError) {
+	localized := &CustomError{
+		Code:   err.Code,
+		Errors: make(map[string][]string, len(err.Errors)),
+		Msg:    TranslateText(lang, err.Msg),
+	}
+
+	for field, messages := range err.Errors {
+		localizedMessages := make([]string, 0, len(messages))
+		for _, message := range messages {
+			localizedMessages = append(localizedMessages, TranslateText(lang, message))
+		}
+		localized.Errors[field] = localizedMessages
+	}
+
+	return localized.Code, localized
 }

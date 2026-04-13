@@ -9,7 +9,8 @@ import (
 type UserContextKey string
 
 const (
-	UserContextKeyClaims UserContextKey = "claims"
+	UserContextKeyClaims   UserContextKey = "claims"
+	UserContextKeyLanguage UserContextKey = "language"
 )
 
 type UserContext struct {
@@ -29,6 +30,14 @@ func GetUserContext(ctx context.Context) UserContext {
 
 	log.Ctx(ctx).Warn().Msg("User context not found")
 	return UserContext{}
+}
+
+func GetLanguage(ctx context.Context) string {
+	if language, ok := ctx.Value(UserContextKeyLanguage).(string); ok && language != "" {
+		return language
+	}
+
+	return "id"
 }
 
 func (uc UserContext) IsOwner() bool {

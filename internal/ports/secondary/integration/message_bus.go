@@ -5,12 +5,6 @@ import (
 	"time"
 )
 
-type MessageBus interface {
-	PublishJSON(ctx context.Context, subject string, payload any) error
-	CreateConsumer(ctx context.Context, cfg MessageBusConsumerConfig) (MessageBusConsumer, error)
-	Close() error
-}
-
 type MessagePublisher interface {
 	PublishJSON(ctx context.Context, subject string, payload any) error
 	Close() error

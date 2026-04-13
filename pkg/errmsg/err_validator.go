@@ -8,7 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-func errorValidationHandler[T any](err error, payload *T) (int, map[string][]string) {
+func errorValidationHandler[T any](lang Language, err error, payload *T) (int, map[string][]string) {
 	var (
 		errorMessages = make(map[string][]string)
 		code          = 400
@@ -44,102 +44,71 @@ func errorValidationHandler[T any](err error, payload *T) (int, map[string][]str
 			}
 		}
 
-		if err.Param() != "" {
-			message = fmt.Sprintf("field validation for '%s' failed on the '%s' tag with param '%s'", field, err.Tag(), err.Param())
-			// message = fmt.Sprintf("validasi untuk '%s' gagal pada tag '%s' dengan parameter '%s'", fieldInMsg, err.Tag(), err.Param())
-		} else {
-			message = fmt.Sprintf("field validation for '%s' failed on the '%s' tag", field, err.Tag())
-			// message = fmt.Sprintf("validasi untuk '%s' gagal pada tag '%s'", fieldInMsg, err.Tag())
-		}
+		message = defaultValidationMessage(lang, field, fieldInMsg, err.Tag(), err.Param())
 
 		// get validate tag that causes the error
 		switch err.Tag() {
 		case "required":
-			message = fmt.Sprintf("%s is required", fieldInMsg)
-			// message = fmt.Sprintf("%s harus diisi", fieldInMsg)
+			message = validationMessageRequired(lang, fieldInMsg)
 		case "email":
-			message = fmt.Sprintf("%s is not a valid email address", fieldInMsg)
-			// message = fmt.Sprintf("%s bukan alamat email yang valid", fieldInMsg)
+			message = validationMessageEmail(lang, fieldInMsg)
 		case "email_blacklist":
-			message = fmt.Sprintf("email %v is not allowed", value)
-			// message = fmt.Sprintf("email %v tidak diizinkan", value)
+			message = validationMessageEmailBlacklist(lang, value)
 		case "strong_password":
-			message = fmt.Sprintf("%s must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number", fieldInMsg)
-			// message = fmt.Sprintf("%s minimal 8 karakter dan harus mengandung setidaknya satu huruf besar, satu huruf kecil, dan satu angka", fieldInMsg)
+			message = validationMessageStrongPassword(lang, fieldInMsg)
 		case "exist":
-			message = "resource is not exist."
-			// message = "sumber data tidak ditemukan."
+			message = validationMessageResourceNotExist(lang)
 		case "datetime":
-			message = fmt.Sprintf("%s is not a valid datetime format (Ex: %s)", fieldInMsg, err.Param())
-			// message = fmt.Sprintf("%s bukan format tanggal dan waktu yang valid (Contoh: %s)", fieldInMsg, err.Param())
+			message = validationMessageDatetime(lang, fieldInMsg, err.Param())
 		case "ulid":
-			message = fmt.Sprintf("%s is not a valid ULID", fieldInMsg)
-			// message = fmt.Sprintf("%s bukan ULID yang valid", fieldInMsg)
+			message = validationMessageSimpleInvalid(lang, fieldInMsg, "ULID")
 		case "base64":
-			message = fmt.Sprintf("%s is not a valid base64 format", fieldInMsg)
-			// message = fmt.Sprintf("%s bukan format base64 yang valid", fieldInMsg)
+			message = validationMessageSimpleFormat(lang, fieldInMsg, "base64")
 		case "base64url":
-			message = fmt.Sprintf("%s is not a valid base64url format", fieldInMsg)
-			// message = fmt.Sprintf("%s bukan format base64url yang valid", fieldInMsg)
+			message = validationMessageSimpleFormat(lang, fieldInMsg, "base64url")
 		case "base64rawurl":
-			message = fmt.Sprintf("%s is not a valid base64rawurl format", fieldInMsg)
-			// message = fmt.Sprintf("%s bukan format base64rawurl yang valid", fieldInMsg)
+			message = validationMessageSimpleFormat(lang, fieldInMsg, "base64rawurl")
 		case "min":
 			// check if the field is a number or a string
 			if valueType.Kind() == reflect.Int || valueType.Kind() == reflect.Int8 || valueType.Kind() == reflect.Int16 || valueType.Kind() == reflect.Int32 || valueType.Kind() == reflect.Int64 || valueType.Kind() == reflect.Float32 || valueType.Kind() == reflect.Float64 {
-				message = fmt.Sprintf("%s must be at least %s", fieldInMsg, err.Param())
-				// message = fmt.Sprintf("%s harus minimal %s", fieldInMsg, err.Param())
+				message = validationMessageMinValue(lang, fieldInMsg, err.Param())
 			}
 			if valueType.Kind() == reflect.String {
-				message = fmt.Sprintf("%s must be at least %s characters", fieldInMsg, err.Param())
-				// message = fmt.Sprintf("%s harus minimal %s karakter", fieldInMsg, err.Param())
+				message = validationMessageMinChars(lang, fieldInMsg, err.Param())
 			}
 			if valueType.Kind() == reflect.Slice {
-				message = fmt.Sprintf("%s must have at least %s items", fieldInMsg, err.Param())
-				// message = fmt.Sprintf("%s harus minimal %s item", fieldInMsg, err.Param())
+				message = validationMessageMinItems(lang, fieldInMsg, err.Param())
 			}
 		case "max":
 			// check if the field is a number or a string
 			if _, ok := value.(int); ok {
-				message = fmt.Sprintf("%s must not be greater than %s", fieldInMsg, err.Param())
-				// message = fmt.Sprintf("%s harus tidak lebih dari %s", fieldInMsg, err.Param())
+				message = validationMessageMaxValue(lang, fieldInMsg, err.Param())
 			}
 			if _, ok := value.(float64); ok {
-				message = fmt.Sprintf("%s must not be greater than %s", fieldInMsg, err.Param())
-				// message = fmt.Sprintf("%s harus tidak lebih dari %s", fieldInMsg, err.Param())
+				message = validationMessageMaxValue(lang, fieldInMsg, err.Param())
 			}
 			if _, ok := value.(string); ok {
-				message = fmt.Sprintf("%s must not be greater than %s characters", fieldInMsg, err.Param())
-				// message = fmt.Sprintf("%s harus tidak lebih dari %s karakter", fieldInMsg, err.Param())
+				message = validationMessageMaxChars(lang, fieldInMsg, err.Param())
 			}
 			if valueType.Kind() == reflect.Slice {
-				message = fmt.Sprintf("%s must not have more than %s items", fieldInMsg, err.Param())
-				// message = fmt.Sprintf("%s harus tidak lebih dari %s item", fieldInMsg, err.Param())
+				message = validationMessageMaxItems(lang, fieldInMsg, err.Param())
 			}
 		case "gt":
-			message = fmt.Sprintf("%s must be greater than %s", fieldInMsg, err.Param())
-			// message = fmt.Sprintf("%s harus lebih dari %s", fieldInMsg, err.Param())
+			message = validationMessageCompare(lang, fieldInMsg, "gt", err.Param())
 		case "gte":
-			message = fmt.Sprintf("%s must be greater than or equal to %s", fieldInMsg, err.Param())
-			// message = fmt.Sprintf("%s harus lebih dari atau sama dengan %s", fieldInMsg, err.Param())
+			message = validationMessageCompare(lang, fieldInMsg, "gte", err.Param())
 		case "lt":
-			message = fmt.Sprintf("%s must be less than %s", fieldInMsg, err.Param())
-			// message = fmt.Sprintf("%s harus kurang dari %s", fieldInMsg, err.Param())
+			message = validationMessageCompare(lang, fieldInMsg, "lt", err.Param())
 		case "lte":
-			message = fmt.Sprintf("%s must be less than or equal to %s", fieldInMsg, err.Param())
-			// message = fmt.Sprintf("%s harus kurang dari atau sama dengan %s", fieldInMsg, err.Param())
+			message = validationMessageCompare(lang, fieldInMsg, "lte", err.Param())
 		case "latitude":
-			message = fmt.Sprintf("%s must be a valid latitude", fieldInMsg)
-			// message = fmt.Sprintf("%s harus latitude yang valid", fieldInMsg)
+			message = validationMessageSimpleInvalid(lang, fieldInMsg, "latitude")
 		case "longitude":
-			message = fmt.Sprintf("%s must be a valid longitude", fieldInMsg)
-			// message = fmt.Sprintf("%s harus longitude yang valid", fieldInMsg)
+			message = validationMessageSimpleInvalid(lang, fieldInMsg, "longitude")
 		case "numeric":
-			message = fmt.Sprintf("%s must be a number", fieldInMsg)
-			// message = fmt.Sprintf("%s harus angka", fieldInMsg)
+			message = validationMessageNumeric(lang, fieldInMsg)
 		case "timezone":
-			message = fmt.Sprintf("%s must be a valid timezone (Ex: Asia/Jakarta)", fieldInMsg)
-			// message = fmt.Sprintf("%s harus zona waktu yang valid (Contoh: Asia/Makassar)", fieldInMsg)
+			message = validationMessageTimezone(lang, fieldInMsg)
 		case "eqfield":
 			eqField := err.Param()
 			eqFieldName := ""
@@ -162,27 +131,200 @@ func errorValidationHandler[T any](err error, payload *T) (int, map[string][]str
 				eqFieldName = strings.ReplaceAll(eqFieldParamsTag, "_", " ")
 			}
 
-			message = fmt.Sprintf("%s must be equal to %s", fieldInMsg, eqFieldName)
-			// message = fmt.Sprintf("%s harus sama dengan %s", fieldInMsg, eqFieldName)
+			message = validationMessageEqualField(lang, fieldInMsg, eqFieldName)
 		case "oneof":
-			// change param to be more readable
-			// ex: "oneof=1 2 3" => "1, 2, atau 3"
-			oneOfValues := strings.Split(err.Param(), " ")
-			oneOfValues[len(oneOfValues)-1] = "or " + oneOfValues[len(oneOfValues)-1]
-			// oneOfValues[len(oneOfValues)-1] = "atau " + oneOfValues[len(oneOfValues)-1]
-			oneOfValuesStr := strings.Join(oneOfValues, ", ")
-			message = fmt.Sprintf("%s must be one of %s", fieldInMsg, oneOfValuesStr)
-			// message = fmt.Sprintf("%s harus salah satu dari %s", fieldInMsg, oneOfValuesStr)
+			message = validationMessageOneOf(lang, fieldInMsg, err.Param())
 		case "unique_in_slice":
-			message = fmt.Sprintf("%s elements must be unique", fieldInMsg)
-			// message = fmt.Sprintf("elemen %s harus unik", fieldInMsg)
+			message = validationMessageUniqueInSlice(lang, fieldInMsg)
 		case "url":
-			message = fmt.Sprintf("%s is not a valid URL", fieldInMsg)
-			// message = fmt.Sprintf("%s bukan URL yang valid", fieldInMsg)
+			message = validationMessageSimpleInvalid(lang, fieldInMsg, "URL")
 		}
 
 		errorMessages[field] = append(errorMessages[field], message)
 	}
 
 	return code, errorMessages
+}
+
+func defaultValidationMessage(lang Language, field string, fieldInMsg string, tag string, param string) string {
+	if param != "" {
+		if lang == LanguageEnglish {
+			return fmt.Sprintf("field validation for '%s' failed on the '%s' tag with param '%s'", field, tag, param)
+		}
+		return fmt.Sprintf("validasi untuk '%s' gagal pada tag '%s' dengan parameter '%s'", fieldInMsg, tag, param)
+	}
+
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("field validation for '%s' failed on the '%s' tag", field, tag)
+	}
+	return fmt.Sprintf("validasi untuk '%s' gagal pada tag '%s'", fieldInMsg, tag)
+}
+
+func validationMessageRequired(lang Language, field string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s is required", field)
+	}
+	return fmt.Sprintf("%s wajib diisi", field)
+}
+
+func validationMessageEmail(lang Language, field string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s is not a valid email address", field)
+	}
+	return fmt.Sprintf("%s bukan alamat email yang valid", field)
+}
+
+func validationMessageEmailBlacklist(lang Language, value any) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("email %v is not allowed", value)
+	}
+	return fmt.Sprintf("email %v tidak diizinkan", value)
+}
+
+func validationMessageStrongPassword(lang Language, field string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number", field)
+	}
+	return fmt.Sprintf("%s minimal 8 karakter dan harus mengandung setidaknya satu huruf besar, satu huruf kecil, dan satu angka", field)
+}
+
+func validationMessageResourceNotExist(lang Language) string {
+	if lang == LanguageEnglish {
+		return "resource does not exist."
+	}
+	return "sumber data tidak ditemukan."
+}
+
+func validationMessageDatetime(lang Language, field string, example string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s is not a valid datetime format (Ex: %s)", field, example)
+	}
+	return fmt.Sprintf("%s bukan format tanggal dan waktu yang valid (Contoh: %s)", field, example)
+}
+
+func validationMessageSimpleInvalid(lang Language, field string, kind string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s is not a valid %s", field, kind)
+	}
+	return fmt.Sprintf("%s bukan %s yang valid", field, kind)
+}
+
+func validationMessageSimpleFormat(lang Language, field string, format string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s is not a valid %s format", field, format)
+	}
+	return fmt.Sprintf("%s bukan format %s yang valid", field, format)
+}
+
+func validationMessageMinValue(lang Language, field string, param string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must be at least %s", field, param)
+	}
+	return fmt.Sprintf("%s harus minimal %s", field, param)
+}
+
+func validationMessageMinChars(lang Language, field string, param string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must be at least %s characters", field, param)
+	}
+	return fmt.Sprintf("%s harus minimal %s karakter", field, param)
+}
+
+func validationMessageMinItems(lang Language, field string, param string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must have at least %s items", field, param)
+	}
+	return fmt.Sprintf("%s harus minimal %s item", field, param)
+}
+
+func validationMessageMaxValue(lang Language, field string, param string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must not be greater than %s", field, param)
+	}
+	return fmt.Sprintf("%s harus tidak lebih dari %s", field, param)
+}
+
+func validationMessageMaxChars(lang Language, field string, param string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must not be greater than %s characters", field, param)
+	}
+	return fmt.Sprintf("%s harus tidak lebih dari %s karakter", field, param)
+}
+
+func validationMessageMaxItems(lang Language, field string, param string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must not have more than %s items", field, param)
+	}
+	return fmt.Sprintf("%s harus tidak lebih dari %s item", field, param)
+}
+
+func validationMessageCompare(lang Language, field string, operator string, param string) string {
+	if lang == LanguageEnglish {
+		switch operator {
+		case "gt":
+			return fmt.Sprintf("%s must be greater than %s", field, param)
+		case "gte":
+			return fmt.Sprintf("%s must be greater than or equal to %s", field, param)
+		case "lt":
+			return fmt.Sprintf("%s must be less than %s", field, param)
+		default:
+			return fmt.Sprintf("%s must be less than or equal to %s", field, param)
+		}
+	}
+
+	switch operator {
+	case "gt":
+		return fmt.Sprintf("%s harus lebih dari %s", field, param)
+	case "gte":
+		return fmt.Sprintf("%s harus lebih dari atau sama dengan %s", field, param)
+	case "lt":
+		return fmt.Sprintf("%s harus kurang dari %s", field, param)
+	default:
+		return fmt.Sprintf("%s harus kurang dari atau sama dengan %s", field, param)
+	}
+}
+
+func validationMessageNumeric(lang Language, field string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must be a number", field)
+	}
+	return fmt.Sprintf("%s harus angka", field)
+}
+
+func validationMessageTimezone(lang Language, field string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must be a valid timezone (Ex: Asia/Jakarta)", field)
+	}
+	return fmt.Sprintf("%s harus zona waktu yang valid (Contoh: Asia/Jakarta)", field)
+}
+
+func validationMessageEqualField(lang Language, field string, eqFieldName string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must be equal to %s", field, eqFieldName)
+	}
+	return fmt.Sprintf("%s harus sama dengan %s", field, eqFieldName)
+}
+
+func validationMessageOneOf(lang Language, field string, param string) string {
+	oneOfValues := strings.Split(param, " ")
+	lastIndex := len(oneOfValues) - 1
+	if lastIndex >= 0 {
+		if lang == LanguageEnglish {
+			oneOfValues[lastIndex] = "or " + oneOfValues[lastIndex]
+		} else {
+			oneOfValues[lastIndex] = "atau " + oneOfValues[lastIndex]
+		}
+	}
+	oneOfValuesStr := strings.Join(oneOfValues, ", ")
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s must be one of %s", field, oneOfValuesStr)
+	}
+	return fmt.Sprintf("%s harus salah satu dari %s", field, oneOfValuesStr)
+}
+
+func validationMessageUniqueInSlice(lang Language, field string) string {
+	if lang == LanguageEnglish {
+		return fmt.Sprintf("%s elements must be unique", field)
+	}
+	return fmt.Sprintf("elemen %s harus unik", field)
 }
