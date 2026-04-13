@@ -55,7 +55,7 @@ func (h *orgUnitHandler) getOrgUnitTree(c *fiber.Ctx) error {
 	tree, err := h.core.GetOrgUnitTree(ctx, userCtx.TenantID, companyID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Str("company_id", companyID).Msg("Failed to get org unit tree")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -82,7 +82,7 @@ func (h *orgUnitHandler) getOrgUnits(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate query params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -97,7 +97,7 @@ func (h *orgUnitHandler) getOrgUnits(c *fiber.Ctx) error {
 	items, total, err := h.core.GetOrgUnits(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get org units")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -142,7 +142,7 @@ func (h *orgUnitHandler) getOrgUnit(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -154,7 +154,7 @@ func (h *orgUnitHandler) getOrgUnit(c *fiber.Ctx) error {
 	item, err := h.core.GetOrgUnit(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get org unit")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -181,7 +181,7 @@ func (h *orgUnitHandler) createOrgUnit(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -189,7 +189,7 @@ func (h *orgUnitHandler) createOrgUnit(c *fiber.Ctx) error {
 	created, err := h.core.CreateOrgUnit(ctx, data)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to create org unit")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -224,14 +224,14 @@ func (h *orgUnitHandler) updateOrgUnit(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
 	data := mapper.OrgUnitFromRestUpdateToCore(ctx, *req)
 	if err := h.core.UpdateOrgUnit(ctx, data); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to update org unit")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -261,7 +261,7 @@ func (h *orgUnitHandler) deleteOrgUnit(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -272,7 +272,7 @@ func (h *orgUnitHandler) deleteOrgUnit(c *fiber.Ctx) error {
 
 	if err := h.core.DeleteOrgUnit(ctx, filter); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to delete org unit")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

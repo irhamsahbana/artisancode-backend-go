@@ -56,7 +56,7 @@ func (h *jobPositionHandler) getJobPositions(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate query params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -70,7 +70,7 @@ func (h *jobPositionHandler) getJobPositions(c *fiber.Ctx) error {
 	items, total, err := h.core.GetJobPositions(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get job positions")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -110,7 +110,7 @@ func (h *jobPositionHandler) getJobPosition(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -122,7 +122,7 @@ func (h *jobPositionHandler) getJobPosition(c *fiber.Ctx) error {
 	item, err := h.core.GetJobPosition(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get job position")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -149,7 +149,7 @@ func (h *jobPositionHandler) createJobPosition(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -157,7 +157,7 @@ func (h *jobPositionHandler) createJobPosition(c *fiber.Ctx) error {
 	created, err := h.core.CreateJobPosition(ctx, data)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to create job position")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -187,14 +187,14 @@ func (h *jobPositionHandler) updateJobPosition(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
 	data := mapper.JobPositionFromRestUpdateToCore(ctx, *req)
 	if err := h.core.UpdateJobPosition(ctx, data); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to update job position")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -219,7 +219,7 @@ func (h *jobPositionHandler) deleteJobPosition(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -230,7 +230,7 @@ func (h *jobPositionHandler) deleteJobPosition(c *fiber.Ctx) error {
 
 	if err := h.core.DeleteJobPosition(ctx, filter); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to delete job position")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

@@ -56,7 +56,7 @@ func (h *workLocationHandler) getWorkLocations(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate query params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -71,7 +71,7 @@ func (h *workLocationHandler) getWorkLocations(c *fiber.Ctx) error {
 	items, total, err := h.core.GetWorkLocations(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get work locations")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -111,7 +111,7 @@ func (h *workLocationHandler) getWorkLocation(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -123,7 +123,7 @@ func (h *workLocationHandler) getWorkLocation(c *fiber.Ctx) error {
 	item, err := h.core.GetWorkLocation(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get work location")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -150,7 +150,7 @@ func (h *workLocationHandler) createWorkLocation(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -158,7 +158,7 @@ func (h *workLocationHandler) createWorkLocation(c *fiber.Ctx) error {
 	created, err := h.core.CreateWorkLocation(ctx, data)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to create work location")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -188,14 +188,14 @@ func (h *workLocationHandler) updateWorkLocation(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
 	data := mapper.WorkLocationFromRestUpdateToCore(ctx, *req)
 	if err := h.core.UpdateWorkLocation(ctx, data); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to update work location")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -220,7 +220,7 @@ func (h *workLocationHandler) deleteWorkLocation(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -231,7 +231,7 @@ func (h *workLocationHandler) deleteWorkLocation(c *fiber.Ctx) error {
 
 	if err := h.core.DeleteWorkLocation(ctx, filter); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to delete work location")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

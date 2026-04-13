@@ -31,7 +31,7 @@ func (h *userHandler) createUser(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, req).Msg("Invalid request validation")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -39,7 +39,7 @@ func (h *userHandler) createUser(c *fiber.Ctx) error {
 	created, err := h.core.CreateUser(ctx, data)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Failed to create user")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

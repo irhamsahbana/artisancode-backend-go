@@ -58,7 +58,7 @@ func (h *rbacHandler) getRoles(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate query params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -73,7 +73,7 @@ func (h *rbacHandler) getRoles(c *fiber.Ctx) error {
 	roles, total, err := h.core.GetRoles(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get roles")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -82,7 +82,7 @@ func (h *rbacHandler) getRoles(c *fiber.Ctx) error {
 		perms, err := h.core.GetPermissionsByRoleID(ctx, role.ID)
 		if err != nil {
 			log.Ctx(ctx).Error().Err(err).Msg("Failed to get role permissions")
-			code, errors := errmsg.Errors[error](err)
+			code, errors := errmsg.Errors[error](ctx, err)
 			return c.Status(code).JSON(response.Error(errors))
 		}
 
@@ -127,7 +127,7 @@ func (h *rbacHandler) getRole(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -135,14 +135,14 @@ func (h *rbacHandler) getRole(c *fiber.Ctx) error {
 	role, err := h.core.GetRoleWithPermissions(ctx, req.ID, uc.TenantID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get role")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
 	perms, err := h.core.GetPermissionsByRoleID(ctx, role.ID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get role permissions")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -178,7 +178,7 @@ func (h *rbacHandler) createRole(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -186,7 +186,7 @@ func (h *rbacHandler) createRole(c *fiber.Ctx) error {
 	created, err := h.core.CreateRole(ctx, data)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to create role")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -195,7 +195,7 @@ func (h *rbacHandler) createRole(c *fiber.Ctx) error {
 		uc := common.GetUserContext(ctx)
 		if err := h.core.SetRolePermissions(ctx, created.ID, uc.TenantID, req.Permissions); err != nil {
 			log.Ctx(ctx).Error().Err(err).Msg("Failed to set role permissions")
-			code, errors := errmsg.Errors[error](err)
+			code, errors := errmsg.Errors[error](ctx, err)
 			return c.Status(code).JSON(response.Error(errors))
 		}
 	}
@@ -226,14 +226,14 @@ func (h *rbacHandler) updateRole(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
 	data := mapper.RoleFromRestUpdateToCore(ctx, *req)
 	if err := h.core.UpdateRole(ctx, data); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to update role")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -241,7 +241,7 @@ func (h *rbacHandler) updateRole(c *fiber.Ctx) error {
 	uc := common.GetUserContext(ctx)
 	if err := h.core.SetRolePermissions(ctx, req.ID, uc.TenantID, req.PermissionIDs); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to set role permissions")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -266,7 +266,7 @@ func (h *rbacHandler) deleteRole(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -278,7 +278,7 @@ func (h *rbacHandler) deleteRole(c *fiber.Ctx) error {
 
 	if err := h.core.DeleteRole(ctx, filter); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to delete role")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -305,7 +305,7 @@ func (h *rbacHandler) getPermissions(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate query params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -320,7 +320,7 @@ func (h *rbacHandler) getPermissions(c *fiber.Ctx) error {
 	permissions, total, err := h.core.GetPermissions(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get permissions")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

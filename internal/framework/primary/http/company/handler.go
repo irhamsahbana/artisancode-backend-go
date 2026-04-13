@@ -56,7 +56,7 @@ func (h *companyHandler) getCompanies(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate query params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -70,7 +70,7 @@ func (h *companyHandler) getCompanies(c *fiber.Ctx) error {
 	items, total, err := h.core.GetCompanies(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get companies")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -110,7 +110,7 @@ func (h *companyHandler) getCompany(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -122,7 +122,7 @@ func (h *companyHandler) getCompany(c *fiber.Ctx) error {
 	item, err := h.core.GetCompany(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get company")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -149,7 +149,7 @@ func (h *companyHandler) createCompany(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -157,7 +157,7 @@ func (h *companyHandler) createCompany(c *fiber.Ctx) error {
 	created, err := h.core.CreateCompany(ctx, data)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to create company")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -187,14 +187,14 @@ func (h *companyHandler) updateCompany(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
 	data := mapper.CompanyFromRestUpdateToCore(ctx, *req)
 	if err := h.core.UpdateCompany(ctx, data); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to update company")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -219,7 +219,7 @@ func (h *companyHandler) deleteCompany(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to validate params")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -230,7 +230,7 @@ func (h *companyHandler) deleteCompany(c *fiber.Ctx) error {
 
 	if err := h.core.DeleteCompany(ctx, filter); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to delete company")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

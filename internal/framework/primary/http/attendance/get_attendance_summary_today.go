@@ -27,7 +27,7 @@ func (h *attendanceHandler) getAttendanceSummaryToday(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get attendance summary today")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

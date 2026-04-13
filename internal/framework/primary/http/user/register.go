@@ -26,12 +26,14 @@ func (h *userHandler) register(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, req).Msg("Invalid request body")
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
+		code, errs := errmsg.Errors(ctx, err, req)
+		return c.Status(code).JSON(response.Error(errs))
 	}
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, req).Msg("Invalid request validation")
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
+		code, errs := errmsg.Errors(ctx, err, req)
+		return c.Status(code).JSON(response.Error(errs))
 	}
 
 	user := mapper.RegisterReqToCore(ctx, *req)
@@ -39,7 +41,7 @@ func (h *userHandler) register(c *fiber.Ctx) error {
 	tokens, err := h.core.RegisterOwner(ctx, user, tenant)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Register service error")
-		code, errs := errmsg.Errors[error](err)
+		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 

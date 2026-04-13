@@ -29,18 +29,18 @@ err := errmsg.NewCustomErrors(400).
 
 ### 2. Validation Errors
 
-Automatically handled by `errmsg.Errors(err, req)` when `err` is `validator.ValidationErrors`:
+Automatically handled by `errmsg.Errors(ctx, err, req)` when `err` is `validator.ValidationErrors`:
 
 ```go
 if err := v.Validate(req); err != nil {
-    code, errors := errmsg.Errors(err, req)
+    code, errors := errmsg.Errors(ctx, err, req)
     return c.Status(code).JSON(response.Error(errors))
 }
 ```
 
 ### 3. Database Errors
 
-Automatically handled by `errmsg.Errors[error](err)` when `err` is `*pq.Error`.
+Automatically handled by `errmsg.Errors[error](ctx, err)` when `err` is `*pq.Error`.
 
 ## Status Code Guidelines
 
@@ -88,15 +88,15 @@ if exist {
 
 ### Handler Layer
 
-- Use `errmsg.Errors(err, req)` for validation errors (with payload for field-level mapping)
-- Use `errmsg.Errors[error](err)` for core/repo errors (without payload)
+- Use `errmsg.Errors(ctx, err, req)` for validation errors (with payload for field-level mapping)
+- Use `errmsg.Errors[error](ctx, err)` for core/repo errors (without payload)
 
 ```go
-// Validation error — pass req for field mapping
-code, errors := errmsg.Errors(err, req)
+// Validation error — pass ctx and req for language + field mapping
+code, errors := errmsg.Errors(ctx, err, req)
 
-// Core/repo error — no payload needed
-code, errs := errmsg.Errors[error](err)
+// Core/repo error — ctx provides request language
+code, errs := errmsg.Errors[error](ctx, err)
 ```
 
 ## Response Envelope

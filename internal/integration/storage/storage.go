@@ -38,7 +38,7 @@ func NewStorageIntegration(c *s3.Client) *storage {
 
 func (s *storage) UploadFile(ctx context.Context, req *coreentity.UploadFileReq) (*coreentity.UploadFileResp, error) {
 	if req.File == nil {
-		return nil, errmsg.NewCustomErrors(400).Add("file", "file is required.")
+		return nil, errmsg.NewCustomErrors(400).Add("file", "file is required")
 	}
 
 	file, err := req.File.Open()
@@ -91,7 +91,7 @@ func (s *storage) UploadFile(ctx context.Context, req *coreentity.UploadFileReq)
 
 func (s *storage) UploadBytes(ctx context.Context, req *coreentity.UploadBytesReq) (*coreentity.UploadFileResp, error) {
 	if len(req.Body) == 0 {
-		return nil, errmsg.NewCustomErrors(400).Add("body", "body is required.")
+		return nil, errmsg.NewCustomErrors(400).Add("body", "body is required")
 	}
 
 	var acl types.ObjectCannedACL
@@ -125,7 +125,7 @@ func (s *storage) UploadBytes(ctx context.Context, req *coreentity.UploadBytesRe
 
 func (s *storage) PresignUploadURL(ctx context.Context, req *coreentity.PresignUploadURLReq) (*coreentity.PresignUploadURLResp, error) {
 	if req.Filename == "" {
-		return nil, errmsg.NewCustomErrors(400).Add("filename", "filename is required.")
+		return nil, errmsg.NewCustomErrors(400).Add("filename", "filename is required")
 	}
 
 	input := &s3.PutObjectInput{
@@ -189,7 +189,7 @@ func (s *storage) ListFiles(ctx context.Context) ([]types.Object, error) {
 func (s *storage) GetFileURL(ctx context.Context, filter coreentity.FileFilter) (string, error) {
 	filename := filter.Filename
 	if filename == "" {
-		return "", errmsg.NewCustomErrors(400).Add("filename", "filename is required.")
+		return "", errmsg.NewCustomErrors(400).Add("filename", "filename is required")
 	}
 
 	ps, err := s.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{

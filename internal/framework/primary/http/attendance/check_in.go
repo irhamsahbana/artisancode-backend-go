@@ -38,7 +38,7 @@ func (h *attendanceHandler) handleAttendanceAction(c *fiber.Ctx, actionType stri
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -60,7 +60,7 @@ func (h *attendanceHandler) handleAttendanceAction(c *fiber.Ctx, actionType stri
 	}[actionType]()
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to create attendance log")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

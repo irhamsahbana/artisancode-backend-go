@@ -37,6 +37,7 @@ func (a *App) build(appName string, appEnvironment string, natsURL string) (*fib
 	}))
 	app.Use(middleware.RequestID)
 	app.Use(middleware.WithAppLogger(log.Logger))
+	app.Use(middleware.WithRequestLanguage())
 	app.Use(middleware.WithTracing(appName))
 	app.Use(middleware.Recover())
 	app.Use(middleware.WithAccessLog(infrastructure.AccessLogger))

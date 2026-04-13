@@ -38,7 +38,7 @@ func (h *userHandler) refreshToken(c *fiber.Ctx) error {
 	tokens, err := h.core.RefreshToken(ctx, user)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("RefreshToken service error")
-		code, errs := errmsg.Errors[error](err)
+		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 

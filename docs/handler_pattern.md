@@ -79,7 +79,7 @@ func (h *handler) getItems(c *fiber.Ctx) error {
 
     if err := v.Validate(req); err != nil {
         log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate query params")
-        code, errors := errmsg.Errors(err, req)
+        code, errors := errmsg.Errors(ctx, err, req)
         return c.Status(code).JSON(response.Error(errors))
     }
 
@@ -93,7 +93,7 @@ func (h *handler) getItems(c *fiber.Ctx) error {
     items, total, err := h.core.GetItems(ctx, filter)
     if err != nil {
         log.Ctx(ctx).Error().Err(err).Msg("Failed to get items")
-        code, errors := errmsg.Errors[error](err)
+        code, errors := errmsg.Errors[error](ctx, err)
         return c.Status(code).JSON(response.Error(errors))
     }
 

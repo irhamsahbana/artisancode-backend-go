@@ -73,7 +73,7 @@ func (h *storageHandler) uploadFile(c *fiber.Ctx) error {
 	resp, err := h.core.UploadFile(ctx, req)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to upload file")
-		code, errs := errmsg.Errors[error](err)
+		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
@@ -98,7 +98,7 @@ func (h *storageHandler) deleteFile(c *fiber.Ctx) error {
 
 	if err := h.core.DeleteFile(ctx, req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to delete file")
-		code, errs := errmsg.Errors[error](err)
+		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
@@ -114,7 +114,7 @@ func (h *storageHandler) listFiles(c *fiber.Ctx) error {
 	resp, err := h.core.ListFiles(ctx)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to list files")
-		code, errs := errmsg.Errors[error](err)
+		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
@@ -144,7 +144,7 @@ func (h *storageHandler) getPrivateFile(c *fiber.Ctx) error {
 	url, err := h.core.GetFileURL(ctx, filter)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any("filename", filename).Msg("Failed to get file URL")
-		code, errs := errmsg.Errors[error](err)
+		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
@@ -181,7 +181,7 @@ func (h *storageHandler) createUploadURL(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
@@ -197,7 +197,7 @@ func (h *storageHandler) createUploadURL(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to create upload URL")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 

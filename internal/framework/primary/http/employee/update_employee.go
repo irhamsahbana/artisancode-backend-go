@@ -35,14 +35,14 @@ func (h *employeeHandler) updateEmployee(c *fiber.Ctx) error {
 
 	if err := v.Validate(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to validate request body")
-		code, errors := errmsg.Errors(err, req)
+		code, errors := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
 	data := mapper.EmployeeFromRestUpdateToCore(ctx, *req)
 	if err := h.core.UpdateEmployee(ctx, data); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to update employee")
-		code, errors := errmsg.Errors[error](err)
+		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
