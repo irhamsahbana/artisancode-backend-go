@@ -1,0 +1,11 @@
+id,helper__tenant_code,name,description
+019d89ca-3376-7d81-b1fe-2861192d9369,,master.read,Read master data
+019d89ca-3459-7a16-89dd-74aa03372ad1,,master.write,Create/update/delete master data
+019d89ca-34f1-70e6-aa1e-e544c9d8bd94,,employee.read,Read employee data
+019d89ca-3588-7e34-b39c-2d950fb2c842,,employee.write,Create/update/delete employee data
+019d89ca-361c-7a87-80d0-fd26a6e10529,,attendance.read,Read attendance data
+019d89ca-36be-7979-bd6f-228bbdb4ccb5,,attendance.write,Manage attendance data
+019d89ca-3762-7a77-8d28-c5de0b5a3334,,user.read,Read user data
+019d89ca-37ff-7664-ab2f-4bc211284045,,user.write,Create/update/delete user data
+019d89ca-38a5-76d6-a5f5-e3bac56dd1b2,,rbac.manage,Manage roles and permissions
+019d89ca-3943-7b52-9bbc-0f8ac827720f,,report.read,Read reports

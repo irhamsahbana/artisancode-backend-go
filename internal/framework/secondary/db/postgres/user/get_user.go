@@ -9,7 +9,6 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
 
-	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -23,14 +22,14 @@ func (r *userRepo) GetUser(ctx context.Context, filter coreentity.User) (*coreen
 	}
 
 	var row struct {
-		ID          string         `db:"id"`
-		Name        string         `db:"name"`
-		UserName    string         `db:"username"`
-		Email       string         `db:"email"`
-		CompanyID   *string        `db:"company_id"`
-		CompanyName *string        `db:"company_name"`
-		RoleIDs     pq.StringArray `db:"role_ids"`
-		RoleNames   pq.StringArray `db:"role_names"`
+		ID           string  `db:"id"`
+		Name         string  `db:"name"`
+		UserName     string  `db:"username"`
+		Email        string  `db:"email"`
+		CompanyID    *string `db:"company_id"`
+		CompanyName  *string `db:"company_name"`
+		RoleIDsRaw   string  `db:"role_ids"`
+		RoleNamesRaw string  `db:"role_names"`
 	}
 
 	query := `
@@ -60,6 +59,18 @@ func (r *userRepo) GetUser(ctx context.Context, filter coreentity.User) (*coreen
 		return nil, err
 	}
 
+	roleIDs, err := parsePostgresTextArray(row.RoleIDsRaw)
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to parse user role ids")
+		return nil, err
+	}
+
+	roleNames, err := parsePostgresTextArray(row.RoleNamesRaw)
+	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to parse user role names")
+		return nil, err
+	}
+
 	return &coreentity.User{
 		ID:          row.ID,
 		Name:        row.Name,
@@ -67,8 +78,8 @@ func (r *userRepo) GetUser(ctx context.Context, filter coreentity.User) (*coreen
 		Email:       row.Email,
 		CompanyID:   row.CompanyID,
 		CompanyName: row.CompanyName,
-		RoleIDs:     []string(row.RoleIDs),
-		RoleNames:   []string(row.RoleNames),
+		RoleIDs:     roleIDs,
+		RoleNames:   roleNames,
 		TenantID:    filter.TenantID,
 	}, nil
 }

@@ -1,0 +1,4 @@
+id,helper__tenant_code,helper__org_unit_tenant_code,helper__org_unit_code,name,address,timezone,latitude,longitude,radius_meters
+019d89ca-5428-794e-b21b-4669a1e13300,BERUA,,COMPANY,Kantor Pusat Jakarta,"Jl. Sudirman No. 1, Jakarta",Asia/Jakarta,-6.2088,106.8456,200
+019d89ca-551a-777d-b649-4b18c35ea91b,BERUA,,DIV-A,Kantor Cabang Bandung,"Jl. Asia Afrika No. 10, Bandung",Asia/Jakarta,-6.9175,107.6191,150
+019d89ca-55b3-772f-a492-f97421c28bce,BERUA,,,Remote Area,,Asia/Jakarta,,,

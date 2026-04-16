@@ -1,10 +1,12 @@
 package postgres
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 )
 
 type Config struct {
@@ -14,21 +16,39 @@ type Config struct {
 	Host            string
 	Port            string
 	SSLMode         string
+	ChannelBinding  string
 	MaxOpenConns    int
 	MaxIdleConns    int
 	ConnMaxLifetime int
 }
 
 func New(cfg Config) (*sqlx.DB, error) {
+	sslMode, err := normalizeConnectionSetting("sslmode", cfg.SSLMode)
+	if err != nil {
+		return nil, err
+	}
+
+	channelBinding, err := normalizeConnectionSetting("channel_binding", cfg.ChannelBinding)
+	if err != nil {
+		return nil, err
+	}
+
 	connectionString := "user=" + cfg.Username +
 		" password=" + cfg.Password +
 		" host=" + cfg.Host +
 		" port=" + cfg.Port +
 		" dbname=" + cfg.Database +
-		" sslmode=" + cfg.SSLMode +
 		" TimeZone=UTC"
 
-	db, err := sqlx.Connect("postgres", connectionString)
+	if sslMode != "" {
+		connectionString += " sslmode=" + sslMode
+	}
+
+	if channelBinding != "" {
+		connectionString += " channel_binding=" + channelBinding
+	}
+
+	db, err := sqlx.Connect("pgx", connectionString)
 	if err != nil {
 		return nil, err
 	}
@@ -44,4 +64,17 @@ func New(cfg Config) (*sqlx.DB, error) {
 	}
 
 	return db, nil
+}
+
+func normalizeConnectionSetting(name, value string) (string, error) {
+	value = strings.TrimSpace(strings.ToLower(value))
+	if value == "" {
+		return "", nil
+	}
+
+	if value != "require" && value != "disable" {
+		return "", fmt.Errorf("invalid postgres %s: %s", name, value)
+	}
+
+	return value, nil
 }

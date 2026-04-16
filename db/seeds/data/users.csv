@@ -1,0 +1,5 @@
+id,helper__tenant_code,helper__company_tenant_code,helper__company_code,name,username,email,helper__password_plain
+019d89ca-4d1e-74e9-b2b9-b26da41ada1b,BERUA,,,Tuan Beruang Agung,beruangkece,beruang@beruang.com,Pa$$w0rd!
+019d89ca-5a71-7d02-a1ad-6a0f7dc10001,BERUA,BERUA,COMPANY,Employee Demo 001,emp001,attendance.employee.001@example.com,Pa$$w0rd!
+019d89ca-5a71-7d02-a1ad-6a0f7dc10002,BERUA,BERUA,COMPANY,Employee Demo 002,emp002,attendance.employee.002@example.com,Pa$$w0rd!
+019d89ca-5a71-7d02-a1ad-6a0f7dc10003,BERUA,BERUA,COMPANY,Employee Demo 003,emp003,attendance.employee.003@example.com,Pa$$w0rd!

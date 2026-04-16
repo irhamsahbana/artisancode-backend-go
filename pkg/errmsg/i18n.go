@@ -166,9 +166,121 @@ var defaultCatalog = MessageCatalog{
 		ID: "Gagal memperbarui kata sandi karyawan",
 		EN: "Failed to update employee password",
 	},
+	"Failed to create user": {
+		ID: "Gagal membuat pengguna",
+		EN: "Failed to create user",
+	},
+	"Failed to update user": {
+		ID: "Gagal memperbarui pengguna",
+		EN: "Failed to update user",
+	},
 	"Work location name already exists": {
 		ID: "Nama lokasi kerja sudah ada",
 		EN: "Work location name already exists",
+	},
+	"Attendance log not found": {
+		ID: "Log absensi tidak ditemukan",
+		EN: "Attendance log not found",
+	},
+	"Attendance recorded successfully": {
+		ID: "Absensi berhasil dicatat",
+		EN: "Attendance recorded successfully",
+	},
+	"Check in already recorded for today": {
+		ID: "Check in untuk hari ini sudah tercatat",
+		EN: "Check in already recorded for today",
+	},
+	"Check out already recorded for today": {
+		ID: "Check out untuk hari ini sudah tercatat",
+		EN: "Check out already recorded for today",
+	},
+	"Check in must be recorded before check out": {
+		ID: "Check in harus dicatat sebelum check out",
+		EN: "Check in must be recorded before check out",
+	},
+	"Company policy not found": {
+		ID: "Kebijakan perusahaan tidak ditemukan",
+		EN: "Company policy not found",
+	},
+	"Employee profile not found": {
+		ID: "Profil karyawan tidak ditemukan",
+		EN: "Employee profile not found",
+	},
+	"Export job message bus is not configured": {
+		ID: "Message bus export job belum dikonfigurasi",
+		EN: "Export job message bus is not configured",
+	},
+	"Export job not found": {
+		ID: "Export job tidak ditemukan",
+		EN: "Export job not found",
+	},
+	"Export job resource metadata is required": {
+		ID: "Metadata resource export job wajib diisi",
+		EN: "Export job resource metadata is required",
+	},
+	"File filter is required": {
+		ID: "Filter file wajib diisi",
+		EN: "File filter is required",
+	},
+	"File not found": {
+		ID: "File tidak ditemukan",
+		EN: "File not found",
+	},
+	"Invalid category for the selected parent": {
+		ID: "Kategori tidak valid untuk parent yang dipilih",
+		EN: "Invalid category for the selected parent",
+	},
+	"Invalid logged_at format": {
+		ID: "Format logged_at tidak valid",
+		EN: "Invalid logged_at format",
+	},
+	"Invalid selfie file": {
+		ID: "File selfie tidak valid",
+		EN: "Invalid selfie file",
+	},
+	"Job position not found": {
+		ID: "Jabatan tidak ditemukan",
+		EN: "Job position not found",
+	},
+	"Organization unit code already exists": {
+		ID: "Kode unit organisasi sudah ada",
+		EN: "Organization unit code already exists",
+	},
+	"Route not found": {
+		ID: "Rute tidak ditemukan",
+		EN: "Route not found",
+	},
+	"Selfie file is no longer available": {
+		ID: "File selfie sudah tidak tersedia",
+		EN: "Selfie file is no longer available",
+	},
+	"Selfie file not found": {
+		ID: "File selfie tidak ditemukan",
+		EN: "Selfie file not found",
+	},
+	"User role not found": {
+		ID: "Peran pengguna tidak ditemukan",
+		EN: "User role not found",
+	},
+	"You are not allowed to access export jobs": {
+		ID: "Anda tidak diizinkan mengakses export job",
+		EN: "You are not allowed to access export jobs",
+	},
+	"You are not allowed to access this resource": {
+		ID: "Anda tidak diizinkan mengakses resource ini",
+		EN: "You are not allowed to access this resource",
+	},
+	"You are not allowed to export attendance reports": {
+		ID: "Anda tidak diizinkan mengekspor laporan absensi",
+		EN: "You are not allowed to export attendance reports",
+	},
+	"You don't have access to this company": {
+		ID: "Anda tidak memiliki akses ke perusahaan ini",
+		EN: "You don't have access to this company",
+	},
+	"product not found": {
+		ID: "produk tidak ditemukan",
+		EN: "product not found",
 	},
 	"file is required": {
 		ID: "file wajib diisi",
@@ -249,6 +361,15 @@ func TranslateText(lang Language, message string) string {
 		if localizedText, ok := defaultCatalog[trimmedMessage]; ok {
 			return localizedText.Localize(lang)
 		}
+	}
+
+	const timeFormatSuffix = " format must be HH:mm"
+	if strings.HasSuffix(message, timeFormatSuffix) {
+		fieldName := strings.TrimSuffix(message, timeFormatSuffix)
+		if lang == LanguageEnglish {
+			return message
+		}
+		return LocalizeFieldName(lang, fieldName) + " harus berformat HH:mm"
 	}
 
 	return message

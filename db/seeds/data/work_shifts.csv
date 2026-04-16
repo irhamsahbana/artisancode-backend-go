@@ -1,0 +1,5 @@
+id,helper__tenant_code,name,timezone,start_time,end_time,grace_period_minutes
+019d89ca-56aa-735f-b839-38123bd585ff,BERUA,Shift Pagi (08:00-17:00),Asia/Makassar,08:00,17:00,15
+019d89ca-57ba-7ed0-8e36-242397528bd4,BERUA,Shift Siang (13:00-22:00),Asia/Makassar,13:00,22:00,15
+019d89ca-584b-7776-8243-2fa297df9cb8,BERUA,Shift Malam (22:00-06:00),Asia/Makassar,22:00,06:00,15
+019d89ca-58f4-7480-be9e-b5b8396f0b1c,BERUA,Flexible,Asia/Makassar,09:00,18:00,30

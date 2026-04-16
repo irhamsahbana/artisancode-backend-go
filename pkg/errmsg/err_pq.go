@@ -5,11 +5,17 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rs/zerolog/log"
 )
 
-func errorPqHandler(lang Language, errPq *pq.Error) (int, map[string][]string) {
+const (
+	pgCodeForeignKeyViolation = "23503"
+	pgCodeUniqueViolation     = "23505"
+	pgCodeNotNullViolation    = "23502"
+)
+
+func errorPgHandler(lang Language, errPg *pgconn.PgError) (int, map[string][]string) {
 	var (
 		errors    = make(map[string][]string)
 		code      = 500
@@ -17,12 +23,13 @@ func errorPqHandler(lang Language, errPq *pq.Error) (int, map[string][]string) {
 		columnMsg string
 	)
 
-	log.Debug().Msgf("pq error code name: %s", errPq.Code.Name())
-	log.Debug().Msgf("pq error detail: %s", errPq.Detail)
+	log.Debug().Str("code", errPg.Code).Str("constraint", errPg.ConstraintName).Msg("Postgres error")
+	log.Debug().Msgf("postgres error detail: %s", errPg.Detail)
 
-	if errPq.Code.Name() == "foreign_key_violation" {
+	switch errPg.Code {
+	case pgCodeForeignKeyViolation:
 		regex := regexp.MustCompile(`Key \(([^)]+)\)`)
-		match := regex.FindStringSubmatch(errPq.Detail)
+		match := regex.FindStringSubmatch(errPg.Detail)
 
 		if len(match) > 1 {
 			column = match[1]
@@ -35,10 +42,10 @@ func errorPqHandler(lang Language, errPq *pq.Error) (int, map[string][]string) {
 			errors[column] = append(errors[column], columnMsg+" tidak valid")
 		}
 		code = 500
-	} else if errPq.Code.Name() == "unique_violation" {
+	case pgCodeUniqueViolation:
 		code = 409
 		regex := regexp.MustCompile(`Key \(([^)]+)\)`)
-		match := regex.FindStringSubmatch(errPq.Detail)
+		match := regex.FindStringSubmatch(errPg.Detail)
 
 		if len(match) > 1 {
 			column = match[1]
@@ -70,10 +77,10 @@ func errorPqHandler(lang Language, errPq *pq.Error) (int, map[string][]string) {
 			}
 			errors[column] = append(errors[column], msg)
 		}
-	} else if errPq.Code.Name() == "not_null_violation" { // null value in column violates not-null constraint
-		// pq: null value in column "product_id" of relation "product_inquiries" violates not-null constraint
+	case pgCodeNotNullViolation: // null value in column violates not-null constraint
+		// postgres: null value in column "product_id" of relation "product_inquiries" violates not-null constraint
 		regex := regexp.MustCompile(`column \"(.+?)\" of relation \"(.+?)\"`)
-		matches := regex.FindStringSubmatch(errPq.Error())
+		matches := regex.FindStringSubmatch(errPg.Error())
 		if len(matches) >= 3 {
 			column = matches[1]
 			columnNameMsg := strings.ReplaceAll(column, "_", " ")

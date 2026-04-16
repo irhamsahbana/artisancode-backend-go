@@ -16,6 +16,7 @@ func WithPostgres() Option {
 			Host:            config.Envs.Postgres.Host,
 			Port:            config.Envs.Postgres.Port,
 			SSLMode:         config.Envs.Postgres.SslMode,
+			ChannelBinding:  config.Envs.Postgres.ChannelBinding,
 			MaxOpenConns:    config.Envs.DB.MaxOpenCons,
 			MaxIdleConns:    config.Envs.DB.MaxIdleCons,
 			ConnMaxLifetime: config.Envs.DB.ConnMaxLifetime,

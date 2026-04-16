@@ -40,7 +40,7 @@ if err := v.Validate(req); err != nil {
 
 ### 3. Database Errors
 
-Automatically handled by `errmsg.Errors[error](ctx, err)` when `err` is `*pq.Error`.
+Automatically handled by `errmsg.Errors[error](ctx, err)` when `err` is `*pgconn.PgError`.
 
 ## Status Code Guidelines
 
@@ -57,7 +57,7 @@ Automatically handled by `errmsg.Errors[error](ctx, err)` when `err` is `*pq.Err
 ### Repository Layer
 
 - Return `errmsg.NewCustomErrors(404)` for `sql.ErrNoRows`
-- Let other DB errors propagate naturally (errmsg handles `*pq.Error`)
+- Let other DB errors propagate naturally (errmsg handles `*pgconn.PgError`)
 
 ```go
 err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)

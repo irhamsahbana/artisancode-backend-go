@@ -7,7 +7,6 @@ import (
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 
-	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -16,15 +15,15 @@ func (r *userRepo) GetUsers(ctx context.Context, filter coreentity.UserListFilte
 	defer span.End()
 
 	type row struct {
-		TotalData   int            `db:"total_data"`
-		ID          string         `db:"id"`
-		Name        string         `db:"name"`
-		UserName    string         `db:"username"`
-		Email       string         `db:"email"`
-		CompanyID   *string        `db:"company_id"`
-		CompanyName *string        `db:"company_name"`
-		RoleIDs     pq.StringArray `db:"role_ids"`
-		RoleNames   pq.StringArray `db:"role_names"`
+		TotalData    int     `db:"total_data"`
+		ID           string  `db:"id"`
+		Name         string  `db:"name"`
+		UserName     string  `db:"username"`
+		Email        string  `db:"email"`
+		CompanyID    *string `db:"company_id"`
+		CompanyName  *string `db:"company_name"`
+		RoleIDsRaw   string  `db:"role_ids"`
+		RoleNamesRaw string  `db:"role_names"`
 	}
 
 	rows := make([]row, 0)
@@ -68,6 +67,18 @@ func (r *userRepo) GetUsers(ctx context.Context, filter coreentity.UserListFilte
 	items := make([]coreentity.User, 0, len(rows))
 	total := 0
 	for _, item := range rows {
+		roleIDs, err := parsePostgresTextArray(item.RoleIDsRaw)
+		if err != nil {
+			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to parse user role ids")
+			return nil, 0, err
+		}
+
+		roleNames, err := parsePostgresTextArray(item.RoleNamesRaw)
+		if err != nil {
+			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to parse user role names")
+			return nil, 0, err
+		}
+
 		total = item.TotalData
 		items = append(items, coreentity.User{
 			ID:          item.ID,
@@ -76,8 +87,8 @@ func (r *userRepo) GetUsers(ctx context.Context, filter coreentity.UserListFilte
 			Email:       item.Email,
 			CompanyID:   item.CompanyID,
 			CompanyName: item.CompanyName,
-			RoleIDs:     []string(item.RoleIDs),
-			RoleNames:   []string(item.RoleNames),
+			RoleIDs:     roleIDs,
+			RoleNames:   roleNames,
 			TenantID:    filter.TenantID,
 		})
 	}
