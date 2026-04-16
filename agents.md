@@ -9,6 +9,7 @@ Technical guidance has been split into the `docs/` folder.
 - [DB & Migration](./docs/db_migration.md)
 - [HTTP & Validation](./docs/http_validation.md)
 - [Auth Context](./docs/auth_context.md)
+- [Localization](./docs/localization.md)
 - [Module Integration](./docs/module_integration.md)
 - [Error Handling](./docs/error_handling.md)
 - [Handler Pattern](./docs/handler_pattern.md)
@@ -129,6 +130,13 @@ if err := someFunction(); err != nil {
 ```
 
 See [Error Handling](./docs/error_handling.md) for status codes, error types, and per-layer patterns.
+
+### Localization
+- Request language is already handled centrally. Do not parse `Accept-Language` inside handlers or core logic.
+- Fiber middleware `WithRequestLanguage()` stores normalized language in request context.
+- Return errors through `pkg/errmsg` so `message` and `errors` can be localized consistently.
+- When adding new business error text, register it in `pkg/errmsg/i18n.go` if it must support both `id` and `en`.
+- Prefer shared localization flow over hardcoding translated branches in feature modules.
 
 ### Logging
 - Use `log.Ctx(ctx)` when `ctx` is available (in repository, core, handler layers)

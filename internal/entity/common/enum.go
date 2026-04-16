@@ -35,6 +35,14 @@ const (
 	AttendanceStatusRecorded AttendanceStatus = "recorded"
 )
 
+type AttendanceTodayStatus string
+
+const (
+	AttendanceTodayStatusNotCheckedIn AttendanceTodayStatus = "not_checked_in"
+	AttendanceTodayStatusCheckedIn    AttendanceTodayStatus = "checked_in"
+	AttendanceTodayStatusCheckedOut   AttendanceTodayStatus = "checked_out"
+)
+
 type FileStatus string
 
 const (

@@ -79,6 +79,7 @@ type CheckAttendanceResp struct {
 
 type GetAttendanceSummaryTodayResp struct {
 	AttendanceDate string  `json:"attendance_date"`
+	TodayStatus    string  `json:"today_status"`
 	CheckedIn      bool    `json:"checked_in"`
 	CheckedOut     bool    `json:"checked_out"`
 	CheckInLogID   *string `json:"check_in_log_id"`

@@ -154,6 +154,7 @@ Suggested response:
 {
   "data": {
     "attendance_date": "2026-03-28",
+    "today_status": "checked_in",
     "checked_in": true,
     "checked_out": false,
     "check_in_log_id": "uuid",

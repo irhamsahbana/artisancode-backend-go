@@ -46,6 +46,7 @@ func (c *attendanceCore) GetAttendanceSummaryToday(ctx context.Context, filter c
 	summary := coreentity.AttendanceSummary{
 		UserCtx:        filter.UserCtx,
 		AttendanceDate: today,
+		TodayStatus:    common.AttendanceTodayStatusNotCheckedIn,
 		CheckedIn:      false,
 		CheckedOut:     false,
 		CanCheckIn:     true,
@@ -71,6 +72,7 @@ func (c *attendanceCore) GetAttendanceSummaryToday(ctx context.Context, filter c
 
 	summary.CanCheckIn = !summary.CheckedIn
 	summary.CanCheckOut = summary.CheckedIn && !summary.CheckedOut
+	summary.TodayStatus = resolveAttendanceTodayStatus(summary)
 
 	return &summary, nil
 }
@@ -83,4 +85,16 @@ func stringPtr(value string) *string {
 func attendanceTypePtr(value common.AttendanceType) *common.AttendanceType {
 	result := value
 	return &result
+}
+
+func resolveAttendanceTodayStatus(summary coreentity.AttendanceSummary) common.AttendanceTodayStatus {
+	if summary.CheckedOut {
+		return common.AttendanceTodayStatusCheckedOut
+	}
+
+	if summary.CheckedIn {
+		return common.AttendanceTodayStatusCheckedIn
+	}
+
+	return common.AttendanceTodayStatusNotCheckedIn
 }

@@ -59,6 +59,7 @@ func AttendanceSummaryFromCoreToRest(item coreentity.AttendanceSummary) restenti
 
 	return restentity.GetAttendanceSummaryTodayResp{
 		AttendanceDate: item.AttendanceDate,
+		TodayStatus:    string(item.TodayStatus),
 		CheckedIn:      item.CheckedIn,
 		CheckedOut:     item.CheckedOut,
 		CheckInLogID:   item.CheckInLogID,

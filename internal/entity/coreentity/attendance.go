@@ -72,6 +72,7 @@ type AttendanceSummary struct {
 	UserCtx common.UserContext
 
 	AttendanceDate string
+	TodayStatus    common.AttendanceTodayStatus
 	CheckedIn      bool
 	CheckedOut     bool
 	CheckInLogID   *string
