@@ -77,6 +77,13 @@ func (c *exportJobCore) processJob(ctx context.Context, item coreentity.ExportJo
 		return err
 	}
 
+	for index := range logs {
+		err = c.attachAttendanceLogAssets(ctx, &logs[index])
+		if err != nil {
+			return err
+		}
+	}
+
 	content, filename, contentType, err := generateAttendanceReportFile(item.Format, logs, filters)
 	if err != nil {
 		return err

@@ -5,6 +5,7 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
+	"codebase-app/pkg/errmsg"
 	"context"
 	"encoding/csv"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 )
 
 type exportFilters struct {
+	Language       string  `json:"language"`
 	Q              string  `json:"q"`
 	EmployeeID     *string `json:"employee_id"`
 	Type           string  `json:"type"`
@@ -80,10 +82,10 @@ func generateAttendanceReportFile(format coreentity.ExportJobFormat, logs []core
 
 	switch format {
 	case coreentity.ExportJobFormatCSV:
-		content, err := buildAttendanceCSV(logs)
+		content, err := buildAttendanceCSV(logs, filters.Language)
 		return content, filenameBase + ".csv", "text/csv", err
 	case coreentity.ExportJobFormatXLSX:
-		content, err := buildAttendanceXLSX(logs)
+		content, err := buildAttendanceXLSX(logs, filters.Language)
 		return content, filenameBase + ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", err
 	case coreentity.ExportJobFormatPDF:
 		content, err := buildAttendancePDF(logs, filters)
@@ -93,11 +95,11 @@ func generateAttendanceReportFile(format coreentity.ExportJobFormat, logs []core
 	}
 }
 
-func buildAttendanceCSV(logs []coreentity.AttendanceLog) ([]byte, error) {
+func buildAttendanceCSV(logs []coreentity.AttendanceLog, language string) ([]byte, error) {
 	buffer := bytes.NewBuffer(nil)
 	writer := csv.NewWriter(buffer)
 
-	err := writer.Write(attendanceExportHeaders())
+	err := writer.Write(attendanceExportHeaders(language))
 	if err != nil {
 		return nil, err
 	}
@@ -117,14 +119,14 @@ func buildAttendanceCSV(logs []coreentity.AttendanceLog) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func buildAttendanceXLSX(logs []coreentity.AttendanceLog) ([]byte, error) {
+func buildAttendanceXLSX(logs []coreentity.AttendanceLog, language string) ([]byte, error) {
 	file := excelize.NewFile()
 	defer file.Close()
 
 	sheetName := "Attendance Logs"
 	file.SetSheetName("Sheet1", sheetName)
 
-	headers := attendanceExportHeaders()
+	headers := attendanceExportHeaders(language)
 	for index, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(index+1, 1)
 		file.SetCellValue(sheetName, cell, header)
@@ -152,13 +154,13 @@ func buildAttendancePDF(logs []coreentity.AttendanceLog, filters exportFilters) 
 	pdf.SetAutoPageBreak(true, 8)
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 14)
-	pdf.CellFormat(0, 8, "Attendance Report", "", 1, "L", false, 0, "")
+	pdf.CellFormat(0, 8, localizeExportText(filters.Language, "Attendance Report", "Laporan Kehadiran"), "", 1, "L", false, 0, "")
 	pdf.SetFont("Arial", "", 9)
 	pdf.MultiCell(0, 5, buildAttendanceFilterSummary(filters), "", "L", false)
 	pdf.Ln(2)
 
-	headers := attendanceExportHeaders()
-	widths := []float64{24, 36, 26, 18, 18, 18, 34, 48, 26, 30, 40, 18}
+	headers := attendanceExportHeaders(filters.Language)
+	widths := []float64{20, 32, 24, 16, 16, 16, 28, 38, 22, 24, 30, 48, 44}
 
 	pdf.SetFont("Arial", "B", 7)
 	for index, header := range headers {
@@ -184,20 +186,21 @@ func buildAttendancePDF(logs []coreentity.AttendanceLog, filters exportFilters) 
 	return buffer.Bytes(), nil
 }
 
-func attendanceExportHeaders() []string {
+func attendanceExportHeaders(language string) []string {
 	return []string{
-		"Employee No",
-		"Employee Name",
-		"Attendance Date",
-		"Type",
-		"Source",
-		"Status",
-		"Logged At",
-		"Address",
-		"Device ID",
-		"Device Name",
-		"Notes",
-		"Photo Proof",
+		localizeExportText(language, "Employee No", "No Karyawan"),
+		localizeExportText(language, "Employee Name", "Nama Karyawan"),
+		localizeExportText(language, "Attendance Date", "Tanggal Kehadiran"),
+		localizeExportText(language, "Type", "Tipe"),
+		localizeExportText(language, "Source", "Sumber"),
+		localizeExportText(language, "Status", "Status"),
+		localizeExportText(language, "Logged At", "Waktu Check"),
+		localizeExportText(language, "Address", "Alamat"),
+		localizeExportText(language, "Device ID", "ID Perangkat"),
+		localizeExportText(language, "Device Name", "Nama Perangkat"),
+		localizeExportText(language, "Notes", "Catatan"),
+		localizeExportText(language, "Photo Proof", "Bukti Foto"),
+		localizeExportText(language, "Location Link", "Link Lokasi"),
 	}
 }
 
@@ -214,13 +217,14 @@ func attendanceExportRow(item coreentity.AttendanceLog) []string {
 		stringValue(item.DeviceID),
 		stringValue(item.DeviceName),
 		stringValue(item.Notes),
-		boolText(item.SelfieURL != nil && *item.SelfieURL != ""),
+		stringValue(item.SelfieURL),
+		buildGoogleMapsURL(item.Latitude, item.Longitude),
 	}
 }
 
 func buildAttendanceFilterSummary(filters exportFilters) string {
 	parts := []string{
-		"Filters:",
+		localizeExportText(filters.Language, "Filters:", "Filter:"),
 	}
 	if filters.DateFrom != nil || filters.DateTo != nil {
 		parts = append(parts, fmt.Sprintf("date=%s to %s", stringValue(filters.DateFrom), stringValue(filters.DateTo)))
@@ -248,6 +252,22 @@ func buildAttendanceFilterSummary(filters exportFilters) string {
 	}
 
 	return strings.Join(parts, " | ")
+}
+
+func localizeExportText(language, englishText, indonesianText string) string {
+	if errmsg.ResolveLanguage(language) == errmsg.LanguageEnglish {
+		return englishText
+	}
+
+	return indonesianText
+}
+
+func buildGoogleMapsURL(latitude, longitude *float64) string {
+	if latitude == nil || longitude == nil {
+		return ""
+	}
+
+	return fmt.Sprintf("https://www.google.com/maps?q=%.7f,%.7f", *latitude, *longitude)
 }
 
 func (c *exportJobCore) storeGeneratedFile(ctx context.Context, item coreentity.ExportJob, originalFilename, contentType string, content []byte) (string, string, error) {
@@ -375,13 +395,6 @@ func truncateForPDF(value string, width float64) string {
 	}
 
 	return value[:limit-3] + "..."
-}
-
-func boolText(value bool) string {
-	if value {
-		return "Yes"
-	}
-	return "No"
 }
 
 func stringValue(value *string) string {

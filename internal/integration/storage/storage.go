@@ -192,10 +192,15 @@ func (s *storage) GetFileURL(ctx context.Context, filter coreentity.FileFilter) 
 		return "", errmsg.NewCustomErrors(400).Add("filename", "filename is required")
 	}
 
+	expiresIn := filter.PresignExpires
+	if expiresIn <= 0 {
+		expiresIn = 15 * time.Minute
+	}
+
 	ps, err := s.presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(config.Envs.Storage.Bucket),
 		Key:    aws.String(filename),
-	}, s3.WithPresignExpires(15*time.Minute))
+	}, s3.WithPresignExpires(expiresIn))
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("error while presigning file")
 		return "", err

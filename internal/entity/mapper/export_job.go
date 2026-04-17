@@ -24,8 +24,9 @@ func ExportJobFromCoreToRest(item coreentity.ExportJob) restentity.ExportJob {
 	}
 }
 
-func ExportJobParamsToJSON(req restentity.CreateExportJobReq) (string, error) {
+func ExportJobParamsToJSON(req restentity.CreateExportJobReq, language string) (string, error) {
 	payload := map[string]any{
+		"language":         language,
 		"q":                req.Q,
 		"employee_id":      req.EmployeeID,
 		"type":             req.Type,

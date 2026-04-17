@@ -2,6 +2,7 @@ package coreentity
 
 import (
 	"mime/multipart"
+	"time"
 
 	"codebase-app/internal/entity/common"
 )
@@ -27,10 +28,11 @@ type File struct {
 }
 
 type FileFilter struct {
-	TenantID string
-	ID       string
-	Folder   common.S3Folder
-	Filename string
+	TenantID       string
+	ID             string
+	Folder         common.S3Folder
+	Filename       string
+	PresignExpires time.Duration
 }
 
 type UploadFileReq struct {

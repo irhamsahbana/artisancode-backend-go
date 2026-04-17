@@ -36,7 +36,7 @@ func (h *exportJobHandler) createExportJob(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
-	paramsJSON, err := mapper.ExportJobParamsToJSON(*req)
+	paramsJSON, err := mapper.ExportJobParamsToJSON(*req, string(errmsg.LanguageFromContext(ctx)))
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to serialize export job params")
 		return c.Status(fiber.StatusInternalServerError).JSON(response.Error(err))

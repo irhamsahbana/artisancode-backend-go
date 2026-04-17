@@ -31,6 +31,8 @@ func ExportJobRequestedHandler(ctx context.Context, core IntegrationExportJobPro
 			return
 		}
 
+		log.Ctx(msgCtx).Debug().Any("payload", payload).Msg("consumer::ExportJobRequestedHandler Received message")
+
 		err = core.ProcessExportJob(msgCtx, coreentity.ExportJobDetailFilter{
 			TenantID: payload.TenantID,
 			ID:       payload.JobID,
