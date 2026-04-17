@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"codebase-app/internal/adapter"
-	consumerModule "codebase-app/internal/framework/primary/consumer/natsjestream"
+	natsConsumerModule "codebase-app/internal/framework/primary/consumer/natsjestream"
+	postgresConsumerModule "codebase-app/internal/framework/primary/consumer/postgres"
 	"codebase-app/internal/infrastructure/config"
 	infraLogging "codebase-app/internal/infrastructure/logging"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
 	"context"
 	"flag"
+	"path/filepath"
 
 	"github.com/rs/zerolog/log"
 )
@@ -29,7 +31,7 @@ func RunConsumer(cmd *flag.FlagSet, args []string) {
 		AppName:       envs.App.Name,
 		AppVersion:    envs.App.Version,
 		AppEnv:        envs.App.Environtment,
-		LogFile:       "consumer.log",
+		LogFile:       filepath.Join("logs", "consumer.log"),
 		AccessLogFile: envs.App.LogFileAccess,
 		LogLevel:      envs.App.LogLevel,
 		DB:            adapter.Adapters.Postgres,
@@ -67,7 +69,16 @@ func RunConsumer(cmd *flag.FlagSet, args []string) {
 
 	log.Info().Msg("Running consumer")
 
-	app := consumerModule.NewApp()
+	var app interface {
+		Run(ctx context.Context) error
+	}
+
+	if envs.MessageBus.Driver == "postgres" {
+		app = postgresConsumerModule.NewApp()
+	} else {
+		app = natsConsumerModule.NewApp()
+	}
+
 	err = app.Run(context.Background())
 	if err != nil {
 		log.Fatal().Err(err).Msg("consumer::RunConsumer::Failed to run consumer app")

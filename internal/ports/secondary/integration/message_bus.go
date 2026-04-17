@@ -39,5 +39,5 @@ type MessageBusMessage interface {
 	Data() []byte
 	Headers() map[string][]string
 	Ack() error
-	Nak() error
+	Nak(reason string) error
 }

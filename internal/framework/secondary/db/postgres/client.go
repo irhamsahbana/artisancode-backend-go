@@ -42,6 +42,11 @@ func New(cfg Config) (*sqlx.DB, error) {
 
 	if sslMode != "" {
 		connectionString += " sslmode=" + sslMode
+
+		if sslMode == "require" {
+			sslNegotiation := "direct"
+			connectionString += " sslnegotiation=" + sslNegotiation
+		}
 	}
 
 	if channelBinding != "" {
@@ -69,7 +74,7 @@ func New(cfg Config) (*sqlx.DB, error) {
 func normalizeConnectionSetting(name, value string) (string, error) {
 	value = strings.TrimSpace(strings.ToLower(value))
 	if value == "" {
-		return "", nil
+		return "require", nil
 	}
 
 	if value != "require" && value != "disable" {

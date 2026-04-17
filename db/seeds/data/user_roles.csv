@@ -1,5 +1,5 @@
 id,helper__tenant_code,helper__user_email,helper__role_name
 019d89ca-4dbc-7a58-9bef-6487a67b95f2,,beruang@beruang.com,owner
-019d89ca-5a71-7d02-a1ad-6a0f7dc11001,BERUA,attendance.employee.001@example.com,employee
-019d89ca-5a71-7d02-a1ad-6a0f7dc11002,BERUA,attendance.employee.002@example.com,employee
-019d89ca-5a71-7d02-a1ad-6a0f7dc11003,BERUA,attendance.employee.003@example.com,employee
+019d89ca-5a71-7d02-a1ad-6a0f7dc11001,BERUA,emp1@beruang.com,employee
+019d89ca-5a71-7d02-a1ad-6a0f7dc11002,BERUA,emp2@beruang.com,employee
+019d89ca-5a71-7d02-a1ad-6a0f7dc11003,BERUA,emp3@beruang.com,employee

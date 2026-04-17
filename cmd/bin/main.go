@@ -17,7 +17,9 @@ func main() {
 
 	httpServerCmd := flag.NewFlagSet("http_server", flag.ExitOnError)
 	seedCmd := flag.NewFlagSet("seed", flag.ExitOnError)
+	clearDataCmd := flag.NewFlagSet("clear-data", flag.ExitOnError)
 	consumerCmd := flag.NewFlagSet("consumer", flag.ExitOnError)
+	schedulerCmd := flag.NewFlagSet("scheduler", flag.ExitOnError)
 	wsCmd := flag.NewFlagSet("ws", flag.ExitOnError)
 	cronjobCmd := flag.NewFlagSet("cronjob", flag.ExitOnError)
 
@@ -30,8 +32,12 @@ func main() {
 	switch os.Args[1] {
 	case "seed":
 		cmd.RunSeed(seedCmd, os.Args[2:])
+	case "clear-data":
+		cmd.RunClearData(clearDataCmd, os.Args[2:])
 	case "consumer":
 		cmd.RunConsumer(consumerCmd, os.Args[2:])
+	case "scheduler":
+		cmd.RunScheduler(schedulerCmd, os.Args[2:])
 	case "http_server":
 		cmd.RunHttpServer(httpServerCmd, os.Args[2:])
 	case "cronjob":

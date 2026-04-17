@@ -1,4 +1,4 @@
-.PHONY: migrate restore create-migration seed dev daemon ws build build-dev build-staging build-production lint-fix lint-ci nats commit help test-storage-upload cleanup-storage-orphans
+.PHONY: migrate restore create-migration seed dev daemon ws build build-dev build-staging build-production lint-fix lint-ci nats commit help test-storage-upload cleanup-storage-orphans cleanup-message-queue scheduler
 
 # Variables
 GOOSE_CMD := goose
@@ -31,6 +31,12 @@ test-storage-upload: ## Test storage presigned upload (usage: AUTH_TOKEN=xxx mak
 
 cleanup-storage-orphans: ## Clean expired pending storage files (usage: make cleanup-storage-orphans [limit=100])
 	@go run ./cmd/bin/main.go cronjob --task=cleanup-expired-storage-files --limit=$(or $(limit),100)
+
+cleanup-message-queue: ## Clean processed message queue rows (usage: make cleanup-message-queue [limit=500] [retention_hours=168])
+	@go run ./cmd/bin/main.go cronjob --task=cleanup-processed-message-queue --limit=$(or $(limit),500) --retention-hours=$(or $(retention_hours),168)
+
+scheduler: ## Run internal cron scheduler
+	@go run ./cmd/bin/main.go scheduler
 
 daemon: ## Run with daemon (pmgo)
 	@pmgo

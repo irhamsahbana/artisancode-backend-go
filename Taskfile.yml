@@ -32,6 +32,10 @@ tasks:
     cmds:
       # - go run ./cmd/bin/main.go seed -total={{.total}} -table={{.table}}
       - go run ./cmd/bin/main.go seed -table={{.table}}
+  clear-data:
+    desc: "Delete all application data from PostgreSQL. Requires confirm=DELETE_ALL_DATA"
+    cmds:
+      - go run ./cmd/bin/main.go clear-data -confirm={{.confirm}}
   dev:
     cmds:
       - go run ./cmd/bin/main.go
@@ -41,6 +45,15 @@ tasks:
   ws:
     cmds:
       - go run ./cmd/bin/main.go ws --port=8080
+  consumer:
+    cmds:
+      - go run ./cmd/bin/main.go consumer
+  consumer-postgres:
+    cmds:
+      - MESSAGE_BUS_DRIVER=postgres go run ./cmd/bin/main.go consumer
+  consumer-nats:
+    cmds:
+      - MESSAGE_BUS_DRIVER=nats go run ./cmd/bin/main.go consumer
   build:
     cmds:
       - go build -o ./kpf-app ./cmd/bin/main.go

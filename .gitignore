@@ -11,6 +11,7 @@ digihub-app
 backups
 bruno
 logs
+consumer*.log
 /storage/
 tmp
 

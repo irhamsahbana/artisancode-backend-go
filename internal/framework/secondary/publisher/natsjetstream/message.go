@@ -28,6 +28,6 @@ func (m *natsMessage) Ack() error {
 	return m.msg.Ack()
 }
 
-func (m *natsMessage) Nak() error {
+func (m *natsMessage) Nak(_ string) error {
 	return m.msg.Nak()
 }

@@ -3,16 +3,19 @@ package cmd
 import (
 	"codebase-app/internal/adapter"
 	exportJobCore "codebase-app/internal/core/export_job"
+	messageQueueCore "codebase-app/internal/core/message_queue"
 	storageCore "codebase-app/internal/core/storage"
 	"codebase-app/internal/entity/coreentity"
 	attendanceRepo "codebase-app/internal/framework/secondary/db/postgres/attendance"
 	exportJobRepo "codebase-app/internal/framework/secondary/db/postgres/export_job"
+	messageQueueRepo "codebase-app/internal/framework/secondary/db/postgres/message_queue"
 	storageRepo "codebase-app/internal/framework/secondary/db/postgres/storage"
 	storageIntegration "codebase-app/internal/integration/storage"
 	"context"
 	"flag"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -20,8 +23,9 @@ import (
 // RunCronjob runs the file upload process depending on file size
 func RunCronjob(cmd *flag.FlagSet, args []string) {
 	var (
-		task  = cmd.String("task", "backup", "cron task to run")
-		limit = cmd.Int("limit", 100, "max number of expired files to clean per run")
+		task           = cmd.String("task", "backup", "cron task to run")
+		limit          = cmd.Int("limit", 100, "max number of rows/files to clean per run")
+		retentionHours = cmd.Int("retention-hours", 168, "retention in hours for processed message queue cleanup")
 	)
 
 	if err := cmd.Parse(args); err != nil {
@@ -39,6 +43,10 @@ func RunCronjob(cmd *flag.FlagSet, args []string) {
 	}
 	if *task == "process-export-jobs" {
 		runProcessExportJobs(*limit)
+		return
+	}
+	if *task == "cleanup-processed-message-queue" {
+		runCleanupProcessedMessageQueue(*limit, *retentionHours)
 		return
 	}
 }
@@ -91,6 +99,31 @@ func runProcessExportJobs(limit int) {
 	log.Info().
 		Int("processed", resp.Processed).
 		Msg("Export job processing completed")
+}
+
+func runCleanupProcessedMessageQueue(limit, retentionHours int) {
+	repo := messageQueueRepo.NewMessageQueueRepository(messageQueueRepo.MessageQueueRepositoryConfig{
+		DB: adapter.Adapters.Postgres,
+	})
+	core := messageQueueCore.NewMessageQueueCore(messageQueueCore.MessageQueueCoreConfig{
+		Repo: repo,
+	})
+
+	before := time.Now().UTC().Add(-time.Duration(retentionHours) * time.Hour).Format(time.RFC3339)
+	resp, err := core.CleanupProcessedMessages(context.Background(), coreentity.CleanupProcessedMessageQueueReq{
+		Before: before,
+		Limit:  limit,
+	})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to clean processed message queue")
+		return
+	}
+
+	log.Info().
+		Int("deleted", resp.Deleted).
+		Int("limit", limit).
+		Int("retention_hours", retentionHours).
+		Msg("Processed message queue cleanup completed")
 }
 
 // execCommand runs a command with the given arguments and logs the output

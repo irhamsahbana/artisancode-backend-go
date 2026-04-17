@@ -1,6 +1,9 @@
 package seeds
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestResolveScopedIDFallsBackToGlobal(t *testing.T) {
 	state := &csvSeedState{
@@ -62,5 +65,48 @@ func TestResolveUserIDByEmail(t *testing.T) {
 	}
 	if id == nil || *id != "user-001" {
 		t.Fatalf("resolveUserID returned %v, want %q", id, "user-001")
+	}
+}
+
+func TestTenantScopedRolePermissionsHaveScopedRolesAndPermissions(t *testing.T) {
+	state, err := newCSVSeedState()
+	if err != nil {
+		t.Fatalf("newCSVSeedState returned error: %v", err)
+	}
+
+	for _, row := range state.files[seedTableRolePerms].rows {
+		scope := strings.TrimSpace(row["tenant_code"])
+		if scope == "" {
+			continue
+		}
+
+		roleKey := scopedLookupKey(scope, row["role_name"])
+		if _, ok := state.lookupID(seedTableRoles, roleKey); !ok {
+			t.Fatalf("tenant-scoped role %q for %q is missing", row["role_name"], scope)
+		}
+
+		permissionKey := scopedLookupKey(scope, row["permission_name"])
+		if _, ok := state.lookupID(seedTablePermissions, permissionKey); !ok {
+			t.Fatalf("tenant-scoped permission %q for %q is missing", row["permission_name"], scope)
+		}
+	}
+}
+
+func TestTenantScopedUserRolesHaveScopedRoles(t *testing.T) {
+	state, err := newCSVSeedState()
+	if err != nil {
+		t.Fatalf("newCSVSeedState returned error: %v", err)
+	}
+
+	for _, row := range state.files[seedTableUserRoles].rows {
+		scope := strings.TrimSpace(row["tenant_code"])
+		if scope == "" {
+			continue
+		}
+
+		roleKey := scopedLookupKey(scope, row["role_name"])
+		if _, ok := state.lookupID(seedTableRoles, roleKey); !ok {
+			t.Fatalf("tenant-scoped user role %q for %q is missing", row["role_name"], scope)
+		}
 	}
 }

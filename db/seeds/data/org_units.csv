@@ -1,5 +1,5 @@
 id,helper__tenant_code,helper__parent_code,name,code,category,config
-019d89ca-44d3-763d-ae8d-c40b997fa53a,BERUA,,Company,COMPANY,company,"{""logo"":null,""attendance_radius_meters"":50,""attendance_check_in_start"":""08:00"",""attendance_check_in_end"":""09:00"",""attendance_check_out_start"":""17:00"",""attendance_check_out_end"":""23:59"",""leave_allowance_annual"":12,""overtime_rate_multiplier"":1.5,""preferred_language"":""id"",""supported_languages"":[""id"",""en""],""timezone"":""Asia/Makassar"",""date_format"":""YYYY-MM-DD"",""time_format"":""HH:mm:ss""}"
+019d89ca-44d3-763d-ae8d-c40b997fa53a,BERUA,,PT Beruang Jaya,COMPANY,company,"{""logo"":null,""attendance_radius_meters"":50,""attendance_check_in_start"":""08:00"",""attendance_check_in_end"":""09:00"",""attendance_check_out_start"":""17:00"",""attendance_check_out_end"":""23:59"",""leave_allowance_annual"":12,""overtime_rate_multiplier"":1.5,""preferred_language"":""id"",""supported_languages"":[""id"",""en""],""timezone"":""Asia/Makassar"",""date_format"":""YYYY-MM-DD"",""time_format"":""HH:mm:ss""}"
 019d89ca-45ba-79b8-9501-b97cc834d3d4,BERUA,COMPANY,Branch A,BRANCH-A,branch,{}
 019d89ca-466a-7e73-8eaf-0aecc145da80,BERUA,COMPANY,Branch B,BRANCH-B,branch,{}
 019d89ca-4706-7bdb-b924-7dbb6a2920e3,BERUA,BRANCH-A,Division A,DIV-A,division,{}

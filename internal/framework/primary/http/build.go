@@ -2,7 +2,7 @@ package http
 
 import (
 	"codebase-app/internal/adapter"
-	natsjetstream "codebase-app/internal/framework/secondary/publisher/natsjetstream"
+	messagebus "codebase-app/internal/framework/secondary/publisher/messagebus"
 	"codebase-app/internal/infrastructure"
 	storage "codebase-app/internal/integration/storage"
 	"codebase-app/internal/middleware"
@@ -12,10 +12,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
 
-func (a *App) build(appName string, appEnvironment string, natsURL string) (*fiber.App, integrationPorts.MessagePublisher, error) {
+func (a *App) build(appName string, appEnvironment string, db *sqlx.DB) (*fiber.App, integrationPorts.MessagePublisher, error) {
 	app := fiber.New()
 	adapter.Adapters.Sync(
 		adapter.WithRestServer(app),
@@ -23,7 +24,7 @@ func (a *App) build(appName string, appEnvironment string, natsURL string) (*fib
 		adapter.WithStorage(),
 	)
 
-	bus, err := natsjetstream.NewPublisher(natsURL)
+	bus, err := messagebus.NewPublisher(db)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -48,7 +49,7 @@ func (a *App) build(appName string, appEnvironment string, natsURL string) (*fib
 
 	setup.HttpDependencies(
 		app,
-		adapter.Adapters.Postgres,
+		db,
 		s3,
 		bus,
 	)

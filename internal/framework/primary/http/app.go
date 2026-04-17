@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
 
@@ -14,11 +15,11 @@ func NewApp() *App {
 	return &App{}
 }
 
-func (a *App) Run(ctx context.Context, appName string, appEnvironment string, port string, natsURL string) error {
+func (a *App) Run(ctx context.Context, appName string, appEnvironment string, port string, db *sqlx.DB) error {
 	ctx, span := infraTracing.StartSpan(ctx, "http.Run")
 	defer span.End()
 
-	app, bus, err := a.build(appName, appEnvironment, natsURL)
+	app, bus, err := a.build(appName, appEnvironment, db)
 	if err != nil {
 		infraTracing.RecordError(span, err)
 		return err

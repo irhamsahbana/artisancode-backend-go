@@ -88,7 +88,7 @@ func RunHttpServer(cmd *flag.FlagSet, args []string) {
 		envs.App.Name,
 		envs.App.Environtment,
 		serverPort,
-		envs.EmailVerificationQueueNats.NatsURL,
+		adapter.Adapters.Postgres,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("http::RunHttpServer::Failed to run HTTP app")
