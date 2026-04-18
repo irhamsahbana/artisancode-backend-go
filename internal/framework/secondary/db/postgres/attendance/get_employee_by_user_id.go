@@ -22,10 +22,11 @@ func (r *attendanceRepo) GetEmployeeByUserID(ctx context.Context, tenantID, user
 		EmployeeNo string         `db:"employee_no"`
 		FullName   string         `db:"full_name"`
 		Email      sql.NullString `db:"email"`
+		ShiftID    *string        `db:"shift_id"`
 	}
 
 	query := `
-		SELECT id, tenant_id, employee_no, full_name, email
+		SELECT id, tenant_id, employee_no, full_name, email, shift_id
 		FROM employees
 		WHERE tenant_id = ? AND user_id = ? AND deleted_at IS NULL
 		LIMIT 1
@@ -49,6 +50,7 @@ func (r *attendanceRepo) GetEmployeeByUserID(ctx context.Context, tenantID, user
 		EmployeeNo: data.EmployeeNo,
 		FullName:   data.FullName,
 		Email:      nullableStringToValue(data.Email),
+		ShiftID:    data.ShiftID,
 	}, nil
 }
 

@@ -160,7 +160,7 @@ func buildAttendancePDF(logs []coreentity.AttendanceLog, filters exportFilters) 
 	pdf.Ln(2)
 
 	headers := attendanceExportHeaders(filters.Language)
-	widths := []float64{20, 32, 24, 16, 16, 16, 28, 38, 22, 24, 30, 48, 44}
+	widths := attendancePDFColumnWidths(len(headers))
 
 	pdf.SetFont("Arial", "B", 7)
 	for index, header := range headers {
@@ -191,6 +191,11 @@ func attendanceExportHeaders(language string) []string {
 		localizeExportText(language, "Employee No", "No Karyawan"),
 		localizeExportText(language, "Employee Name", "Nama Karyawan"),
 		localizeExportText(language, "Attendance Date", "Tanggal Kehadiran"),
+		localizeExportText(language, "Shift Name", "Nama Shift"),
+		localizeExportText(language, "Shift Timezone", "Zona Waktu Shift"),
+		localizeExportText(language, "Shift Start", "Mulai Shift"),
+		localizeExportText(language, "Shift End", "Selesai Shift"),
+		localizeExportText(language, "Shift Grace (Minutes)", "Toleransi Shift (Menit)"),
 		localizeExportText(language, "Type", "Tipe"),
 		localizeExportText(language, "Source", "Sumber"),
 		localizeExportText(language, "Status", "Status"),
@@ -209,6 +214,11 @@ func attendanceExportRow(item coreentity.AttendanceLog) []string {
 		item.EmployeeNo,
 		item.EmployeeName,
 		item.AttendanceDate,
+		stringValue(item.ShiftName),
+		stringValue(item.ShiftTimezone),
+		stringValue(item.ShiftStartTime),
+		stringValue(item.ShiftEndTime),
+		intValue(item.ShiftGraceMins),
 		string(item.Type),
 		string(item.Source),
 		string(item.Status),
@@ -220,6 +230,27 @@ func attendanceExportRow(item coreentity.AttendanceLog) []string {
 		stringValue(item.SelfieURL),
 		buildGoogleMapsURL(item.Latitude, item.Longitude),
 	}
+}
+
+func intValue(value *int) string {
+	if value == nil {
+		return ""
+	}
+
+	return fmt.Sprintf("%d", *value)
+}
+
+func attendancePDFColumnWidths(columnCount int) []float64 {
+	widths := []float64{20, 32, 24, 24, 24, 18, 18, 18, 16, 16, 16, 28, 38, 22, 24, 30, 48, 44}
+	if columnCount <= len(widths) {
+		return widths[:columnCount]
+	}
+
+	for len(widths) < columnCount {
+		widths = append(widths, 24)
+	}
+
+	return widths
 }
 
 func buildAttendanceFilterSummary(filters exportFilters) string {

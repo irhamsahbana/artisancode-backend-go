@@ -11,6 +11,12 @@ type AttendanceLog struct {
 	EmployeeNo     string
 	EmployeeName   string
 	AttendanceDate string
+	ShiftID        *string
+	ShiftName      *string
+	ShiftTimezone  *string
+	ShiftStartTime *string
+	ShiftEndTime   *string
+	ShiftGraceMins *int
 	Type           common.AttendanceType
 	Source         common.AttendanceSource
 	Status         common.AttendanceStatus

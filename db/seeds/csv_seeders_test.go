@@ -110,3 +110,16 @@ func TestTenantScopedUserRolesHaveScopedRoles(t *testing.T) {
 		}
 	}
 }
+
+func TestEmployeeSeedsRequireShiftName(t *testing.T) {
+	state, err := newCSVSeedState()
+	if err != nil {
+		t.Fatalf("newCSVSeedState returned error: %v", err)
+	}
+
+	for _, row := range state.files[seedTableEmployees].rows {
+		if strings.TrimSpace(row["shift_name"]) == "" {
+			t.Fatalf("employee %q is missing shift_name", row["employee_no"])
+		}
+	}
+}

@@ -24,8 +24,9 @@ func (r *attendanceRepo) CreateAttendanceLog(ctx context.Context, data coreentit
 	query := `
 		INSERT INTO attendance_logs (
 			tenant_id, employee_id, attendance_date, type, source, status, logged_at,
+			shift_id, shift_name, shift_timezone, shift_start_time, shift_end_time, shift_grace_period_minutes,
 			latitude, longitude, address, device_id, device_name, notes
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id, created_at
 	`
 
@@ -44,6 +45,12 @@ func (r *attendanceRepo) CreateAttendanceLog(ctx context.Context, data coreentit
 		string(data.Source),
 		string(data.Status),
 		loggedAt,
+		data.ShiftID,
+		data.ShiftName,
+		data.ShiftTimezone,
+		data.ShiftStartTime,
+		data.ShiftEndTime,
+		data.ShiftGraceMins,
 		data.Latitude,
 		data.Longitude,
 		data.Address,

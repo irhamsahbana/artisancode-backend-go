@@ -23,6 +23,13 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 		}).Msg("Invalid join date payload")
 		return errmsg.NewCustomErrors(400).SetMessage("Invalid join date or join date timezone")
 	}
+	if data.ShiftID == nil || *data.ShiftID == "" {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
+			"employee_id": data.ID,
+			"tenant_id":   data.TenantID,
+		}).Msg("Work shift is required when updating employee")
+		return errmsg.NewCustomErrors(400).SetMessage("Work shift is required")
+	}
 
 	existing, err := c.repo.GetEmployee(ctx, coreentity.Employee{
 		TenantID: data.TenantID,

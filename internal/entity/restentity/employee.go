@@ -48,7 +48,7 @@ type CreateEmployeeReq struct {
 	OrgUnitID        *string `json:"org_unit_id" validate:"omitempty,uuidv7"`
 	JobPositionID    *string `json:"job_position_id" validate:"omitempty,uuidv7"`
 	LocationID       *string `json:"location_id" validate:"omitempty,uuidv7"`
-	ShiftID          *string `json:"shift_id" validate:"omitempty,uuidv7"`
+	ShiftID          *string `json:"shift_id" validate:"required,uuidv7"`
 	Status           string  `json:"status" validate:"required,oneof=active inactive"`
 	JoinDate         *string `json:"join_date" validate:"omitempty,datetime=2006-01-02"`
 	JoinDateTimezone string  `json:"join_date_timezone" validate:"required,timezone"`
@@ -67,7 +67,7 @@ type UpdateEmployeeReq struct {
 	OrgUnitID        *string `json:"org_unit_id" validate:"omitempty,uuidv7"`
 	JobPositionID    *string `json:"job_position_id" validate:"omitempty,uuidv7"`
 	LocationID       *string `json:"location_id" validate:"omitempty,uuidv7"`
-	ShiftID          *string `json:"shift_id" validate:"omitempty,uuidv7"`
+	ShiftID          *string `json:"shift_id" validate:"required,uuidv7"`
 	Status           string  `json:"status" validate:"required,oneof=active inactive"`
 	JoinDate         *string `json:"join_date" validate:"omitempty,datetime=2006-01-02"`
 	JoinDateTimezone string  `json:"join_date_timezone" validate:"required,timezone"`

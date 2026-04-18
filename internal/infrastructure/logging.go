@@ -142,15 +142,6 @@ func InitializeLogger(stage string, filename string, logLevel zerolog.Level, db 
 	signal.Notify(c, syscall.SIGHUP)
 	go func() {
 		for {
-			<-q
-			lumberjackLogger.Close()
-			log.Info().Msg("Closing logs ...")
-			// telegramHook.Stop()
-			log.Info().Msg("Closing telegram hook ...")
-		}
-	}()
-	go func() {
-		for {
 			<-c
 			if err := lumberjackLogger.Rotate(); err != nil {
 				log.Error().Err(err).Msg("Error while rotating logs")

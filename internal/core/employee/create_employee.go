@@ -24,6 +24,13 @@ func (c *employeeCore) CreateEmployee(ctx context.Context, data coreentity.Emplo
 		}).Msg("Invalid join date payload")
 		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid join date or join date timezone")
 	}
+	if data.ShiftID == nil || *data.ShiftID == "" {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
+			"employee_no": data.EmployeeNo,
+			"tenant_id":   data.TenantID,
+		}).Msg("Work shift is required when creating employee")
+		return nil, errmsg.NewCustomErrors(400).SetMessage("Work shift is required")
+	}
 
 	// Validate unique employee_no per tenant
 	exists, err := c.repo.ExistsByEmployeeNo(ctx, data.TenantID, data.EmployeeNo, "")

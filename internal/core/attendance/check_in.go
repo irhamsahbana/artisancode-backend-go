@@ -33,6 +33,21 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 	if err != nil {
 		return nil, err
 	}
+	if employee.ShiftID == nil || *employee.ShiftID == "" {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
+			"employee_id": employee.ID,
+			"tenant_id":   data.TenantID,
+		}).Msg("Employee does not have a work shift")
+		return nil, errmsg.NewCustomErrors(400).SetMessage("Work shift is required")
+	}
+
+	shift, err := c.repo.GetWorkShift(ctx, coreentity.WorkShift{
+		TenantID: data.TenantID,
+		ID:       *employee.ShiftID,
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	attendanceDate := eventTime.Format("2006-01-02")
 	exists, err := c.repo.ExistsAttendanceByTypeOnDate(ctx, data.TenantID, employee.ID, attendanceDate, string(attendanceType))
@@ -83,6 +98,12 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 		EmployeeNo:     employee.EmployeeNo,
 		EmployeeName:   employee.FullName,
 		AttendanceDate: attendanceDate,
+		ShiftID:        &shift.ID,
+		ShiftName:      &shift.Name,
+		ShiftTimezone:  &shift.Timezone,
+		ShiftStartTime: &shift.StartTime,
+		ShiftEndTime:   &shift.EndTime,
+		ShiftGraceMins: &shift.GracePeriodMinutes,
 		Type:           attendanceType,
 		Source:         common.AttendanceSourceMobile,
 		Status:         common.AttendanceStatusRecorded,

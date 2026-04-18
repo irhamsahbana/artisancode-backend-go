@@ -154,6 +154,10 @@ var defaultCatalog = MessageCatalog{
 		ID: "Nomor karyawan sudah ada di tenant ini",
 		EN: "Employee number already exists in this tenant",
 	},
+	"Work shift is required": {
+		ID: "Shift kerja wajib diisi",
+		EN: "Work shift is required",
+	},
 	"Failed to get employee role": {
 		ID: "Gagal mengambil peran karyawan",
 		EN: "Failed to get employee role",

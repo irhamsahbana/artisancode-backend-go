@@ -24,6 +24,12 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 		EmployeeNo     string          `db:"employee_no"`
 		EmployeeName   string          `db:"employee_name"`
 		AttendanceDate time.Time       `db:"attendance_date"`
+		ShiftID        *string         `db:"shift_id"`
+		ShiftName      sql.NullString  `db:"shift_name"`
+		ShiftTimezone  sql.NullString  `db:"shift_timezone"`
+		ShiftStartTime sql.NullString  `db:"shift_start_time"`
+		ShiftEndTime   sql.NullString  `db:"shift_end_time"`
+		ShiftGraceMins sql.NullInt64   `db:"shift_grace_period_minutes"`
 		Type           string          `db:"type"`
 		Source         string          `db:"source"`
 		Status         string          `db:"status"`
@@ -50,8 +56,8 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 			SELECT
 				day_logs.employee_id,
 				day_logs.attendance_date,
-				MIN(CASE WHEN day_logs.type = 'check_in' THEN timezone(COALESCE(day_wl.timezone, 'UTC'), day_logs.logged_at) END) AS first_check_in_local,
-				MAX(CASE WHEN day_logs.type = 'check_out' THEN timezone(COALESCE(day_wl.timezone, 'UTC'), day_logs.logged_at) END) AS last_check_out_local
+				MIN(CASE WHEN day_logs.type = 'check_in' THEN timezone(COALESCE(day_logs.shift_timezone, day_wl.timezone, 'UTC'), day_logs.logged_at) END) AS first_check_in_local,
+				MAX(CASE WHEN day_logs.type = 'check_out' THEN timezone(COALESCE(day_logs.shift_timezone, day_wl.timezone, 'UTC'), day_logs.logged_at) END) AS last_check_out_local
 			FROM attendance_logs day_logs
 			INNER JOIN employees day_employee ON day_employee.id = day_logs.employee_id AND day_employee.deleted_at IS NULL
 			LEFT JOIN work_locations day_wl ON day_wl.id = day_employee.location_id AND day_wl.deleted_at IS NULL
@@ -66,6 +72,12 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 			e.employee_no,
 			e.full_name AS employee_name,
 			al.attendance_date,
+			al.shift_id,
+			al.shift_name,
+			al.shift_timezone,
+			al.shift_start_time,
+			al.shift_end_time,
+			al.shift_grace_period_minutes,
 			al.type,
 			al.source,
 			al.status,
@@ -80,7 +92,6 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 			al.updated_at
 		FROM attendance_logs al
 		INNER JOIN employees e ON e.id = al.employee_id AND e.deleted_at IS NULL
-		LEFT JOIN work_shifts ws ON ws.id = e.shift_id AND ws.deleted_at IS NULL
 		LEFT JOIN work_locations wl ON wl.id = e.location_id AND wl.deleted_at IS NULL
 		LEFT JOIN daily_attendance da ON da.employee_id = al.employee_id AND da.attendance_date = al.attendance_date
 		WHERE al.deleted_at IS NULL AND al.tenant_id = ?
@@ -185,22 +196,22 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 		if *filter.ExceptionType == "late_check_in" {
 			query += ` AND al.type = 'check_in'
 				AND da.first_check_in_local IS NOT NULL
-				AND ws.start_time IS NOT NULL
-				AND ws.start_time <> ''
-				AND da.first_check_in_local::time > (ws.start_time::time + make_interval(mins => COALESCE(ws.grace_period_minutes, 0)))
-				AND timezone(COALESCE(wl.timezone, 'UTC'), al.logged_at) = da.first_check_in_local`
+				AND al.shift_start_time IS NOT NULL
+				AND al.shift_start_time <> ''
+				AND da.first_check_in_local::time > (al.shift_start_time::time + make_interval(mins => COALESCE(al.shift_grace_period_minutes, 0)))
+				AND timezone(COALESCE(al.shift_timezone, wl.timezone, 'UTC'), al.logged_at) = da.first_check_in_local`
 		}
 		if *filter.ExceptionType == "missing_check_out" {
 			query += ` AND al.type = 'check_in'
 				AND da.first_check_in_local IS NOT NULL
 				AND da.last_check_out_local IS NULL
-				AND timezone(COALESCE(wl.timezone, 'UTC'), al.logged_at) = da.first_check_in_local`
+				AND timezone(COALESCE(al.shift_timezone, wl.timezone, 'UTC'), al.logged_at) = da.first_check_in_local`
 		}
 		if *filter.ExceptionType == "missing_check_in" {
 			query += ` AND al.type = 'check_out'
 				AND da.first_check_in_local IS NULL
 				AND da.last_check_out_local IS NOT NULL
-				AND timezone(COALESCE(wl.timezone, 'UTC'), al.logged_at) = da.last_check_out_local`
+				AND timezone(COALESCE(al.shift_timezone, wl.timezone, 'UTC'), al.logged_at) = da.last_check_out_local`
 		}
 	}
 
@@ -222,6 +233,12 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 			EmployeeNo:     d.EmployeeNo,
 			EmployeeName:   d.EmployeeName,
 			AttendanceDate: d.AttendanceDate.Format("2006-01-02"),
+			ShiftID:        d.ShiftID,
+			ShiftName:      nullableStringPtr(d.ShiftName),
+			ShiftTimezone:  nullableStringPtr(d.ShiftTimezone),
+			ShiftStartTime: nullableStringPtr(d.ShiftStartTime),
+			ShiftEndTime:   nullableStringPtr(d.ShiftEndTime),
+			ShiftGraceMins: nullableIntPtr(d.ShiftGraceMins),
 			Type:           common.AttendanceType(d.Type),
 			Source:         common.AttendanceSource(d.Source),
 			Status:         common.AttendanceStatus(d.Status),
@@ -265,4 +282,13 @@ func formatTimePtr(value *time.Time) *string {
 
 	formatted := value.Format(time.RFC3339)
 	return &formatted
+}
+
+func nullableIntPtr(value sql.NullInt64) *int {
+	if !value.Valid {
+		return nil
+	}
+
+	result := int(value.Int64)
+	return &result
 }

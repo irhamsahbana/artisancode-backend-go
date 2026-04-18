@@ -2,7 +2,7 @@ package restentity
 
 type CreateExportJobReq struct {
 	ResourceType   string  `json:"resource_type" validate:"required,oneof=attendance_logs"`
-	Format         string  `json:"format" validate:"required,oneof=csv xlsx pdf"`
+	Format         string  `json:"format" validate:"required,oneof=xlsx"`
 	Q              string  `json:"q" validate:"omitempty,min=2"`
 	EmployeeID     *string `json:"employee_id" validate:"omitempty,uuidv7"`
 	Type           string  `json:"type" validate:"omitempty,oneof=check_in check_out"`

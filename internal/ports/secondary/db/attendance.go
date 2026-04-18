@@ -13,6 +13,7 @@ type AttendanceRepository interface {
 	CreateAttendanceLog(ctx context.Context, data coreentity.AttendanceLog) (*coreentity.AttendanceLog, error)
 	ExistsAttendanceByTypeOnDate(ctx context.Context, tenantID, employeeID, attendanceDate, attendanceType string) (bool, error)
 	GetEmployeeByUserID(ctx context.Context, tenantID, userID string) (*coreentity.Employee, error)
+	GetWorkShift(ctx context.Context, filter coreentity.WorkShift) (*coreentity.WorkShift, error)
 	GetCompanyByUserID(ctx context.Context, tenantID, userID string) (*coreentity.Company, error)
 	GetOwnerAttendanceDashboardSummary(ctx context.Context, filter coreentity.OwnerAttendanceDashboardFilter) (*coreentity.OwnerAttendanceDashboardSummary, error)
 	GetOwnerAttendanceDashboardExceptions(ctx context.Context, filter coreentity.OwnerAttendanceDashboardFilter) ([]coreentity.OwnerAttendanceDashboardException, error)

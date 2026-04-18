@@ -24,6 +24,12 @@ func (r *attendanceRepo) GetAttendanceLog(ctx context.Context, filter coreentity
 		EmployeeNo     string          `db:"employee_no"`
 		EmployeeName   string          `db:"employee_name"`
 		AttendanceDate time.Time       `db:"attendance_date"`
+		ShiftID        *string         `db:"shift_id"`
+		ShiftName      sql.NullString  `db:"shift_name"`
+		ShiftTimezone  sql.NullString  `db:"shift_timezone"`
+		ShiftStartTime sql.NullString  `db:"shift_start_time"`
+		ShiftEndTime   sql.NullString  `db:"shift_end_time"`
+		ShiftGraceMins sql.NullInt64   `db:"shift_grace_period_minutes"`
 		Type           string          `db:"type"`
 		Source         string          `db:"source"`
 		Status         string          `db:"status"`
@@ -46,6 +52,12 @@ func (r *attendanceRepo) GetAttendanceLog(ctx context.Context, filter coreentity
 			e.employee_no,
 			e.full_name AS employee_name,
 			al.attendance_date,
+			al.shift_id,
+			al.shift_name,
+			al.shift_timezone,
+			al.shift_start_time,
+			al.shift_end_time,
+			al.shift_grace_period_minutes,
 			al.type,
 			al.source,
 			al.status,
@@ -85,6 +97,12 @@ func (r *attendanceRepo) GetAttendanceLog(ctx context.Context, filter coreentity
 		EmployeeNo:     data.EmployeeNo,
 		EmployeeName:   data.EmployeeName,
 		AttendanceDate: data.AttendanceDate.Format("2006-01-02"),
+		ShiftID:        data.ShiftID,
+		ShiftName:      nullableStringPtr(data.ShiftName),
+		ShiftTimezone:  nullableStringPtr(data.ShiftTimezone),
+		ShiftStartTime: nullableStringPtr(data.ShiftStartTime),
+		ShiftEndTime:   nullableStringPtr(data.ShiftEndTime),
+		ShiftGraceMins: nullableIntPtr(data.ShiftGraceMins),
 		Type:           common.AttendanceType(data.Type),
 		Source:         common.AttendanceSource(data.Source),
 		Status:         common.AttendanceStatus(data.Status),

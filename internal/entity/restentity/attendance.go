@@ -6,6 +6,12 @@ type AttendanceLog struct {
 	EmployeeNo     string   `json:"employee_no"`
 	EmployeeName   string   `json:"employee_name"`
 	AttendanceDate string   `json:"attendance_date"`
+	ShiftID        *string  `json:"shift_id"`
+	ShiftName      *string  `json:"shift_name"`
+	ShiftTimezone  *string  `json:"shift_timezone"`
+	ShiftStartTime *string  `json:"shift_start_time"`
+	ShiftEndTime   *string  `json:"shift_end_time"`
+	ShiftGraceMins *int     `json:"shift_grace_period_minutes"`
 	Type           string   `json:"type"`
 	Source         string   `json:"source"`
 	Status         string   `json:"status"`

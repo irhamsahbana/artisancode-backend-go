@@ -553,7 +553,7 @@ func (s *Seed) seedEmployees(tx *sqlx.Tx, state *csvSeedState) error {
 			return fmt.Errorf("seed employees %s: %w", employeeNo, err)
 		}
 		shiftScope := scopedLookupScope(row["shift_tenant_code"], row["tenant_code"])
-		shiftID, err := resolveScopedNullableID(state, seedTableWorkShifts, shiftScope, row["shift_name"], "work shift")
+		shiftID, err := resolveScopedID(state, seedTableWorkShifts, shiftScope, row["shift_name"], "work shift")
 		if err != nil {
 			return fmt.Errorf("seed employees %s: %w", employeeNo, err)
 		}
@@ -566,7 +566,7 @@ func (s *Seed) seedEmployees(tx *sqlx.Tx, state *csvSeedState) error {
 			"org_unit_id":        orgUnitID,
 			"job_position_id":    jobPositionID,
 			"location_id":        locationID,
-			"shift_id":           shiftID,
+			"shift_id":           &shiftID,
 			"email":              nullableStringValue(row["email"]),
 			"status":             status,
 			"join_date":          nullableStringValue(row["join_date"]),
