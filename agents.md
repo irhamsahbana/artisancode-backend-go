@@ -2,6 +2,8 @@
 
 Technical guidance has been split into the `docs/` folder.
 
+If a task changes backend workflow expectations, coding conventions, or agent behavior, update this `agents.md` file and the relevant `docs/` content in the same task when practical.
+
 ## Documentation Index
 
 - [Architecture](./docs/architecture.md)

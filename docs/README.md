@@ -2,6 +2,8 @@
 
 This documentation splits engineering guidance into smaller files for more efficient consumption by agents and developers.
 
+When a backend task changes workflow expectations, coding conventions, or agent operating instructions, update the relevant `agents.md` file alongside the affected documentation when practical.
+
 ## Document List
 
 - [Architecture](./architecture.md) - Module structure, ports, mapper pattern
