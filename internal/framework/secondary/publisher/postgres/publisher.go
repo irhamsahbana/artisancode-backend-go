@@ -1,4 +1,4 @@
-package postgresmessagebus
+package postgres
 
 import (
 	"context"
@@ -23,7 +23,7 @@ func NewPublisher(db *sqlx.DB) integrationPorts.MessagePublisher {
 }
 
 func (p *publisher) PublishJSON(ctx context.Context, subject string, payload any) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgresmessagebus:publisher:PublishJSON")
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgres:publisher:PublishJSON")
 	defer span.End()
 
 	data, err := json.Marshal(payload)

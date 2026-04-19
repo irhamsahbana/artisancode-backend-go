@@ -1,4 +1,4 @@
-package natsjetstream
+package nats
 
 import (
 	"context"
@@ -14,9 +14,9 @@ type consumerManager struct {
 	client *client
 }
 
-var _ integrationPorts.MessageConsumerManager = &consumerManager{}
+var _ integrationPorts.MessageSubscriptionManager = &consumerManager{}
 
-func NewConsumerManager(url string) (integrationPorts.MessageConsumerManager, error) {
+func NewSubscriptionManager(url string) (integrationPorts.MessageSubscriptionManager, error) {
 	client, err := newClient(url)
 	if err != nil {
 		return nil, err
@@ -27,8 +27,8 @@ func NewConsumerManager(url string) (integrationPorts.MessageConsumerManager, er
 	}, nil
 }
 
-func (m *consumerManager) CreateConsumer(ctx context.Context, cfg integrationPorts.MessageBusConsumerConfig) (integrationPorts.MessageBusConsumer, error) {
-	ctx, span := tracing.StartSpan(ctx, "nats.CreateConsumer")
+func (m *consumerManager) CreateSubscription(ctx context.Context, cfg integrationPorts.MessageBusSubscriptionConfig) (integrationPorts.MessageBusSubscription, error) {
+	ctx, span := tracing.StartSpan(ctx, "nats.CreateSubscription")
 	defer span.End()
 
 	stream, err := m.getOrCreateStream(ctx, cfg)
@@ -44,7 +44,7 @@ func (m *consumerManager) CreateConsumer(ctx context.Context, cfg integrationPor
 	return &natsConsumer{consumer: consumer}, nil
 }
 
-func (m *consumerManager) getOrCreateStream(ctx context.Context, cfg integrationPorts.MessageBusConsumerConfig) (jetstream.Stream, error) {
+func (m *consumerManager) getOrCreateStream(ctx context.Context, cfg integrationPorts.MessageBusSubscriptionConfig) (jetstream.Stream, error) {
 	_, err := m.client.js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
 		Name:        cfg.StreamName,
 		Description: cfg.StreamDescription,
@@ -66,7 +66,7 @@ func (m *consumerManager) getOrCreateStream(ctx context.Context, cfg integration
 	return stream, nil
 }
 
-func (m *consumerManager) createOrUpdateConsumer(ctx context.Context, stream jetstream.Stream, cfg integrationPorts.MessageBusConsumerConfig) (jetstream.Consumer, error) {
+func (m *consumerManager) createOrUpdateConsumer(ctx context.Context, stream jetstream.Stream, cfg integrationPorts.MessageBusSubscriptionConfig) (jetstream.Consumer, error) {
 	consumer, err := stream.CreateOrUpdateConsumer(ctx, jetstream.ConsumerConfig{
 		Name:        cfg.ConsumerName,
 		Durable:     cfg.Durable,

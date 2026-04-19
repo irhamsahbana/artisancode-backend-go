@@ -2,21 +2,19 @@ package http
 
 import (
 	"codebase-app/internal/adapter"
-	messagebus "codebase-app/internal/framework/secondary/publisher/messagebus"
 	"codebase-app/internal/infrastructure"
+	infraMetrics "codebase-app/internal/infrastructure/metrics"
 	storage "codebase-app/internal/integration/storage"
 	"codebase-app/internal/middleware"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
 	"codebase-app/internal/setup"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
 
-func (a *App) build(appName string, appEnvironment string, db *sqlx.DB) (*fiber.App, integrationPorts.MessagePublisher, error) {
+func (a *App) build(appName string, appVersion string, appEnvironment string, db *sqlx.DB) (*fiber.App, error) {
 	app := fiber.New()
 	adapter.Adapters.Sync(
 		adapter.WithRestServer(app),
@@ -24,12 +22,8 @@ func (a *App) build(appName string, appEnvironment string, db *sqlx.DB) (*fiber.
 		adapter.WithStorage(),
 	)
 
-	bus, err := messagebus.NewPublisher(db)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	s3 := storage.NewStorageIntegration(adapter.Adapters.Storage)
+	metrics := infraMetrics.New(appName, appVersion, appEnvironment)
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
@@ -40,19 +34,19 @@ func (a *App) build(appName string, appEnvironment string, db *sqlx.DB) (*fiber.
 	app.Use(middleware.WithAppLogger(log.Logger))
 	app.Use(middleware.WithRequestLanguage())
 	app.Use(middleware.LocalizeJSONResponse())
+	app.Use(middleware.WithHTTPMetrics(metrics))
 	app.Use(middleware.WithTracing(appName))
 	app.Use(middleware.Recover())
 	app.Use(middleware.WithAccessLog(infrastructure.AccessLogger))
 
-	metricTitle := appName + " " + appEnvironment + " " + "Metrics"
-	app.Get("/metrics", monitor.New(monitor.Config{Title: metricTitle}))
+	app.Get("/metrics", metrics.Handler())
 
 	setup.HttpDependencies(
 		app,
 		db,
 		s3,
-		bus,
+		a.bus,
 	)
 
-	return app, bus, nil
+	return app, nil
 }

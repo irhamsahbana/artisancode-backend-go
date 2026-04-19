@@ -11,7 +11,6 @@ type WorkLocation struct {
 	OrgUnitName  *string
 	Name         string
 	Address      *string
-	Timezone     string
 	Latitude     *float64
 	Longitude    *float64
 	RadiusMeters *int

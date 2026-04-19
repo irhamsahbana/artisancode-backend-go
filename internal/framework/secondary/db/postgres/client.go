@@ -73,13 +73,10 @@ func New(cfg Config) (*sqlx.DB, error) {
 
 func normalizeConnectionSetting(name, value string) (string, error) {
 	value = strings.TrimSpace(strings.ToLower(value))
-	if value == "" {
-		return "require", nil
-	}
-
-	if value != "require" && value != "disable" {
+	switch value {
+	case "require", "disable", "prefer", "direct", "true", "false", "":
+		return value, nil
+	default:
 		return "", fmt.Errorf("invalid postgres %s: %s", name, value)
 	}
-
-	return value, nil
 }

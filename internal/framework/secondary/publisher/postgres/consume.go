@@ -1,4 +1,4 @@
-package postgresmessagebus
+package postgres
 
 import (
 	"context"
@@ -19,12 +19,12 @@ import (
 type postgresConsumer struct {
 	db  *sqlx.DB
 	cfg Config
-	def integrationPorts.MessageBusConsumerConfig
+	def integrationPorts.MessageBusSubscriptionConfig
 }
 
-var _ integrationPorts.MessageBusConsumer = &postgresConsumer{}
+var _ integrationPorts.MessageBusSubscription = &postgresConsumer{}
 
-func (c *postgresConsumer) Consume(handler func(integrationPorts.MessageBusMessage)) (integrationPorts.MessageBusConsumeContext, error) {
+func (c *postgresConsumer) Consume(handler func(integrationPorts.MessageBusMessage)) (integrationPorts.MessageBusSubscriptionContext, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	consumeCtx := &postgresConsumeContext{
@@ -90,7 +90,7 @@ func (c *postgresConsumer) consumeBatch(ctx context.Context, handler func(integr
 }
 
 func (c *postgresConsumer) claimMessage(ctx context.Context) (*postgresMessage, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgresmessagebus:consume:claimMessage")
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgres:consume:claimMessage")
 	defer span.End()
 
 	tx, err := c.db.BeginTxx(ctx, nil)
@@ -177,7 +177,7 @@ type postgresConsumeContext struct {
 	wg     sync.WaitGroup
 }
 
-var _ integrationPorts.MessageBusConsumeContext = &postgresConsumeContext{}
+var _ integrationPorts.MessageBusSubscriptionContext = &postgresConsumeContext{}
 
 func (c *postgresConsumeContext) Stop() {
 	c.cancel()

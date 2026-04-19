@@ -10,12 +10,12 @@ type MessagePublisher interface {
 	Close() error
 }
 
-type MessageConsumerManager interface {
-	CreateConsumer(ctx context.Context, cfg MessageBusConsumerConfig) (MessageBusConsumer, error)
+type MessageSubscriptionManager interface {
+	CreateSubscription(ctx context.Context, cfg MessageBusSubscriptionConfig) (MessageBusSubscription, error)
 	Close() error
 }
 
-type MessageBusConsumerConfig struct {
+type MessageBusSubscriptionConfig struct {
 	StreamName          string
 	StreamDescription   string
 	Subjects            []string
@@ -26,11 +26,11 @@ type MessageBusConsumerConfig struct {
 	ConsumerDescription string
 }
 
-type MessageBusConsumer interface {
-	Consume(handler func(MessageBusMessage)) (MessageBusConsumeContext, error)
+type MessageBusSubscription interface {
+	Consume(handler func(MessageBusMessage)) (MessageBusSubscriptionContext, error)
 }
 
-type MessageBusConsumeContext interface {
+type MessageBusSubscriptionContext interface {
 	Stop()
 }
 

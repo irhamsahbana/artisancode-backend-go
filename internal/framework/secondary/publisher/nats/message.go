@@ -1,4 +1,4 @@
-package natsjetstream
+package nats
 
 import (
 	integrationPorts "codebase-app/internal/ports/secondary/integration"

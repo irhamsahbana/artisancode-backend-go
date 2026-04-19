@@ -1,4 +1,4 @@
-package postgresmessagebus
+package postgres
 
 import (
 	"context"
@@ -37,7 +37,7 @@ func (m *postgresMessage) Headers() map[string][]string {
 }
 
 func (m *postgresMessage) Ack() error {
-	ctx, span := tracing.StartSpan(context.Background(), "internal:framework:secondary:publisher:postgresmessagebus:message:Ack")
+	ctx, span := tracing.StartSpan(context.Background(), "internal:framework:secondary:publisher:postgres:message:Ack")
 	defer span.End()
 
 	query := `
@@ -60,7 +60,7 @@ func (m *postgresMessage) Ack() error {
 }
 
 func (m *postgresMessage) Nak(reason string) error {
-	ctx, span := tracing.StartSpan(context.Background(), "internal:framework:secondary:publisher:postgresmessagebus:message:Nak")
+	ctx, span := tracing.StartSpan(context.Background(), "internal:framework:secondary:publisher:postgres:message:Nak")
 	defer span.End()
 
 	tx, err := m.db.BeginTxx(ctx, nil)

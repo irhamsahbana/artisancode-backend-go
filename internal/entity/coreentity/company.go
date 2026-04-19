@@ -44,7 +44,7 @@ func DefaultCompanyConfig() CompanyConfig {
 		OvertimeRateMultiplier:  1.5,
 		PreferredLanguage:       "id",
 		SupportedLanguages:      []string{"id", "en"},
-		Timezone:                "Asia/Jakarta",
+		Timezone:                "Asia/Makassar",
 		DateFormat:              "YYYY-MM-DD",
 		TimeFormat:              "HH:mm:ss",
 	}

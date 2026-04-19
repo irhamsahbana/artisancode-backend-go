@@ -1,4 +1,4 @@
-package natsjetstream
+package nats
 
 import (
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
@@ -10,9 +10,9 @@ type natsConsumer struct {
 	consumer jetstream.Consumer
 }
 
-var _ integrationPorts.MessageBusConsumer = &natsConsumer{}
+var _ integrationPorts.MessageBusSubscription = &natsConsumer{}
 
-func (c *natsConsumer) Consume(handler func(integrationPorts.MessageBusMessage)) (integrationPorts.MessageBusConsumeContext, error) {
+func (c *natsConsumer) Consume(handler func(integrationPorts.MessageBusMessage)) (integrationPorts.MessageBusSubscriptionContext, error) {
 	ctx, err := c.consumer.Consume(func(msg jetstream.Msg) {
 		handler(&natsMessage{msg: msg})
 	})
@@ -27,7 +27,7 @@ type natsConsumeContext struct {
 	ctx jetstream.ConsumeContext
 }
 
-var _ integrationPorts.MessageBusConsumeContext = &natsConsumeContext{}
+var _ integrationPorts.MessageBusSubscriptionContext = &natsConsumeContext{}
 
 func (c *natsConsumeContext) Stop() {
 	c.ctx.Stop()

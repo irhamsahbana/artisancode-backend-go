@@ -39,7 +39,7 @@ type Config struct {
 	DB struct {
 		ConnectionTimeout int `env:"DB_CONN_TIMEOUT" env-default:"30" env-description:"database timeout in seconds"`
 		MaxOpenCons       int `env:"DB_MAX_OPEN_CONS" env-default:"20" env-description:"database max open conn in seconds"`
-		MaxIdleCons       int `env:"DB_MAX_IdLE_CONS" env-default:"20" env-description:"database max idle conn in seconds"`
+		MaxIdleCons       int `env:"DB_MAX_IDLE_CONS" env-default:"20" env-description:"database max idle conn in seconds"`
 		ConnMaxLifetime   int `env:"DB_CONN_MAX_LIFETIME" env-default:"0" env-description:"database conn max lifetime in seconds"`
 	}
 	Guard struct {
@@ -60,8 +60,8 @@ type Config struct {
 		Username       string `env:"POSTGRES_USER" env-default:"postgres"`
 		Password       string `env:"POSTGRES_PASSWORD" env-default:"postgres"`
 		Database       string `env:"POSTGRES_DB" env-default:"venatronics"`
-		SslMode        string `env:"POSTGRES_SSL_MODE" env-default:"require"`
-		ChannelBinding string `env:"POSTGRES_CHANNEL_BINDING" env-default:"require"`
+		SslMode        string `env:"POSTGRES_SSL_MODE" env-default:""`
+		ChannelBinding string `env:"POSTGRES_CHANNEL_BINDING" env-default:""`
 	}
 	OpenAI struct {
 		APIKey  string `env:"OPENAI_API_KEY"`

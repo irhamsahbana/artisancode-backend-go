@@ -71,7 +71,7 @@ func RunWebsocket(cmd *flag.FlagSet, args []string) {
 		adapter.WithPostgres(),
 	)
 
-	infrastructure.InitializeLogger(envs.App.Environtment, envs.App.LogFileWs, logLevel, adapter.Adapters.Postgres)
+	infrastructure.InitializeLogger(envs.App.Environtment, envs.App.LogFileWs, logLevel)
 
 	quit := make(chan os.Signal, 1)
 

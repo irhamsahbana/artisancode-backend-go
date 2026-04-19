@@ -1,4 +1,4 @@
-package postgresmessagebus
+package postgres
 
 import (
 	"context"
@@ -67,14 +67,14 @@ func TestConsumeAndAckMarksProcessed(t *testing.T) {
 	truncateMessageQueueTables(t, db)
 
 	publisher := NewPublisher(db)
-	manager := NewConsumerManager(db, Config{
+	manager := NewSubscriptionManager(db, Config{
 		PollInterval: 10 * time.Millisecond,
 		BatchSize:    1,
 		RetryDelay:   50 * time.Millisecond,
 		MaxAttempts:  3,
 	})
 
-	consumer, err := manager.CreateConsumer(context.Background(), integrationPorts.MessageBusConsumerConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-ack",
 		Subjects:     []string{"test.consume.ack"},
 	})
@@ -83,7 +83,7 @@ func TestConsumeAndAckMarksProcessed(t *testing.T) {
 	}
 
 	received := make(chan string, 1)
-	consumeCtx, err := consumer.Consume(func(msg integrationPorts.MessageBusMessage) {
+	consumeCtx, err := subscription.Consume(func(msg integrationPorts.MessageBusMessage) {
 		received <- string(msg.Data())
 		if ackErr := msg.Ack(); ackErr != nil {
 			t.Errorf("expected ack to succeed, got %v", ackErr)
@@ -142,14 +142,14 @@ func TestConsumeAndNakRequeuesMessage(t *testing.T) {
 	truncateMessageQueueTables(t, db)
 
 	publisher := NewPublisher(db)
-	manager := NewConsumerManager(db, Config{
+	manager := NewSubscriptionManager(db, Config{
 		PollInterval: 10 * time.Millisecond,
 		BatchSize:    1,
 		RetryDelay:   50 * time.Millisecond,
 		MaxAttempts:  3,
 	})
 
-	consumer, err := manager.CreateConsumer(context.Background(), integrationPorts.MessageBusConsumerConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-nak",
 		Subjects:     []string{"test.consume.nak"},
 	})
@@ -158,7 +158,7 @@ func TestConsumeAndNakRequeuesMessage(t *testing.T) {
 	}
 
 	received := make(chan struct{}, 1)
-	consumeCtx, err := consumer.Consume(func(msg integrationPorts.MessageBusMessage) {
+	consumeCtx, err := subscription.Consume(func(msg integrationPorts.MessageBusMessage) {
 		select {
 		case received <- struct{}{}:
 		default:
@@ -226,14 +226,14 @@ func TestConsumeAndNakMovesMessageToDeadLetterAfterMaxAttempts(t *testing.T) {
 	truncateMessageQueueTables(t, db)
 
 	publisher := NewPublisher(db)
-	manager := NewConsumerManager(db, Config{
+	manager := NewSubscriptionManager(db, Config{
 		PollInterval: 10 * time.Millisecond,
 		BatchSize:    1,
 		RetryDelay:   50 * time.Millisecond,
 		MaxAttempts:  1,
 	})
 
-	consumer, err := manager.CreateConsumer(context.Background(), integrationPorts.MessageBusConsumerConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-dead-letter",
 		Subjects:     []string{"test.consume.dead-letter"},
 	})
@@ -242,7 +242,7 @@ func TestConsumeAndNakMovesMessageToDeadLetterAfterMaxAttempts(t *testing.T) {
 	}
 
 	received := make(chan struct{}, 1)
-	consumeCtx, err := consumer.Consume(func(msg integrationPorts.MessageBusMessage) {
+	consumeCtx, err := subscription.Consume(func(msg integrationPorts.MessageBusMessage) {
 		select {
 		case received <- struct{}{}:
 		default:

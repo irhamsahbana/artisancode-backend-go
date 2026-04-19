@@ -392,7 +392,7 @@ func (s *Seed) seedWorkLocations(tx *sqlx.Tx, state *csvSeedState) error {
 	file := state.files[seedTableWorkLocations]
 	cfg := upsertConfig{
 		table:              seedTableWorkLocations,
-		columns:            []string{"tenant_id", "org_unit_id", "name", "address", "timezone", "latitude", "longitude", "radius_meters"},
+		columns:            []string{"tenant_id", "org_unit_id", "name", "address", "latitude", "longitude", "radius_meters"},
 		matchColumns:       []string{"tenant_id", "name"},
 		hasUpdatedAt:       true,
 		supportsSoftDelete: true,
@@ -402,10 +402,6 @@ func (s *Seed) seedWorkLocations(tx *sqlx.Tx, state *csvSeedState) error {
 		name, err := requiredCSVValue(row, "name")
 		if err != nil {
 			return fmt.Errorf("seed work_locations: %w", err)
-		}
-		timezone, err := requiredCSVValue(row, "timezone")
-		if err != nil {
-			return fmt.Errorf("seed work_locations %s: %w", name, err)
 		}
 		tenantID, err := resolveTenantID(state, row["tenant_code"])
 		if err != nil {
@@ -434,7 +430,6 @@ func (s *Seed) seedWorkLocations(tx *sqlx.Tx, state *csvSeedState) error {
 			"org_unit_id":   orgUnitID,
 			"name":          name,
 			"address":       nullableStringValue(row["address"]),
-			"timezone":      timezone,
 			"latitude":      latitude,
 			"longitude":     longitude,
 			"radius_meters": radiusMeters,

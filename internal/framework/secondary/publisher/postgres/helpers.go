@@ -1,4 +1,4 @@
-package postgresmessagebus
+package postgres
 
 import (
 	"strings"

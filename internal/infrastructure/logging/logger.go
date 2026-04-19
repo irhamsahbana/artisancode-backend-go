@@ -4,7 +4,6 @@ import (
 	"io"
 
 	infra "codebase-app/internal/infrastructure"
-	"github.com/jmoiron/sqlx"
 )
 
 type Config struct {
@@ -15,7 +14,6 @@ type Config struct {
 	LogFile       string
 	AccessLogFile string
 	LogLevel      string
-	DB            *sqlx.DB
 }
 
 type Provider = infra.LoggerProvider
@@ -29,6 +27,5 @@ func InitLogger(cfg *Config) (Provider, io.Writer, error) {
 		LogFile:       cfg.LogFile,
 		AccessLogFile: cfg.AccessLogFile,
 		LogLevel:      cfg.LogLevel,
-		DB:            cfg.DB,
 	})
 }

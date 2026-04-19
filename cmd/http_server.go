@@ -6,6 +6,7 @@ import (
 	"codebase-app/internal/infrastructure/config"
 	infraLogging "codebase-app/internal/infrastructure/logging"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
+	"codebase-app/internal/setup"
 	"codebase-app/pkg/validator"
 	"context"
 	"flag"
@@ -38,7 +39,6 @@ func RunHttpServer(cmd *flag.FlagSet, args []string) {
 		LogFile:       envs.App.LogFile,
 		AccessLogFile: envs.App.LogFileAccess,
 		LogLevel:      envs.App.LogLevel,
-		DB:            adapter.Adapters.Postgres,
 	})
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize logger")
@@ -82,10 +82,19 @@ func RunHttpServer(cmd *flag.FlagSet, args []string) {
 		serverPort = *flagAppPort
 	}
 
-	app := httpModule.NewApp()
+	bus, err := setup.NewMessagePublisher(adapter.Adapters.Postgres)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to initialize HTTP message bus")
+	}
+
+	app := httpModule.NewApp(httpModule.AppConfig{
+		Bus:      bus,
+		Shutdown: adapter.Adapters.Unsync,
+	})
 	err = app.Run(
 		context.Background(),
 		envs.App.Name,
+		envs.App.Version,
 		envs.App.Environtment,
 		serverPort,
 		adapter.Adapters.Postgres,

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"codebase-app/internal/adapter"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
 	"context"
 	"os"
@@ -27,9 +26,12 @@ func (a *App) waitForShutdown(ctx context.Context) error {
 	<-quit
 	log.Ctx(ctx).Info().Msg("Server is shutting down ...")
 
-	err := adapter.Adapters.Unsync()
-	if err != nil {
-		infraTracing.RecordError(span, err)
+	var err error
+	if a.shutdown != nil {
+		err = a.shutdown()
+		if err != nil {
+			infraTracing.RecordError(span, err)
+		}
 	}
 
 	log.Ctx(ctx).Info().Msg("Server gracefully stopped")

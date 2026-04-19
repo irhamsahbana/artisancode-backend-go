@@ -1,4 +1,4 @@
-package postgresmessagebus
+package postgres
 
 import "go.opentelemetry.io/otel/propagation"
 

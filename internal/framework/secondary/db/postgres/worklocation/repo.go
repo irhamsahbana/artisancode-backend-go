@@ -49,7 +49,7 @@ func (r *workLocationRepo) GetWorkLocations(ctx context.Context, filter coreenti
 		SELECT
 			COUNT(*) OVER() AS total_data,
 			wl.id, wl.tenant_id, wl.org_unit_id, ou.name AS org_unit_name,
-			wl.name, wl.address, wl.timezone, wl.latitude, wl.longitude, wl.radius_meters
+			wl.name, wl.address, wl.latitude, wl.longitude, wl.radius_meters
 		FROM work_locations wl
 		LEFT JOIN org_units ou ON wl.org_unit_id = ou.id
 		WHERE wl.deleted_at IS NULL AND wl.tenant_id = ?
@@ -85,7 +85,6 @@ func (r *workLocationRepo) GetWorkLocations(ctx context.Context, filter coreenti
 			OrgUnitName:  d.OrgUnitName,
 			Name:         d.Name,
 			Address:      d.Address,
-			Timezone:     d.Timezone,
 			Latitude:     d.Latitude,
 			Longitude:    d.Longitude,
 			RadiusMeters: d.RadiusMeters,
@@ -103,7 +102,7 @@ func (r *workLocationRepo) GetWorkLocation(ctx context.Context, filter coreentit
 
 	query := `
 		SELECT wl.id, wl.tenant_id, wl.org_unit_id, ou.name AS org_unit_name,
-			wl.name, wl.address, wl.timezone, wl.latitude, wl.longitude, wl.radius_meters
+			wl.name, wl.address, wl.latitude, wl.longitude, wl.radius_meters
 		FROM work_locations wl
 		LEFT JOIN org_units ou ON wl.org_unit_id = ou.id
 		WHERE wl.id = ? AND wl.tenant_id = ? AND wl.deleted_at IS NULL
@@ -125,7 +124,6 @@ func (r *workLocationRepo) GetWorkLocation(ctx context.Context, filter coreentit
 		OrgUnitName:  data.OrgUnitName,
 		Name:         data.Name,
 		Address:      data.Address,
-		Timezone:     data.Timezone,
 		Latitude:     data.Latitude,
 		Longitude:    data.Longitude,
 		RadiusMeters: data.RadiusMeters,
@@ -139,13 +137,13 @@ func (r *workLocationRepo) CreateWorkLocation(ctx context.Context, data coreenti
 
 	query := `
 		INSERT INTO work_locations (
-			tenant_id, org_unit_id, name, address, timezone, latitude, longitude, radius_meters
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			tenant_id, org_unit_id, name, address, latitude, longitude, radius_meters
+		) VALUES (?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
 	`
 	var id string
 	err := r.db.GetContext(ctx, &id, r.db.Rebind(query),
-		data.TenantID, data.OrgUnitID, data.Name, data.Address, data.Timezone, data.Latitude, data.Longitude, data.RadiusMeters,
+		data.TenantID, data.OrgUnitID, data.Name, data.Address, data.Latitude, data.Longitude, data.RadiusMeters,
 	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create work location")
@@ -162,12 +160,12 @@ func (r *workLocationRepo) UpdateWorkLocation(ctx context.Context, data coreenti
 
 	query := `
 		UPDATE work_locations
-		SET org_unit_id = ?, name = ?, address = ?, timezone = ?, latitude = ?, longitude = ?, radius_meters = ?, updated_at = NOW()
+		SET org_unit_id = ?, name = ?, address = ?, latitude = ?, longitude = ?, radius_meters = ?, updated_at = NOW()
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
 	_, err := r.db.ExecContext(ctx, r.db.Rebind(query),
-		data.OrgUnitID, data.Name, data.Address, data.Timezone, data.Latitude, data.Longitude, data.RadiusMeters, data.ID, data.TenantID,
+		data.OrgUnitID, data.Name, data.Address, data.Latitude, data.Longitude, data.RadiusMeters, data.ID, data.TenantID,
 	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to update work location")

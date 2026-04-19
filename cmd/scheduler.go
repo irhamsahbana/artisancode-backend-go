@@ -47,7 +47,6 @@ func RunScheduler(cmd *flag.FlagSet, args []string) {
 		LogFile:       filepath.Join("logs", "scheduler.log"),
 		AccessLogFile: envs.App.LogFileAccess,
 		LogLevel:      envs.App.LogLevel,
-		DB:            adapter.Adapters.Postgres,
 	})
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to initialize logger")

@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS work_locations (
     org_unit_id UUID,
     name VARCHAR(255) NOT NULL,
     address TEXT,
-    timezone VARCHAR(64) NOT NULL,
     latitude DECIMAL(10,6),
     longitude DECIMAL(10,6),
     radius_meters INT,
