@@ -240,7 +240,7 @@ func (s *Seed) seedUsers(tx *sqlx.Tx, state *csvSeedState) error {
 	file := state.files[seedTableUsers]
 	cfg := upsertConfig{
 		table:              seedTableUsers,
-		columns:            []string{"tenant_id", "company_id", "name", "username", "email", "password"},
+		columns:            []string{"tenant_id", "company_id", "name", "username", "email", "password", "email_verified_at"},
 		matchColumns:       []string{"email"},
 		hasUpdatedAt:       true,
 		supportsSoftDelete: true,
@@ -278,14 +278,19 @@ func (s *Seed) seedUsers(tx *sqlx.Tx, state *csvSeedState) error {
 		if err != nil {
 			return fmt.Errorf("seed users %s: hash password: %w", email, err)
 		}
+		emailVerifiedAt, err := optionalTimeValue(row, "email_verified_at")
+		if err != nil {
+			return fmt.Errorf("seed users %s: %w", email, err)
+		}
 
 		values := map[string]any{
-			"tenant_id":  tenantID,
-			"company_id": companyID,
-			"name":       name,
-			"username":   username,
-			"email":      strings.ToLower(strings.TrimSpace(email)),
-			"password":   string(hashedPassword),
+			"tenant_id":         tenantID,
+			"company_id":        companyID,
+			"name":              name,
+			"username":          username,
+			"email":             strings.ToLower(strings.TrimSpace(email)),
+			"password":          string(hashedPassword),
+			"email_verified_at": emailVerifiedAt,
 		}
 
 		id, backfilled, err := upsertRecord(tx, cfg, row["id"], values)

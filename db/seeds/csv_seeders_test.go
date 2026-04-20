@@ -123,3 +123,20 @@ func TestEmployeeSeedsRequireShiftName(t *testing.T) {
 		}
 	}
 }
+
+func TestEmployeeUsersHaveEmailVerifiedAt(t *testing.T) {
+	state, err := newCSVSeedState()
+	if err != nil {
+		t.Fatalf("newCSVSeedState returned error: %v", err)
+	}
+
+	for _, row := range state.files[seedTableUsers].rows {
+		email := strings.TrimSpace(row["email"])
+		if !strings.HasPrefix(email, "emp") {
+			continue
+		}
+		if strings.TrimSpace(row["email_verified_at"]) == "" {
+			t.Fatalf("employee user %q is missing email_verified_at", email)
+		}
+	}
+}

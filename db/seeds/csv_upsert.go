@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
@@ -210,4 +211,27 @@ func optionalFloatValue(row map[string]string, column string) (*float64, error) 
 		return nil, fmt.Errorf("parse %s as float: %w", column, err)
 	}
 	return &value, nil
+}
+
+func optionalTimeValue(row map[string]string, column string) (*time.Time, error) {
+	raw := strings.TrimSpace(row[column])
+	if raw == "" {
+		return nil, nil
+	}
+
+	layouts := []string{
+		time.RFC3339,
+		"2006-01-02 15:04:05Z07:00",
+		"2006-01-02 15:04:05",
+		"2006-01-02",
+	}
+
+	for _, layout := range layouts {
+		value, err := time.Parse(layout, raw)
+		if err == nil {
+			return &value, nil
+		}
+	}
+
+	return nil, fmt.Errorf("parse %s as time: unsupported format %q", column, raw)
 }
