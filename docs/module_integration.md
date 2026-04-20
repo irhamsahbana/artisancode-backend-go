@@ -1,60 +1,106 @@
 # Module Integration
 
-## Module Registration
+## Where Wiring Lives Now
 
-- Register modules in `internal/setup/http_dependency.go`.
-- Initialization order:
-  - repository
-  - core
-  - handler
-  - route group
+Module registration tidak lagi cukup dijelaskan sebagai satu file `http_dependency.go`.
+
+Wiring aktif sekarang terbagi dua:
+
+- `internal/setup/http_dependency.go`
+  - repository, core, handler, dan route registration untuk HTTP runtime
+- `internal/setup/consumer_dependency.go`
+  - subscription, consumer-facing core, publisher, dan shutdown wiring untuk worker/consumer runtime
+
+Kalau menambah module HTTP baru, update `http_dependency.go`.
+Kalau menambah subscription/consumer baru, update `consumer_dependency.go`.
+
+## HTTP Registration Pattern
+
+`internal/framework/primary/http/build.go` hanya menyiapkan app dan middleware global, lalu memanggil `setup.HttpDependencies()`.
+
+Di `setup.HttpDependencies()` pola registration yang dipakai sekarang adalah:
+
+1. build repository
+2. build integration/helper dependency
+3. build core
+4. build handler
+5. register route dengan `app.Group(...)`
+
+Contoh bentuk yang dipakai:
+
+```go
+employeeRepository := employeeRepo.NewEmployeeRepository(employeeRepo.EmployeeRepositoryConfig{
+    DB: db,
+})
+
+employeeCoreInst := employeeCore.NewEmployeeCore(employeeCore.EmployeeCoreConfig{
+    Repo:     employeeRepository,
+    UserRepo: userRepository,
+})
+
+employeeHandler.NewEmployeeHandler(employeeHandler.EmployeeHandlerConfig{
+    Core: employeeCoreInst,
+}).Register(app.Group("/employees", middleware.Auth))
+```
 
 ## Route Protection
 
-- Internal routes that require protection should use auth middleware in the module handler.
-- Apply `middleware.Auth` on route groups that need authentication.
+Proteksi route saat ini kebanyakan dipasang di setup layer lewat `app.Group(path, middleware.Auth)`, bukan di dalam setiap handler.
 
-```go
-func (h *handler) Register(router fiber.Router) {
-    protected := router.Group("/", middleware.Auth)
-    protected.Post("/", h.create)
-    protected.Delete("/:id", h.delete)
+Contoh yang aktif:
 
-    // Public routes (no auth)
-    router.Get("/public/:id", h.getPublic)
-}
-```
+- `app.Group("/companies", middleware.Auth)`
+- `app.Group("/employees", middleware.Auth)`
+- `app.Group("/attendance-logs", middleware.Auth)`
+- `app.Group("/me", middleware.Auth)`
 
-## Cross-Module Reusability
+Pengecualian yang memang dibiarkan public atau mixed:
 
-Modules like `company`, `rbac`, and `storage` are designed to be reusable across other modules. This allows:
+- `/users/*`
+  - auth/public endpoints diregister di handler user
+  - CRUD tertentu diproteksi per-route di handler
+- `/storage`
+  - upload/delete/list diproteksi
+  - `GET /storage/private/*` memakai signed URL validation middleware
 
-- **Configuration**: Fetch company-specific settings via `CompanyRepository`
-- **Access Control**: Perform permission checks using `RbacCore`
-- **File Operations**: Upload/delete files using `StorageCore`
+Karena itu, saat menambah route baru:
 
-### Dependency Injection for Cross-Module Usage
+- kalau seluruh group harus protected, pasang `middleware.Auth` di `app.Group(...)`
+- kalau satu module punya kombinasi public dan protected route, dokumentasikan dengan jelas di `handler.go`
 
-When a module needs to use another module's functionality:
+## Consumer Registration Pattern
 
-```go
-// In your module's core constructor
-type YourCoreConfig struct {
-    Repo    repository.YourRepository
-    RbacSvc core.RbacCore              // for permission checks
-}
+Consumer runtime saat ini tidak me-register HTTP route. Yang dibuat adalah dependency untuk subscription manager dan handler loop.
 
-func NewYourCore(cfg YourCoreConfig) *yourCore {
-    return &yourCore{
-        repo:    cfg.Repo,
-        rbacSvc: cfg.RbacSvc,
-    }
-}
-```
+`NewConsumerDependencies(...)` saat ini menyiapkan:
 
-### Important Notes
+- email subscription
+- export job subscription
+- export job core
+- export job publisher
+- subscription manager
+- shutdown callback
 
-- Always use interface contracts (`ports`) when injecting cross-module dependencies
-- Never instantiate module dependencies directly inside handlers or core
-- Use centralized ports at `internal/ports/core`, `internal/ports/primary`, `internal/ports/secondary/db`, and `internal/ports/secondary/integration`
-- Wire all dependencies in `internal/setup/http_dependency.go`
+Jika menambah consumer baru:
+
+1. buat subscription config baru
+2. inject dependency yang dibutuhkan core/processor
+3. expose hasilnya di `ConsumerDependencies`
+4. assign hasilnya di `internal/framework/primary/consumer/postgres/build.go`
+
+## Cross-Module Dependencies
+
+Gunakan interface dari `internal/ports/...` untuk dependency lintas modul.
+
+Contoh yang memang aktif:
+
+- `employee` core memakai `UserRepository`
+- `worklocation` core memakai `OrgUnitRepository`
+- `attendance` core memakai `CompanyRepository` dan `StorageRepository`
+- `export_job` core memakai `AttendanceRepository`, `StorageRepository`, dan message publisher
+
+Aturan:
+
+- jangan instantiate repository atau integration baru di dalam handler/core
+- jangan akses package concrete module lain langsung kalau contract sudah tersedia di `ports`
+- semua wiring lintas modul harus terlihat di `setup`

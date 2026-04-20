@@ -1,70 +1,124 @@
 # Architecture
 
-## Dominant Structure
+## Active Runtime Structure
 
-- Use a per-domain modular pattern at `internal/module/<module_name>`.
-- Standard module structure:
-  - `repository/` for SQL queries and DB access
-  - `core/` for business logic and domain rules
-  - `handler/` for HTTP layer
+Struktur backend produksi yang aktif sekarang berpusat di layer berikut:
 
-## File Split Pattern (All Layers)
+- `internal/framework/primary/http/`
+  - bootstrap Fiber app
+  - middleware global
+  - HTTP handlers per module
+- `internal/core/`
+  - business logic per module
+- `internal/framework/secondary/db/postgres/`
+  - repository Postgres per module
+- `internal/integration/`
+  - adapter ke service eksternal seperti storage, email, token cache, OAuth, rate limit
+- `internal/setup/`
+  - dependency wiring untuk HTTP dan consumer runtime
+- `internal/ports/`
+  - contract antar layer
 
-Every module layer (**repository**, **core**, **handler**) must split functions into separate files — one file per main function. The main struct, config, and constructor stay in the base file.
+`internal/module/` bukan lagi struktur dominan kode produksi. Saat ini folder itu hanya menyisakan template/eksperimen, jadi jangan jadikan folder itu sebagai acuan utama dokumentasi arsitektur.
 
-### Repository Layer
+## Bootstrap Flow
 
+### HTTP app
+
+HTTP runtime dibangun dari:
+
+- `internal/framework/primary/http/app.go`
+- `internal/framework/primary/http/build.go`
+- `internal/setup/http_dependency.go`
+
+Urutan umumnya:
+
+1. buat `fiber.App`
+2. sinkronkan adapter global lewat `adapter.Adapters.Sync(...)`
+3. pasang middleware global
+4. expose `/metrics`
+5. panggil `setup.HttpDependencies()` untuk me-register semua module route
+
+### Consumer app
+
+Consumer runtime saat ini dibangun dari:
+
+- `internal/framework/primary/consumer/postgres/build.go`
+- `internal/setup/consumer_dependency.go`
+
+Runtime ini menyiapkan:
+
+- message publisher
+- subscription manager
+- email subscription
+- export job subscription
+- export job core dan publisher dependency
+
+## Module Shape
+
+Pola modul aktif mengikuti pemisahan per concern, bukan satu folder `module/<name>`:
+
+```text
+internal/core/<module>
+internal/framework/primary/http/<module>
+internal/framework/secondary/db/postgres/<module>
+internal/ports/core
+internal/ports/secondary/db
 ```
-repository/
-  repo.go                # struct, config, constructor only
-  get_work_shifts.go     # GetWorkShifts
-  get_work_shift.go      # GetWorkShift
-  create_work_shift.go   # CreateWorkShift
-  update_work_shift.go   # UpdateWorkShift
-  delete_work_shift.go   # DeleteWorkShift
+
+Contoh konkret:
+
+```text
+internal/core/attendance/
+internal/framework/primary/http/attendance/
+internal/framework/secondary/db/postgres/attendance/
 ```
 
-### Core Layer
+## File Split Pattern
 
-```
-core/
-  core.go                # struct, config, constructor only
-  get_work_shifts.go     # GetWorkShifts
-  get_work_shift.go      # GetWorkShift
-  create_work_shift.go   # CreateWorkShift
-  update_work_shift.go   # UpdateWorkShift
-  delete_work_shift.go   # DeleteWorkShift
-```
+Modul yang aktif umumnya memakai satu file per operasi utama.
 
-### Handler Layer
+Contoh:
 
-```
-handler/
-  handler.go             # struct, config, constructor, Register routes only
-  get_work_shifts.go     # getWorkShifts
-  get_work_shift.go      # getWorkShift
-  create_work_shift.go   # createWorkShift
-  update_work_shift.go   # updateWorkShift
-  delete_work_shift.go   # deleteWorkShift
+```text
+internal/core/user/
+  core.go
+  register.go
+  login.go
+  refresh_token.go
+  verify_email.go
+  resend_verification_email.go
+  forgot_password.go
+  reset_password.go
+  action_token_helpers.go
 ```
 
-**Rules:**
-- **One main function per file** — no exceptions
-- **Helper functions** specific to a main function are placed directly below it in the same file
-- The base file (`repo.go`, `core.go`, `handler.go`) contains only: struct definition, config struct, constructor, and (for handler) the `Register` method
-- Example: `register.go` contains `RegisterOwner`, `createTenant`, `getOwnerRole`, `createOwnerUser`, while shared email token/template helpers live in dedicated files such as `action_token_helpers.go`
+Aturan praktis:
 
-## Ports (Interfaces)
+- `handler.go`, `core.go`, `repo.go` dipakai untuk struct, config, constructor, dan method registrasi
+- satu operasi utama idealnya satu file
+- helper yang spesifik ke satu operasi boleh diletakkan di file yang sama
+- helper shared boleh punya file sendiri bila dipakai lintas operasi
 
-- Interfaces are centralized at `internal/ports/` (not inside modules).
-- Structure follows domain/capability grouping:
-  - `internal/ports/core/` - service interfaces consumed by primary adapters
-  - `internal/ports/primary/` - contracts specific to primary adapters such as HTTP-facing abstractions
-  - `internal/ports/secondary/db/` - repository interfaces for driven adapters
-  - `internal/ports/secondary/integration/` - integration interfaces for driven adapters
-- Modules implement these interfaces, keeping them decoupled and testable.
+## Ports
+
+Interface tetap disentralisasi di `internal/ports/`:
+
+- `internal/ports/core/`
+- `internal/ports/primary/`
+- `internal/ports/secondary/db/`
+- `internal/ports/secondary/integration/`
+
+Gunakan contract ini untuk dependency injection antar layer dan antar modul.
 
 ## Mapper
 
-- Cross-layer mapping is separated under `internal/entity/mapper`.
-- Mapper files are split by sub-domain for maintainability.
+Mapping antar boundary tetap dipisah di `internal/entity/mapper/`.
+
+Peran mapper:
+
+- `restentity` -> `coreentity`
+- `repoentity` -> `coreentity`
+- `coreentity` -> `restentity`
+
+Handler sebaiknya mapping di boundary, bukan membiarkan core menerima `restentity` langsung.

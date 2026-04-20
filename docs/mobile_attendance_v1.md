@@ -1,202 +1,78 @@
 # Mobile Attendance V1
 
-This document defines the minimum backend readiness for the first mobile app focused on employee attendance.
+Dokumen ini merangkum kontrak backend yang memang sudah tersedia sekarang untuk kebutuhan mobile attendance pertama.
 
 ## Goals
 
-- Support employee login with the existing auth flow.
-- Support employee self-service attendance check-in and check-out.
-- Support employee access to their own attendance history.
-- Support owner/admin visibility for attendance audit on the web.
-- Keep the first API surface small and stable.
+- login employee dengan auth flow yang sama
+- check-in dan check-out mandiri oleh employee
+- lihat histori attendance milik sendiri
+- tampilkan konteks user, profil employee, shift hari ini, ringkasan hari ini, dan policy attendance
 
-## Non-Goals For V1
+## Active Routes
 
-- Offline sync
-- Face recognition / selfie verification
-- Advanced approval workflow
-- Complex shift roster engine
-- Push notification orchestration
-- Multi-device trust policy
-
-## V1 Domain Set
-
-The minimum recommended domains before the mobile app starts:
-
-1. Auth
-2. Me / employee context
-3. Attendance logs
-4. Attendance summary
-5. Attendance policy
-6. Shift snapshot for today
-
-## Route Group
-
-Use the existing route style and keep attendance routes under a single group:
+Route yang sudah aktif saat ini:
 
 - `GET /attendance-logs`
 - `GET /attendance-logs/:id`
 - `POST /attendance-logs/check-in`
 - `POST /attendance-logs/check-out`
-
-Additional mobile-readiness routes recommended for V1:
-
+- `GET /attendance-summary/today`
+- `GET /attendance-summary/owner-dashboard`
+- `GET /attendance-policy`
 - `GET /me`
 - `GET /me/employee`
-- `GET /attendance-summary/today`
-- `GET /attendance-policy`
 - `GET /me/shift-today`
+
+Semua route di atas diproteksi `middleware.Auth`.
 
 ## Access Rules
 
-### Owner / Admin
-
-- Can view attendance logs across the tenant.
-- Can filter by employee and date range.
-- Must not use the employee check-in/check-out endpoints to record attendance for another user in V1.
-
 ### Employee
 
-- Can only view their own attendance logs.
-- Can only create attendance for themselves.
-- `employee_id` must be resolved by the server from the logged-in user.
+- hanya boleh melihat attendance miliknya sendiri
+- hanya boleh check-in/check-out untuk dirinya sendiri
+- `employee_id` ditentukan server dari `UserContext`, bukan dari request mobile
 
-## Existing V1-Ready Endpoints
+### Owner/Admin
 
-These are already aligned with the current attendance implementation direction:
+- bisa melihat attendance tenant sesuai aturan core
+- owner dashboard tersedia di `GET /attendance-summary/owner-dashboard`
+
+## Attendance List Contract
 
 ### `GET /attendance-logs`
 
-Purpose:
-- List attendance logs
+Query yang aktif sekarang:
 
-Behavior:
-- Owner sees tenant-wide logs
-- Employee only sees their own logs
-
-Query:
 - `page`
 - `limit`
 - `q`
 - `employee_id`
 - `type`
 - `source`
+- `status`
+- `selfie_status`
+- `org_unit_id`
+- `branch_id`
+- `work_location_id`
+- `exception_type`
 - `attendance_date`
 - `date_from`
 - `date_to`
 
-### `GET /attendance-logs/:id`
+Behavior umum:
 
-Purpose:
-- Fetch a single attendance log
+- owner/admin bisa melihat data tenant sesuai akses
+- employee dibatasi oleh core agar hanya melihat data sendiri
 
-Behavior:
-- Owner can access logs within tenant
-- Employee can access only their own log
+## Attendance Action Contract
 
 ### `POST /attendance-logs/check-in`
 
-Purpose:
-- Record employee mobile check-in
-
 ### `POST /attendance-logs/check-out`
 
-Purpose:
-- Record employee mobile check-out
-
-## Missing Endpoints Recommended Before Mobile Starts
-
-### `GET /me`
-
-Purpose:
-- Return auth identity plus top-level role/tenant context needed for bootstrapping the app
-
-Suggested response:
-
-```json
-{
-  "data": {
-    "user_id": "uuid",
-    "user_name": "EMP-ATT-001",
-    "tenant_id": "uuid",
-    "tenant_name": "PT Beruang",
-    "roles": ["employee"]
-  },
-  "message": "Your request has been successfully processed",
-  "success": true
-}
-```
-
-### `GET /me/employee`
-
-Purpose:
-- Return employee profile for the logged-in user
-
-Suggested fields:
-- `id`
-- `employee_no`
-- `full_name`
-- `email`
-- `org_unit_id`
-- `job_position_id`
-- `location_id`
-- `shift_id`
-- `status`
-
-### `GET /attendance-summary/today`
-
-Purpose:
-- Drive the main mobile home screen
-
-Suggested response:
-
-```json
-{
-  "data": {
-    "attendance_date": "2026-03-28",
-    "today_status": "checked_in",
-    "checked_in": true,
-    "checked_out": false,
-    "check_in_log_id": "uuid",
-    "check_out_log_id": null,
-    "last_log_type": "check_in",
-    "last_logged_at": "2026-03-28T08:05:00+08:00",
-    "can_check_in": false,
-    "can_check_out": true
-  },
-  "message": "Your request has been successfully processed",
-  "success": true
-}
-```
-
-### `GET /attendance-policy`
-
-Purpose:
-- Expose the current policy the mobile client needs to present and validate against
-
-Suggested fields:
-- `timezone`
-- `attendance_radius_meters`
-- `attendance_check_in_start`
-- `attendance_check_in_end`
-- `attendance_check_out_start`
-- `attendance_check_out_end`
-
-### `GET /me/shift-today`
-
-Purpose:
-- Give the employee a simple shift snapshot for the current day
-
-Suggested fields:
-- `shift_id`
-- `shift_name`
-- `start_time`
-- `end_time`
-- `attendance_date`
-
-## Request / Response Contracts
-
-### Check-In Request
+Body request yang aktif sekarang:
 
 ```json
 {
@@ -206,112 +82,124 @@ Suggested fields:
   "address": "Makassar",
   "device_id": "ios-sim-001",
   "device_name": "iPhone Test",
-  "notes": "Arrived"
+  "notes": "Arrived",
+  "selfie_file_id": "uuidv7"
 }
 ```
 
-### Check-Out Request
+Catatan penting:
 
-```json
-{
-  "logged_at": "2026-03-28T17:15:00+08:00",
-  "device_id": "ios-sim-001",
-  "device_name": "iPhone Test"
-}
-```
+- `selfie_file_id` saat ini wajib
+- `logged_at` optional, tapi kalau dikirim harus format RFC3339
+- response sukses mengembalikan `id`
 
-### Standard Success Response
+Success message saat ini:
 
-```json
-{
-  "data": {
-    "id": "uuid"
-  },
-  "message": "Attendance recorded successfully",
-  "success": true
-}
-```
+- `"Attendance recorded successfully"`
 
-### Standard Error Cases
+## Supporting Mobile Routes
 
-- `400` duplicate check-in
-- `400` check-out before check-in
-- `400` invalid timestamp payload
-- `401` missing or invalid token
-- `404` employee profile not found
+### `GET /me`
 
-## Business Rules To Freeze Before Mobile Build
+Dipakai untuk bootstrap identity session saat app start.
 
-These must be explicit before UI implementation:
+Field aktif:
 
-1. What timezone is authoritative for attendance day calculation?
-2. Can employee check-in outside the allowed time window?
-3. Can employee check-in outside the allowed radius?
-4. Will outside-policy attendance be rejected or stored with a different status?
-5. Is duplicate prevention per day or per shift?
-6. Does mobile need idempotency protection for retry?
+- `user_id`
+- `user_name`
+- `tenant_id`
+- `tenant_name`
+- `roles`
+- `company_id`
+- `company_name`
 
-## Recommended Rule Decisions For V1
+### `GET /me/employee`
 
-To keep implementation simple:
+Dipakai untuk profil employee milik user yang login.
 
-1. Use company timezone as the source of truth.
-2. Allow only one `check_in` and one `check_out` per employee per attendance date.
-3. Reject `check_out` if no `check_in` exists for that date.
-4. Do not implement radius/time-window enforcement yet unless business confirms exact behavior.
-5. Store device metadata now, even if it is not yet enforced.
+Field aktif:
 
-## Automated Test Priorities
+- `id`
+- `employee_no`
+- `full_name`
+- `email`
+- `user_id`
+- `org_unit_id`
+- `job_position_id`
+- `location_id`
+- `shift_id`
+- `status`
+- `join_date`
 
-### Backend
+### `GET /me/shift-today`
 
-1. Employee can check in successfully.
-2. Duplicate check-in is rejected.
-3. Check-out without check-in is rejected.
-4. Check-out after check-in succeeds.
-5. Employee list endpoint only returns own logs.
-6. Owner list endpoint returns tenant logs.
-7. Employee cannot open another employee's log detail.
+Dipakai untuk kartu shift hari ini.
 
-### Web
+Field aktif:
 
-1. Owner attendance page loads and shows logs.
-2. Employee attendance page shows only employee logs.
-3. Attendance list keeps rendering correctly without hydration mismatch.
+- `shift_id`
+- `shift_name`
+- `start_time`
+- `end_time`
+- `timezone`
+- `attendance_date`
 
-## Implementation Backlog
+Jika user belum punya shift hari ini, endpoint saat ini bisa mengembalikan sukses dengan `data = null`.
 
-### Phase 1: Ready Before Mobile UI
+### `GET /attendance-summary/today`
 
-- [x] Attendance log table and CRUD-style read endpoints
-- [x] Employee self check-in/check-out endpoints
-- [x] `GET /me`
-- [x] `GET /me/employee`
-- [x] `GET /attendance-summary/today`
-- [x] `GET /attendance-policy`
-- [x] `GET /me/shift-today`
+Dipakai untuk home summary mobile.
 
-### Phase 2: Strongly Recommended After Bootstrapping
+Field aktif:
 
-- [ ] Idempotency key support for attendance actions
-- [ ] Attendance request / correction flow
-- [ ] Leave request module
-- [ ] Holiday / calendar feed
+- `attendance_date`
+- `today_status`
+- `checked_in`
+- `checked_out`
+- `check_in_log_id`
+- `check_out_log_id`
+- `last_log_type`
+- `last_logged_at`
+- `can_check_in`
+- `can_check_out`
 
-### Phase 3: Operational Hardening
+### `GET /attendance-policy`
 
-- [ ] Radius enforcement
-- [ ] Time-window enforcement
-- [ ] Device registration / session management
-- [ ] Evidence upload for attendance correction
+Dipakai untuk menampilkan policy attendance yang relevan ke employee.
 
-## Definition Of Ready For Mobile App Start
+Field aktif:
 
-The mobile app should not start before:
+- `timezone`
+- `attendance_radius_meters`
+- `attendance_check_in_start`
+- `attendance_check_in_end`
+- `attendance_check_out_start`
+- `attendance_check_out_end`
 
-1. The Phase 1 endpoints exist.
-2. Auth flow is stable.
-3. Error messages are predictable for expected attendance failures.
-4. At least one employee test account exists.
-5. Backend test cases for attendance flow exist.
-6. Owner web attendance page already works for support/audit visibility.
+## Storage Dependency
+
+Flow mobile attendance saat ini bergantung pada storage module:
+
+1. client minta upload URL ke `/storage/upload-url`
+2. client upload selfie
+3. client kirim `selfie_file_id` ke endpoint check-in/check-out
+
+Jika `selfie_file_id` tidak valid, folder salah, atau status file bukan `pending`, request attendance akan ditolak.
+
+## Business Rules Active Today
+
+Dari implementasi core attendance saat ini:
+
+1. satu employee hanya boleh punya satu `check_in` per tanggal attendance
+2. satu employee hanya boleh punya satu `check_out` per tanggal attendance
+3. `check_out` ditolak bila belum ada `check_in` pada tanggal yang sama
+4. employee harus punya `shift_id`
+5. selfie file harus ada, berasal dari folder attendance face, dan masih `pending`
+6. source attendance mobile saat ini disimpan sebagai `mobile`
+7. status attendance yang dibuat saat ini adalah `recorded`
+
+## Known Scope Notes
+
+- owner dashboard sudah tersedia, jadi web audit summary tidak lagi hanya backlog
+- policy radius/window sudah tersedia via endpoint dedicated
+- check-in/check-out masih online flow; belum ada offline sync atau idempotency layer khusus mobile
