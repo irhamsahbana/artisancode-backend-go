@@ -3,6 +3,7 @@ package consumer
 import (
 	"codebase-app/internal/infrastructure/config"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
+	emailint "codebase-app/internal/integration/email"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 	"context"
 	"encoding/json"
@@ -12,9 +13,13 @@ import (
 )
 
 type ForgotPasswordEventPayload struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
-	Token string `json:"token"`
+	Email   string   `json:"email"`
+	Role    string   `json:"role"`
+	Token   string   `json:"token"`
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+	Body    string   `json:"body"`
+	IsHTML  bool     `json:"is_html"`
 }
 
 func ForgotPasswordHandler(ctx context.Context, msg integrationPorts.MessageBusMessage) {
@@ -55,6 +60,15 @@ func ForgotPasswordHandler(ctx context.Context, msg integrationPorts.MessageBusM
 func sendForgotPassword(ctx context.Context, to []string, payload *ForgotPasswordEventPayload) error {
 	ctx, span := infraTracing.StartSpan(ctx, "consumer.SendForgotPassword")
 	defer span.End()
+
+	if len(payload.To) > 0 && payload.Subject != "" && payload.Body != "" {
+		return sendQueuedEmail(ctx, emailint.EmailPayload{
+			To:      payload.To,
+			Subject: payload.Subject,
+			Body:    payload.Body,
+			IsHTML:  payload.IsHTML,
+		})
+	}
 
 	var (
 		mail             = config.Envs.Mail

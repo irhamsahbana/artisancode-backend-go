@@ -3,6 +3,7 @@ package setup
 import (
 	"time"
 
+	"codebase-app/internal/adapter"
 	attendanceCore "codebase-app/internal/core/attendance"
 	companyCore "codebase-app/internal/core/company"
 	employeeCore "codebase-app/internal/core/employee"
@@ -39,22 +40,26 @@ import (
 	userRepo "codebase-app/internal/framework/secondary/db/postgres/user"
 	worklocationRepo "codebase-app/internal/framework/secondary/db/postgres/worklocation"
 	workshiftRepo "codebase-app/internal/framework/secondary/db/postgres/workshift"
+
+	storage "codebase-app/internal/integration/storage"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/jmoiron/sqlx"
 
 	"codebase-app/internal/infrastructure"
+	"codebase-app/internal/integration/ratelimit"
 	"codebase-app/internal/integration/tokencache"
 	"codebase-app/internal/middleware"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
 	"codebase-app/pkg/response"
 )
 
-func HttpDependencies(
-	app *fiber.App,
-	db *sqlx.DB,
-	s3 integrationPorts.StorageContract,
-	bus integrationPorts.MessagePublisher,
-) {
+func HttpDependencies() {
+	var (
+		app = adapter.Adapters.RestServer
+		db  = adapter.Adapters.Postgres
+		bus = adapter.Adapters.MessagePublisher
+		s3  = storage.NewStorageIntegration(adapter.Adapters.Storage)
+	)
+
 	userRepository := userRepo.NewUserRepository(userRepo.UserRepositoryConfig{
 		DB: db,
 	})
@@ -81,6 +86,7 @@ func HttpDependencies(
 	})
 
 	tokenCache := tokencache.NewTokenCache(time.Hour*24*7, time.Minute*10)
+	authRateLimiter := ratelimit.NewCacheLimiter()
 	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.AttendanceRepositoryConfig{
 		DB: db,
 	})
@@ -94,6 +100,7 @@ func HttpDependencies(
 	userCoreInst := userCore.NewUserCore(userCore.UserCoreConfig{
 		Repo:       userRepository,
 		TokenCache: tokenCache,
+		Bus:        bus,
 	})
 	companyCoreInst := companyCore.NewCompanyCore(companyCore.CompanyCoreConfig{
 		Repo: companyRepository,
@@ -140,7 +147,8 @@ func HttpDependencies(
 		Repo: meRepository,
 	})
 	userHandler.NewUserHandler(userHandler.UserHandlerConfig{
-		Core: userCoreInst,
+		Core:        userCoreInst,
+		RateLimiter: authRateLimiter,
 	}).Register(app.Group("/users"))
 	companyHandler.NewCompanyHandler(companyHandler.CompanyHandlerConfig{
 		Core: companyCoreInst,

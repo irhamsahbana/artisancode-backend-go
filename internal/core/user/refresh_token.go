@@ -27,7 +27,7 @@ func (c *userCore) RefreshToken(ctx context.Context, user coreentity.User) (*cor
 		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid or expired refresh token")
 	}
 
-	foundUser, err := c.repo.FindActiveUserByEmailAndTenant(ctx, "", tokenData.TenantID)
+	foundUser, err := c.repo.FindActiveUserByIDAndTenant(ctx, tokenData.UserID, tokenData.TenantID)
 	if err != nil {
 		return nil, err
 	}

@@ -11,8 +11,8 @@ type OrgUnit struct {
 }
 
 type GetOrgUnitsReq struct {
-	Q         string `query:"q" validate:"omitempty,min=2"`
-	Category  string `query:"category" validate:"omitempty,oneof=company branch division department unit"`
+	Q        string `query:"q" validate:"omitempty,min=2"`
+	Category string `query:"category" validate:"omitempty,oneof=company branch division department unit"`
 	types.MetaQuery
 }
 
@@ -34,10 +34,10 @@ type GetOrgUnitResp struct {
 }
 
 type CreateOrgUnitReq struct {
-	Code      string  `json:"code" validate:"required,min=1"`
-	Name      string  `json:"name" validate:"required,min=2"`
-	ParentID  *string `json:"parent_id" validate:"omitempty,uuidv7"`
-	Category  string  `json:"category" validate:"required,oneof=company branch division department unit"`
+	Code     string  `json:"code" validate:"required,min=1"`
+	Name     string  `json:"name" validate:"required,min=2"`
+	ParentID *string `json:"parent_id" validate:"omitempty,uuidv7"`
+	Category string  `json:"category" validate:"required,oneof=company branch division department unit"`
 }
 
 type CreateOrgUnitResp struct {
@@ -45,11 +45,11 @@ type CreateOrgUnitResp struct {
 }
 
 type UpdateOrgUnitReq struct {
-	ID        string  `params:"id" validate:"required"`
-	Code      string  `json:"code" validate:"required,min=1"`
-	Name      string  `json:"name" validate:"required,min=2"`
-	ParentID  *string `json:"parent_id" validate:"omitempty,uuidv7"`
-	Category  string  `json:"category" validate:"required,oneof=company branch division department unit"`
+	ID       string  `params:"id" validate:"required"`
+	Code     string  `json:"code" validate:"required,min=1"`
+	Name     string  `json:"name" validate:"required,min=2"`
+	ParentID *string `json:"parent_id" validate:"omitempty,uuidv7"`
+	Category string  `json:"category" validate:"required,oneof=company branch division department unit"`
 }
 
 type DeleteOrgUnitReq struct {

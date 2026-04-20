@@ -52,6 +52,41 @@ func RefreshTokenReqToCore(ctx context.Context, req restentity.RefreshTokenReq) 
 	}
 }
 
+func VerifyEmailReqToCore(ctx context.Context, req restentity.VerifyEmailReq) coreentity.UserActionToken {
+	_ = common.GetUserContext(ctx)
+	return coreentity.UserActionToken{
+		Token:   req.Token,
+		Purpose: coreentity.UserActionTokenPurposeEmailVerification,
+	}
+}
+
+func ResendVerificationEmailReqToCore(ctx context.Context, req restentity.ResendVerificationEmailReq) coreentity.User {
+	uc := common.GetUserContext(ctx)
+	return coreentity.User{
+		UserCtx: uc,
+		Email:   req.Email,
+	}
+}
+
+func ForgotPasswordReqToCore(ctx context.Context, req restentity.ForgotPasswordReq) coreentity.User {
+	uc := common.GetUserContext(ctx)
+	return coreentity.User{
+		UserCtx: uc,
+		Email:   req.Email,
+	}
+}
+
+func ResetPasswordReqToCore(ctx context.Context, req restentity.ResetPasswordReq) (coreentity.UserActionToken, coreentity.User) {
+	uc := common.GetUserContext(ctx)
+	return coreentity.UserActionToken{
+			Token:   req.Token,
+			Purpose: coreentity.UserActionTokenPurposePasswordReset,
+		}, coreentity.User{
+			UserCtx:  uc,
+			Password: req.Password,
+		}
+}
+
 func AuthTokensToLoginResp(tokens coreentity.AuthTokens) restentity.LoginResp {
 	return restentity.LoginResp{
 		AccessToken:  tokens.AccessToken,
@@ -59,10 +94,10 @@ func AuthTokensToLoginResp(tokens coreentity.AuthTokens) restentity.LoginResp {
 	}
 }
 
-func AuthTokensToRegisterResp(tokens coreentity.AuthTokens) restentity.RegisterResp {
+func RegisterResultToRegisterResp(result coreentity.RegisterResult) restentity.RegisterResp {
 	return restentity.RegisterResp{
-		AccessToken:  tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
+		Email:                result.Email,
+		VerificationRequired: result.VerificationRequired,
 	}
 }
 

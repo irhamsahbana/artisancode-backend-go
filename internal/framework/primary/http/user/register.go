@@ -38,13 +38,13 @@ func (h *userHandler) register(c *fiber.Ctx) error {
 
 	user := mapper.RegisterReqToCore(ctx, *req)
 	tenant := mapper.RegisterReqToTenant(ctx, *req)
-	tokens, err := h.core.RegisterOwner(ctx, user, tenant)
+	result, err := h.core.RegisterOwner(ctx, user, tenant)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Register service error")
 		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	resp := mapper.AuthTokensToRegisterResp(*tokens)
-	return c.Status(fiber.StatusOK).JSON(response.Success(resp, ""))
+	resp := mapper.RegisterResultToRegisterResp(*result)
+	return c.Status(fiber.StatusOK).JSON(response.Success(resp, "Please verify your email to continue"))
 }

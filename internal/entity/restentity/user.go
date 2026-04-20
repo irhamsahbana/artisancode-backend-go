@@ -32,6 +32,23 @@ type RegisterReq struct {
 }
 
 type RegisterResp struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	Email                string `json:"email"`
+	VerificationRequired bool   `json:"verification_required"`
+}
+
+type VerifyEmailReq struct {
+	Token string `json:"token" validate:"required"`
+}
+
+type ResendVerificationEmailReq struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type ForgotPasswordReq struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
+type ResetPasswordReq struct {
+	Token    string `json:"token" validate:"required"`
+	Password string `json:"password" validate:"required,min=8"`
 }

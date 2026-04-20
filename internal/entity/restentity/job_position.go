@@ -4,12 +4,12 @@ import "codebase-app/pkg/types"
 
 type JobPosition struct {
 	ID    string  `json:"id"`
-	Name  string `json:"name"`
+	Name  string  `json:"name"`
 	Grade *string `json:"grade"`
 }
 
 type GetJobPositionsReq struct {
-	Q        string `query:"q" validate:"omitempty,min=2"`
+	Q string `query:"q" validate:"omitempty,min=2"`
 	types.MetaQuery
 }
 
@@ -41,7 +41,7 @@ type CreateJobPositionResp struct {
 
 type UpdateJobPositionReq struct {
 	ID    string  `params:"id" validate:"required"`
-	Name  string `json:"name" validate:"required,min=2"`
+	Name  string  `json:"name" validate:"required,min=2"`
 	Grade *string `json:"grade"`
 }
 

@@ -23,6 +23,7 @@ func main() {
 	wsCmd := flag.NewFlagSet("ws", flag.ExitOnError)
 	cronjobCmd := flag.NewFlagSet("cronjob", flag.ExitOnError)
 	dbBenchCmd := flag.NewFlagSet("db-bench", flag.ExitOnError)
+	emailPreviewCmd := flag.NewFlagSet("email-preview", flag.ExitOnError)
 
 	if len(os.Args) < 2 {
 		log.Info().Msg("No command provided, defaulting to 'http_server'")
@@ -47,6 +48,8 @@ func main() {
 		cmd.RunWebsocket(wsCmd, os.Args[2:])
 	case "db-bench":
 		cmd.RunDBBench(dbBenchCmd, os.Args[2:])
+	case "email-preview":
+		cmd.RunEmailPreview(emailPreviewCmd, os.Args[2:])
 	default:
 		log.Info().Msg("Invalid command provided, defaulting to 'http_server' with provided flags")
 		if os.Args[1][0] == '-' { // check if the first argument is a flag

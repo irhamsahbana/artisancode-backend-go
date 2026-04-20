@@ -52,7 +52,7 @@ handler/
 - **One main function per file** — no exceptions
 - **Helper functions** specific to a main function are placed directly below it in the same file
 - The base file (`repo.go`, `core.go`, `handler.go`) contains only: struct definition, config struct, constructor, and (for handler) the `Register` method
-- Example: `register.go` contains `RegisterOwner`, `createTenant`, `getOwnerRole`, `createOwnerUser`, `generateAuthTokens`, `sendVerificationEmail`, `buildVerificationEmailBody`
+- Example: `register.go` contains `RegisterOwner`, `createTenant`, `getOwnerRole`, `createOwnerUser`, while shared email token/template helpers live in dedicated files such as `action_token_helpers.go`
 
 ## Ports (Interfaces)
 

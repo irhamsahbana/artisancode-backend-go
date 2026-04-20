@@ -15,7 +15,13 @@ func (a *App) Run(ctx context.Context) error {
 	ctx, span := infraTracing.StartSpan(ctx, "consumer.Run")
 	defer span.End()
 
-	err := a.validate()
+	err := a.build(ctx)
+	if err != nil {
+		infraTracing.RecordError(span, err)
+		return err
+	}
+
+	err = a.validate()
 	if err != nil {
 		infraTracing.RecordError(span, err)
 		return err

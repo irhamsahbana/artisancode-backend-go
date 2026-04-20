@@ -118,6 +118,50 @@ var defaultCatalog = MessageCatalog{
 		ID: "Refresh token tidak valid atau sudah kedaluwarsa",
 		EN: "Invalid or expired refresh token",
 	},
+	"Please verify your email to continue": {
+		ID: "Silakan verifikasi email Anda untuk melanjutkan",
+		EN: "Please verify your email to continue",
+	},
+	"Email is not verified": {
+		ID: "Email belum diverifikasi",
+		EN: "Email is not verified",
+	},
+	"Email is already verified": {
+		ID: "Email sudah diverifikasi",
+		EN: "Email is already verified",
+	},
+	"Email verified successfully": {
+		ID: "Email berhasil diverifikasi",
+		EN: "Email verified successfully",
+	},
+	"Verification email has been resent": {
+		ID: "Email verifikasi berhasil dikirim ulang",
+		EN: "Verification email has been resent",
+	},
+	"If the email is registered, a password reset link has been sent": {
+		ID: "Jika email terdaftar, tautan reset password sudah dikirim",
+		EN: "If the email is registered, a password reset link has been sent",
+	},
+	"Password has been reset successfully": {
+		ID: "Password berhasil direset",
+		EN: "Password has been reset successfully",
+	},
+	"Invalid or expired email verification token": {
+		ID: "Token verifikasi email tidak valid atau sudah kedaluwarsa",
+		EN: "Invalid or expired email verification token",
+	},
+	"Invalid or expired password reset token": {
+		ID: "Token reset password tidak valid atau sudah kedaluwarsa",
+		EN: "Invalid or expired password reset token",
+	},
+	"Too many verification email requests. Please wait before trying again": {
+		ID: "Terlalu banyak permintaan email verifikasi. Silakan tunggu sebentar sebelum mencoba lagi",
+		EN: "Too many verification email requests. Please wait before trying again",
+	},
+	"Too many password reset requests. Please wait before trying again": {
+		ID: "Terlalu banyak permintaan reset password. Silakan tunggu sebentar sebelum mencoba lagi",
+		EN: "Too many password reset requests. Please wait before trying again",
+	},
 	"Employee not found": {
 		ID: "Karyawan tidak ditemukan",
 		EN: "Employee not found",
@@ -213,6 +257,10 @@ var defaultCatalog = MessageCatalog{
 	"Export job message bus is not configured": {
 		ID: "Message bus export job belum dikonfigurasi",
 		EN: "Export job message bus is not configured",
+	},
+	"Email message bus is not configured": {
+		ID: "Message bus email belum dikonfigurasi",
+		EN: "Email message bus is not configured",
 	},
 	"Export job not found": {
 		ID: "Export job tidak ditemukan",

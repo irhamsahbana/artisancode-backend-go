@@ -6,8 +6,6 @@ import (
 	"codebase-app/internal/infrastructure/config"
 	infraLogging "codebase-app/internal/infrastructure/logging"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
-	"codebase-app/internal/setup"
-	"codebase-app/pkg/validator"
 	"context"
 	"flag"
 
@@ -19,11 +17,6 @@ func RunHttpServer(cmd *flag.FlagSet, args []string) {
 		envs        = config.Envs
 		flagAppPort = cmd.String("port", "3000", "Application port")
 		serverPort  string
-	)
-
-	adapter.Adapters.Sync(
-		adapter.WithPostgres(),
-		adapter.WithValidator(validator.NewValidator()),
 	)
 
 	var otlpEndpoint string
@@ -82,13 +75,7 @@ func RunHttpServer(cmd *flag.FlagSet, args []string) {
 		serverPort = *flagAppPort
 	}
 
-	bus, err := setup.NewMessagePublisher(adapter.Adapters.Postgres)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize HTTP message bus")
-	}
-
 	app := httpModule.NewApp(httpModule.AppConfig{
-		Bus:      bus,
 		Shutdown: adapter.Adapters.Unsync,
 	})
 	err = app.Run(
@@ -97,7 +84,6 @@ func RunHttpServer(cmd *flag.FlagSet, args []string) {
 		envs.App.Version,
 		envs.App.Environtment,
 		serverPort,
-		adapter.Adapters.Postgres,
 	)
 	if err != nil {
 		log.Fatal().Err(err).Msg("http::RunHttpServer::Failed to run HTTP app")

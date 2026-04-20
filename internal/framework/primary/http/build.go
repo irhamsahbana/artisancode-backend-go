@@ -4,32 +4,31 @@ import (
 	"codebase-app/internal/adapter"
 	"codebase-app/internal/infrastructure"
 	infraMetrics "codebase-app/internal/infrastructure/metrics"
-	storage "codebase-app/internal/integration/storage"
 	"codebase-app/internal/middleware"
 	"codebase-app/internal/setup"
+	"codebase-app/pkg/validator"
+	"context"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
 
-func (a *App) build(appName string, appVersion string, appEnvironment string, db *sqlx.DB) (*fiber.App, error) {
+func (a *App) build(ctx context.Context, appName string, appVersion string, appEnvironment string) (*fiber.App, error) {
 	app := fiber.New()
 	adapter.Adapters.Sync(
 		adapter.WithRestServer(app),
+		adapter.WithPostgres(),
+		adapter.WithMessagePublisher(),
+		adapter.WithValidator(validator.NewValidator()),
+		adapter.WithRestServer(app),
 		adapter.WithOpenAISDK(),
+		adapter.WithEmailSender(),
 		adapter.WithStorage(),
 	)
 
-	s3 := storage.NewStorageIntegration(adapter.Adapters.Storage)
 	metrics := infraMetrics.New(appName, appVersion, appEnvironment)
 
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowMethods: "GET,POST,PUT,DELETE,PATCH,OPTIONS,HEAD",
-		AllowHeaders: "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization",
-	}))
+	app.Use(middleware.CORS())
 	app.Use(middleware.RequestID)
 	app.Use(middleware.WithAppLogger(log.Logger))
 	app.Use(middleware.WithRequestLanguage())
@@ -41,12 +40,7 @@ func (a *App) build(appName string, appVersion string, appEnvironment string, db
 
 	app.Get("/metrics", metrics.Handler())
 
-	setup.HttpDependencies(
-		app,
-		db,
-		s3,
-		a.bus,
-	)
+	setup.HttpDependencies()
 
 	return app, nil
 }

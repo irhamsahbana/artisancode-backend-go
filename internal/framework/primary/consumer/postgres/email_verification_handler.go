@@ -3,6 +3,7 @@ package consumer
 import (
 	"codebase-app/internal/infrastructure/config"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
+	emailint "codebase-app/internal/integration/email"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 	"context"
 	"encoding/json"
@@ -12,8 +13,12 @@ import (
 )
 
 type EmailVerificationEventPayload struct {
-	Email string `json:"email"`
-	Token string `json:"token"`
+	Email   string   `json:"email"`
+	Token   string   `json:"token"`
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+	Body    string   `json:"body"`
+	IsHTML  bool     `json:"is_html"`
 }
 
 func EmailVerificationHandler(ctx context.Context, msg integrationPorts.MessageBusMessage) {
@@ -55,6 +60,15 @@ func EmailVerificationHandler(ctx context.Context, msg integrationPorts.MessageB
 func sendEmailVerification(ctx context.Context, to []string, payload *EmailVerificationEventPayload) error {
 	ctx, span := infraTracing.StartSpan(ctx, "consumer.SendEmailVerification")
 	defer span.End()
+
+	if len(payload.To) > 0 && payload.Subject != "" && payload.Body != "" {
+		return sendQueuedEmail(ctx, emailint.EmailPayload{
+			To:      payload.To,
+			Subject: payload.Subject,
+			Body:    payload.Body,
+			IsHTML:  payload.IsHTML,
+		})
+	}
 
 	var (
 		mail             = config.Envs.Mail

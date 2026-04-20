@@ -1,13 +1,14 @@
 package consumer
 
 import (
+	corePorts "codebase-app/internal/ports/core"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 )
 
 type App struct {
 	emailSubscription   integrationPorts.MessageBusSubscription
 	exportSubscription  integrationPorts.MessageBusSubscription
-	exportCore          IntegrationExportJobProcessor
+	exportCore          corePorts.ExportJobCore
 	exportPublisher     integrationPorts.MessagePublisher
 	subscriptionManager integrationPorts.MessageSubscriptionManager
 	shutdown            func() error
@@ -16,7 +17,7 @@ type App struct {
 type AppConfig struct {
 	EmailSubscription   integrationPorts.MessageBusSubscription
 	ExportSubscription  integrationPorts.MessageBusSubscription
-	ExportCore          IntegrationExportJobProcessor
+	ExportCore          corePorts.ExportJobCore
 	ExportPublisher     integrationPorts.MessagePublisher
 	SubscriptionManager integrationPorts.MessageSubscriptionManager
 	Shutdown            func() error

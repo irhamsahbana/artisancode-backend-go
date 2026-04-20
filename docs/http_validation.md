@@ -67,6 +67,35 @@ type UpdateItemReq struct {
 | `max=N` | Maximum length (string) or value (number) |
 | `oneof=a b c` | Must be one of listed values |
 
+## Auth Email Requests
+
+Auth email endpoints currently use these request shapes:
+
+```go
+type VerifyEmailReq struct {
+    Token string `json:"token" validate:"required"`
+}
+
+type ResendVerificationEmailReq struct {
+    Email string `json:"email" validate:"required,email"`
+}
+
+type ForgotPasswordReq struct {
+    Email string `json:"email" validate:"required,email"`
+}
+
+type ResetPasswordReq struct {
+    Token    string `json:"token" validate:"required"`
+    Password string `json:"password" validate:"required,min=8"`
+}
+```
+
+Notes:
+
+- resend verification and forgot password are public endpoints
+- reset password and verify email consume one-time action tokens
+- rate-limited handlers should return `429` with `Retry-After`
+
 ## Domain Constants
 
 - When a request or response field maps to a known domain enum such as attendance `type`, `source`, or `status`, define and reuse the canonical constant in `internal/entity/common/enum.go`.

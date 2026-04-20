@@ -1,23 +1,29 @@
 package coreentity
 
-import "codebase-app/internal/entity/common"
+import (
+	"time"
+
+	"codebase-app/internal/entity/common"
+)
 
 type User struct {
 	UserCtx common.UserContext
 
-	ID           string
-	RoleIDs      []string
-	RoleNames    []string
-	Name         string
-	UserName     string
-	Email        string
-	Password     string
-	RefreshToken string
-	TenantID     string
-	TenantCode   string
-	TenantName   string
-	CompanyID    *string
-	CompanyName  *string
+	ID                string
+	RoleIDs           []string
+	RoleNames         []string
+	Name              string
+	UserName          string
+	Email             string
+	Password          string
+	RefreshToken      string
+	TenantID          string
+	TenantCode        string
+	TenantName        string
+	CompanyID         *string
+	CompanyName       *string
+	PreferredLanguage string
+	EmailVerifiedAt   *time.Time
 }
 
 type UserListFilter struct {

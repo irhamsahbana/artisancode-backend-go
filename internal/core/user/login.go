@@ -33,6 +33,11 @@ func (c *userCore) Login(ctx context.Context, user coreentity.User) (*coreentity
 		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid credentials")
 	}
 
+	if foundUser.EmailVerifiedAt == nil {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{"email": user.Email}).Msg("Email is not verified")
+		return nil, errmsg.NewCustomErrors(403).SetMessage("Email is not verified")
+	}
+
 	tokenExp := time.Now().UTC().Add(time.Hour * 24)
 	payload := jwthandler.CostumClaimsPayload{
 		UserID:          foundUser.ID,

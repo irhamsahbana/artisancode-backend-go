@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"codebase-app/internal/integration/ratelimit"
 	"codebase-app/internal/middleware"
 	corePorts "codebase-app/internal/ports/core"
 
@@ -8,22 +9,29 @@ import (
 )
 
 type userHandler struct {
-	core corePorts.UserCore
+	core        corePorts.UserCore
+	rateLimiter ratelimit.AttemptLimiter
 }
 
 type UserHandlerConfig struct {
-	Core corePorts.UserCore
+	Core        corePorts.UserCore
+	RateLimiter ratelimit.AttemptLimiter
 }
 
 func NewUserHandler(cfg UserHandlerConfig) *userHandler {
 	return &userHandler{
-		core: cfg.Core,
+		core:        cfg.Core,
+		rateLimiter: cfg.RateLimiter,
 	}
 }
 
 func (h *userHandler) Register(router fiber.Router) {
 	router.Post("/login", h.login)
 	router.Post("/register", h.register)
+	router.Post("/verify-email", h.verifyEmail)
+	router.Post("/resend-verification-email", h.resendVerificationEmail)
+	router.Post("/forgot-password", h.forgotPassword)
+	router.Post("/reset-password", h.resetPassword)
 	router.Post("/refresh-token", h.refreshToken)
 	router.Get("/", middleware.Auth, h.getUsers)
 	router.Get("/:id", middleware.Auth, h.getUser)

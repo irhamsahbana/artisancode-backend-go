@@ -15,6 +15,9 @@ var (
 type Config struct {
 	App struct {
 		Name                    string `env:"APP_NAME"`
+		ProductName             string `env:"APP_PRODUCT_NAME" env-default:"Presense"`
+		WebsiteURL              string `env:"APP_WEBSITE_URL" env-default:"https://artisanco.de"`
+		SupportEmail            string `env:"APP_SUPPORT_EMAIL" env-default:"support@artisanco.de"`
 		Version                 string `env:"APP_VERSION" env-default:"dev"`
 		Environtment            string `env:"APP_ENV" env-default:"production"`
 		BaseURL                 string `env:"APP_BASE_URL" env-default:"http://localhost:3000"`

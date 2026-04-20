@@ -17,3 +17,4 @@ When a backend task changes workflow expectations, coding conventions, or agent 
 - [Parameter Convention](./parameter_convention.md) - Value vs pointer, filter structs, mapper naming
 - [Storage Upload Flow](./storage_upload_flow.md) - Presigned upload lifecycle, storage file linking, orphan cleanup
 - [Mobile Attendance V1](./mobile_attendance_v1.md) - Mobile readiness scope, endpoint contracts, and backlog
+- [Auth Email Flow](./auth_email_flow.md) - Verification/reset token flow, rate limiting, templates, and preview command

@@ -6,13 +6,14 @@ import (
 
 	"codebase-app/internal/entity/coreentity"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
+	corePorts "codebase-app/internal/ports/core"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel"
 )
 
-func ExportJobRequestedHandler(ctx context.Context, core IntegrationExportJobProcessor) func(integrationPorts.MessageBusMessage) {
+func ExportJobRequestedHandler(ctx context.Context, core corePorts.ExportJobCore) func(integrationPorts.MessageBusMessage) {
 	return func(msg integrationPorts.MessageBusMessage) {
 		msgCtx := otel.GetTextMapPropagator().Extract(ctx, MessageHeadersCarrier(msg.Headers()))
 		msgCtx, span := infraTracing.StartSpan(msgCtx, "consumer.ExportJobRequestedHandler")
@@ -52,8 +53,4 @@ func ExportJobRequestedHandler(ctx context.Context, core IntegrationExportJobPro
 			log.Ctx(msgCtx).Error().Err(err).Any("payload", payload).Msg("consumer::ExportJobRequestedHandler error while acknowledging message")
 		}
 	}
-}
-
-type IntegrationExportJobProcessor interface {
-	ProcessExportJob(ctx context.Context, filter coreentity.ExportJobDetailFilter) error
 }

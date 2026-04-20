@@ -1,12 +1,10 @@
 package http
 
 import (
-	infraTracing "codebase-app/internal/infrastructure/tracing"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 	"context"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
 
@@ -27,26 +25,23 @@ func NewApp(cfg AppConfig) *App {
 	}
 }
 
-func (a *App) Run(ctx context.Context, appName string, appVersion string, appEnvironment string, port string, db *sqlx.DB) error {
-	ctx, span := infraTracing.StartSpan(ctx, "http.Run")
-	defer span.End()
-
-	app, err := a.build(appName, appVersion, appEnvironment, db)
+func (a *App) Run(
+	ctx context.Context,
+	appName string,
+	appVersion string,
+	appEnvironment string,
+	port string,
+) error {
+	app, err := a.build(ctx, appName, appVersion, appEnvironment)
 	if err != nil {
-		infraTracing.RecordError(span, err)
 		return err
 	}
-	defer func() {
-		if err := a.bus.Close(); err != nil {
-			log.Error().Err(err).Msg("Failed to close HTTP message bus")
-		}
-	}()
 
 	go a.serve(app, port)
 
 	err = a.waitForShutdown(ctx)
 	if err != nil {
-		infraTracing.RecordError(span, err)
+		return err
 	}
 
 	return err

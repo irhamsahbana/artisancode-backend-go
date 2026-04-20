@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"strings"
+	"time"
 
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
@@ -53,7 +54,8 @@ func (r *userRepo) GetUserByEmailAndTenant(ctx context.Context, email, tenantCod
 			t.name as tenant_name,
 			u.username,
 			u.company_id,
-			c.name as company_name
+			c.name as company_name,
+			u.email_verified_at
 		FROM
 			users u
 		JOIN tenants t ON t.id = u.tenant_id
@@ -65,14 +67,15 @@ func (r *userRepo) GetUserByEmailAndTenant(ctx context.Context, email, tenantCod
 	`
 
 	var row struct {
-		ID          string  `db:"id"`
-		Email       string  `db:"email"`
-		Password    string  `db:"password"`
-		TenantID    string  `db:"tenant_id"`
-		TenantName  string  `db:"tenant_name"`
-		UserName    string  `db:"username"`
-		CompanyID   *string `db:"company_id"`
-		CompanyName *string `db:"company_name"`
+		ID              string       `db:"id"`
+		Email           string       `db:"email"`
+		Password        string       `db:"password"`
+		TenantID        string       `db:"tenant_id"`
+		TenantName      string       `db:"tenant_name"`
+		UserName        string       `db:"username"`
+		CompanyID       *string      `db:"company_id"`
+		CompanyName     *string      `db:"company_name"`
+		EmailVerifiedAt sql.NullTime `db:"email_verified_at"`
 	}
 
 	err := r.db.GetContext(ctx, &row, r.db.Rebind(query), email, tenantCode)
@@ -87,15 +90,21 @@ func (r *userRepo) GetUserByEmailAndTenant(ctx context.Context, email, tenantCod
 		return nil, err
 	}
 
+	var emailVerifiedAt *time.Time
+	if row.EmailVerifiedAt.Valid {
+		emailVerifiedAt = &row.EmailVerifiedAt.Time
+	}
+
 	return &coreentity.User{
-		ID:          row.ID,
-		Email:       row.Email,
-		Password:    row.Password,
-		TenantID:    row.TenantID,
-		TenantName:  row.TenantName,
-		UserName:    row.UserName,
-		CompanyID:   row.CompanyID,
-		CompanyName: row.CompanyName,
+		ID:              row.ID,
+		Email:           row.Email,
+		Password:        row.Password,
+		TenantID:        row.TenantID,
+		TenantName:      row.TenantName,
+		UserName:        row.UserName,
+		CompanyID:       row.CompanyID,
+		CompanyName:     row.CompanyName,
+		EmailVerifiedAt: emailVerifiedAt,
 	}, nil
 }
 

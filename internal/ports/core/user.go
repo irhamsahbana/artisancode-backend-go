@@ -8,7 +8,11 @@ import (
 type UserCore interface {
 	Login(ctx context.Context, user coreentity.User) (*coreentity.AuthTokens, error)
 	RefreshToken(ctx context.Context, user coreentity.User) (*coreentity.AuthTokens, error)
-	RegisterOwner(ctx context.Context, user coreentity.User, tenant coreentity.Tenant) (*coreentity.AuthTokens, error)
+	RegisterOwner(ctx context.Context, user coreentity.User, tenant coreentity.Tenant) (*coreentity.RegisterResult, error)
+	VerifyEmail(ctx context.Context, token coreentity.UserActionToken) error
+	ResendVerificationEmail(ctx context.Context, user coreentity.User) error
+	ForgotPassword(ctx context.Context, user coreentity.User) error
+	ResetPassword(ctx context.Context, token coreentity.UserActionToken, user coreentity.User) error
 	GetUsers(ctx context.Context, filter coreentity.UserListFilter) ([]coreentity.User, int, error)
 	GetUser(ctx context.Context, filter coreentity.User) (*coreentity.User, error)
 	CreateUser(ctx context.Context, data coreentity.User) (*coreentity.User, error)

@@ -1,7 +1,6 @@
 package http
 
 import (
-	infraTracing "codebase-app/internal/infrastructure/tracing"
 	"context"
 	"os"
 	"os/signal"
@@ -12,9 +11,6 @@ import (
 )
 
 func (a *App) waitForShutdown(ctx context.Context) error {
-	ctx, span := infraTracing.StartSpan(ctx, "http.WaitForShutdown")
-	defer span.End()
-
 	quit := make(chan os.Signal, 1)
 
 	shutdownSignals := []os.Signal{os.Interrupt, syscall.SIGTERM, syscall.SIGINT}
@@ -30,7 +26,7 @@ func (a *App) waitForShutdown(ctx context.Context) error {
 	if a.shutdown != nil {
 		err = a.shutdown()
 		if err != nil {
-			infraTracing.RecordError(span, err)
+			return err
 		}
 	}
 

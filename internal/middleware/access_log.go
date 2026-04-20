@@ -21,6 +21,10 @@ func WithAccessLog(logger zerolog.Logger) fiber.Handler {
 		requestId, _ := c.Context().UserValue("request_id").(string)
 		spanCtx := oteltrace.SpanFromContext(c.UserContext()).SpanContext()
 
+		if c.Path() == "/metrics" {
+			return nil
+		}
+
 		event := infrastructure.AccessLogger.Info().Ctx(c.UserContext()).
 			Str("method", c.Method()).
 			Str("path", c.Path()).

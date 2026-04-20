@@ -16,6 +16,7 @@ If a task changes backend workflow expectations, coding conventions, or agent be
 - [Error Handling](./docs/error_handling.md)
 - [Handler Pattern](./docs/handler_pattern.md)
 - [Parameter Convention](./docs/parameter_convention.md)
+- [Auth Email Flow](./docs/auth_email_flow.md)
 
 ## Quick Rules
 
@@ -68,7 +69,7 @@ handler/
 - **One main function per file** — no exceptions
 - **Helper functions** specific to a main function are placed directly below it in the same file
 - The base file (`repo.go`, `core.go`, `handler.go`) contains only: struct definition, config struct, constructor, and (for handler) the `Register` method
-- Example: `register.go` contains `RegisterOwner`, `createTenant`, `getOwnerRole`, `createOwnerUser`, `generateAuthTokens`, `sendVerificationEmail`, `buildVerificationEmailBody`
+- Example: auth flow files may split responsibilities across `register.go`, `verify_email.go`, `forgot_password.go`, `reset_password.go`, and `action_token_helpers.go`
 
 ### Core Layer Rules
 - Core layer must **never** import `restentity` — it only works with `coreentity`
@@ -197,7 +198,7 @@ func (r *employeeRepo) GetEmployees(ctx context.Context, filter coreentity.Emplo
 ```
 
 ### Dependency Injection
-- Build dependencies in `internal/setup/dependency.go`
+- Build HTTP dependencies in `internal/setup/http_dependency.go`
 - Use config struct pattern for all constructors:
 
 ```go

@@ -7,8 +7,6 @@ import (
 	"codebase-app/internal/infrastructure/config"
 	infraLogging "codebase-app/internal/infrastructure/logging"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
-	storage "codebase-app/internal/integration/storage"
-	"codebase-app/internal/setup"
 	"context"
 	"flag"
 	"path/filepath"
@@ -18,11 +16,6 @@ import (
 
 func RunConsumer(cmd *flag.FlagSet, args []string) {
 	envs := config.Envs
-
-	adapter.Adapters.Sync(
-		adapter.WithPostgres(),
-		adapter.WithStorage(),
-	)
 
 	var otlpEndpoint string
 	if envs.Instrumentation.Enabled {
@@ -75,41 +68,14 @@ func RunConsumer(cmd *flag.FlagSet, args []string) {
 		Run(ctx context.Context) error
 	}
 
-	exportPublisher, err := setup.NewMessagePublisher(adapter.Adapters.Postgres)
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to initialize consumer message publisher")
-	}
-
-	subscriptionManager, err := setup.NewMessageSubscriptionManager(adapter.Adapters.Postgres)
-	if err != nil {
-		if closeErr := exportPublisher.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("Failed to close consumer message publisher")
-		}
-		log.Fatal().Err(err).Msg("Failed to initialize message subscription manager")
-	}
-
-	appCfg, err := setup.NewConsumerAppConfig(
-		context.Background(),
-		adapter.Adapters.Postgres,
-		storage.NewStorageIntegration(adapter.Adapters.Storage),
-		exportPublisher,
-		subscriptionManager,
-		adapter.Adapters.Unsync,
-	)
-	if err != nil {
-		if closeErr := exportPublisher.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("Failed to close consumer message publisher")
-		}
-		if closeErr := subscriptionManager.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("Failed to close message subscription manager")
-		}
-		log.Fatal().Err(err).Msg("Failed to build consumer app config")
-	}
-
 	if envs.MessageBus.Driver == "postgres" {
-		app = postgresConsumerModule.NewApp(appCfg)
+		app = postgresConsumerModule.NewApp(postgresConsumerModule.AppConfig{
+			Shutdown: adapter.Adapters.Unsync,
+		})
 	} else {
-		app = natsConsumerModule.NewApp(appCfg)
+		app = natsConsumerModule.NewApp(postgresConsumerModule.AppConfig{
+			Shutdown: adapter.Adapters.Unsync,
+		})
 	}
 
 	err = app.Run(context.Background())

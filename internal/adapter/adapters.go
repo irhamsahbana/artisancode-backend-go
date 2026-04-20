@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"strings"
 
+	emailint "codebase-app/internal/integration/email"
+	integrationPorts "codebase-app/internal/ports/secondary/integration"
+
 	// import "codebase-app/internal/pkg/validator"
 	firebase "firebase.google.com/go"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -28,20 +31,23 @@ type Validator interface {
 }
 
 type Adapter struct {
-	// Driving Adapters
+	// Driving Adapters / Primary Adapters
 	RestServer           *fiber.App
 	WsServer             *http.Server
 	EmailConsumerNats    jetstream.Consumer
 	EmailConsumerCtxNats jetstream.ConsumeContext
 
-	//Driven Adapters
-	Postgres     *sqlx.DB
-	Validator    Validator // *validator.Validator
-	Storage      *s3.Client
-	VenamonGolog *tele.Bot
-	FirebaseSDK  *firebase.App
-	OpenAISDK    *openai.Client
-	DropboxFiles files.Client
+	//Driven Adapters / Secondary Adapters
+	Postgres                   *sqlx.DB
+	MessagePublisher           integrationPorts.MessagePublisher
+	MessageSubscriptionManager integrationPorts.MessageSubscriptionManager
+	Validator                  Validator // *validator.Validator
+	Storage                    *s3.Client
+	EmailSender                *emailint.EmailSender
+	VenamonGolog               *tele.Bot
+	FirebaseSDK                *firebase.App
+	OpenAISDK                  *openai.Client
+	DropboxFiles               files.Client
 }
 
 func (a *Adapter) Sync(opts ...Option) {
@@ -66,6 +72,20 @@ func (a *Adapter) Unsync() error {
 			errs = append(errs, err.Error())
 		}
 		log.Info().Msg("Ws server disconnected")
+	}
+
+	if a.MessagePublisher != nil {
+		if err := a.MessagePublisher.Close(); err != nil {
+			errs = append(errs, err.Error())
+		}
+		log.Info().Msg("Message publisher disconnected")
+	}
+
+	if a.MessageSubscriptionManager != nil {
+		if err := a.MessageSubscriptionManager.Close(); err != nil {
+			errs = append(errs, err.Error())
+		}
+		log.Info().Msg("Message subscription manager disconnected")
 	}
 
 	if a.Postgres != nil {

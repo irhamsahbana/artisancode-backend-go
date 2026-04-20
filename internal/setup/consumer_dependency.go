@@ -4,25 +4,37 @@ import (
 	"context"
 	"time"
 
+	"codebase-app/internal/adapter"
 	exportJobCore "codebase-app/internal/core/export_job"
 	"codebase-app/internal/entity/common"
-	consumerApp "codebase-app/internal/framework/primary/consumer/postgres"
 	attendanceRepo "codebase-app/internal/framework/secondary/db/postgres/attendance"
 	exportJobRepo "codebase-app/internal/framework/secondary/db/postgres/export_job"
 	storageRepo "codebase-app/internal/framework/secondary/db/postgres/storage"
+	storage "codebase-app/internal/integration/storage"
+	corePorts "codebase-app/internal/ports/core"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
-
-	"github.com/jmoiron/sqlx"
 )
 
-func NewConsumerAppConfig(
+type ConsumerDependencies struct {
+	EmailSubscription   integrationPorts.MessageBusSubscription
+	ExportSubscription  integrationPorts.MessageBusSubscription
+	ExportCore          corePorts.ExportJobCore
+	ExportPublisher     integrationPorts.MessagePublisher
+	SubscriptionManager integrationPorts.MessageSubscriptionManager
+	Shutdown            func() error
+}
+
+func NewConsumerDependencies(
 	ctx context.Context,
-	db *sqlx.DB,
-	s3 integrationPorts.StorageContract,
-	bus integrationPorts.MessagePublisher,
-	subscriptionManager integrationPorts.MessageSubscriptionManager,
 	shutdown func() error,
-) (consumerApp.AppConfig, error) {
+) (ConsumerDependencies, error) {
+	var (
+		db                  = adapter.Adapters.Postgres
+		bus                 = adapter.Adapters.MessagePublisher
+		s3                  = storage.NewStorageIntegration(adapter.Adapters.Storage)
+		subscriptionManager = adapter.Adapters.MessageSubscriptionManager
+	)
+
 	emailSubscription, err := subscriptionManager.CreateSubscription(ctx, integrationPorts.MessageBusSubscriptionConfig{
 		StreamName:          common.MessageStreamEmailService,
 		StreamDescription:   "Email service stream",
@@ -34,7 +46,7 @@ func NewConsumerAppConfig(
 		ConsumerDescription: "Email service consumer",
 	})
 	if err != nil {
-		return consumerApp.AppConfig{}, err
+		return ConsumerDependencies{}, err
 	}
 
 	exportSubscription, err := subscriptionManager.CreateSubscription(ctx, integrationPorts.MessageBusSubscriptionConfig{
@@ -48,7 +60,7 @@ func NewConsumerAppConfig(
 		ConsumerDescription: "Export job consumer",
 	})
 	if err != nil {
-		return consumerApp.AppConfig{}, err
+		return ConsumerDependencies{}, err
 	}
 
 	exportJobRepository := exportJobRepo.NewExportJobRepository(exportJobRepo.ExportJobRepositoryConfig{
@@ -68,7 +80,7 @@ func NewConsumerAppConfig(
 		Bus:            bus,
 	})
 
-	return consumerApp.AppConfig{
+	return ConsumerDependencies{
 		EmailSubscription:   emailSubscription,
 		ExportSubscription:  exportSubscription,
 		ExportCore:          exportCore,

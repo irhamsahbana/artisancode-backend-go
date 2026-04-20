@@ -1,6 +1,8 @@
 package email
 
 import (
+	"codebase-app/internal/infrastructure/tracing"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/smtp"
@@ -22,6 +24,7 @@ type EmailPayload struct {
 	To      []string
 	Subject string
 	Body    string
+	IsHTML  bool
 }
 
 var (
@@ -29,7 +32,7 @@ var (
 	once   sync.Once
 )
 
-func NewEmailSender(host, port, username, password, from string) *EmailSender {
+func newEmailSender(host, port, username, password, from string) *EmailSender {
 	return &EmailSender{
 		host:     host,
 		port:     port,
@@ -41,7 +44,7 @@ func NewEmailSender(host, port, username, password, from string) *EmailSender {
 
 func InitEmailSender(host, port, username, password, from string) {
 	once.Do(func() {
-		sender = NewEmailSender(host, port, username, password, from)
+		sender = newEmailSender(host, port, username, password, from)
 	})
 }
 
@@ -51,30 +54,36 @@ func GetEmailSender() *EmailSender {
 
 func (s *EmailSender) buildMessage(payload EmailPayload) []byte {
 	var sb strings.Builder
+	contentType := "text/plain"
+	if payload.IsHTML {
+		contentType = "text/html"
+	}
 	sb.WriteString(fmt.Sprintf("From: %s\r\n", s.from))
 	sb.WriteString(fmt.Sprintf("To: %s\r\n", strings.Join(payload.To, ", ")))
 	sb.WriteString(fmt.Sprintf("Subject: %s\r\n", payload.Subject))
 	sb.WriteString("MIME-Version: 1.0\r\n")
-	sb.WriteString("Content-Type: text/plain; charset=\"utf-8\"\r\n")
+	sb.WriteString(fmt.Sprintf("Content-Type: %s; charset=\"utf-8\"\r\n", contentType))
 	sb.WriteString("\r\n")
 	sb.WriteString(payload.Body)
 	return []byte(sb.String())
 }
 
-func (s *EmailSender) Send(payload EmailPayload) {
-	go func() {
-		if err := s.send(payload); err != nil {
-			log.Error().Err(err).
-				Str("to", strings.Join(payload.To, ", ")).
-				Str("subject", payload.Subject).
-				Msg("Failed to send email")
-		} else {
-			log.Info().
-				Str("to", strings.Join(payload.To, ", ")).
-				Str("subject", payload.Subject).
-				Msg("Email sent successfully")
-		}
-	}()
+func (s *EmailSender) Send(ctx context.Context, payload EmailPayload) {
+	if err := s.send(payload); err != nil {
+		log.Ctx(ctx).Error().Err(err).
+			Str("to", strings.Join(payload.To, ", ")).
+			Str("subject", payload.Subject).
+			Msg("Failed to send email")
+	} else {
+		log.Ctx(ctx).Info().
+			Str("to", strings.Join(payload.To, ", ")).
+			Str("subject", payload.Subject).
+			Msg("Email sent successfully")
+	}
+}
+
+func (s *EmailSender) SendSync(payload EmailPayload) error {
+	return s.send(payload)
 }
 
 func (s *EmailSender) send(payload EmailPayload) error {
@@ -132,10 +141,13 @@ func (s *EmailSender) send(payload EmailPayload) error {
 	return c.Quit()
 }
 
-func SendEmail(payload EmailPayload) {
+func SendEmail(ctx context.Context, payload EmailPayload) {
+	ctx, span := tracing.StartSpan(ctx, "internal:integration:email:email:SendEmail")
+	defer span.End()
+
 	if sender == nil {
-		log.Warn().Msg("Email sender not initialized, skipping email")
+		log.Ctx(ctx).Error().Msg("Email sender not initialized, skipping email")
 		return
 	}
-	sender.Send(payload)
+	sender.Send(ctx, payload)
 }
