@@ -207,7 +207,7 @@ func (s *csvSeedState) rebuildLookups() {
 		register(seedTableOrgUnits, scopedLookupKey(row["tenant_code"], row["code"]), row["id"])
 	}
 	for _, row := range s.files[seedTableUsers].rows {
-		register(seedTableUsers, strings.ToLower(strings.TrimSpace(row["email"])), row["id"])
+		register(seedTableUsers, scopedLookupKey(row["tenant_code"], row["email"]), row["id"])
 	}
 	for _, row := range s.files[seedTableJobPositions].rows {
 		register(seedTableJobPositions, scopedLookupKey(row["tenant_code"], row["name"]), row["id"])

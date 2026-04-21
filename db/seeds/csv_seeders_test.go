@@ -54,12 +54,12 @@ func TestResolveUserIDByEmail(t *testing.T) {
 	state := &csvSeedState{
 		ids: map[string]map[string]string{
 			seedTableUsers: {
-				"attendance.employee.001@example.com": "user-001",
+				scopedLookupKey("BERUA", "attendance.employee.001@example.com"): "user-001",
 			},
 		},
 	}
 
-	id, err := resolveUserID(state, "attendance.employee.001@example.com")
+	id, err := resolveUserID(state, "BERUA", "attendance.employee.001@example.com")
 	if err != nil {
 		t.Fatalf("resolveUserID returned error: %v", err)
 	}

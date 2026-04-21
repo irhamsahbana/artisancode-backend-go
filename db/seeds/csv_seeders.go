@@ -241,7 +241,7 @@ func (s *Seed) seedUsers(tx *sqlx.Tx, state *csvSeedState) error {
 	cfg := upsertConfig{
 		table:              seedTableUsers,
 		columns:            []string{"tenant_id", "company_id", "name", "username", "email", "password", "email_verified_at"},
-		matchColumns:       []string{"email"},
+		matchColumns:       []string{"tenant_id", "email"},
 		hasUpdatedAt:       true,
 		supportsSoftDelete: true,
 	}
@@ -301,7 +301,7 @@ func (s *Seed) seedUsers(tx *sqlx.Tx, state *csvSeedState) error {
 			row["id"] = id
 			file.modified = true
 		}
-		state.registerID(seedTableUsers, strings.ToLower(strings.TrimSpace(email)), id)
+		state.registerID(seedTableUsers, scopedLookupKey(row["tenant_code"], email), id)
 	}
 
 	return nil
@@ -320,9 +320,9 @@ func (s *Seed) seedUserRoles(tx *sqlx.Tx, state *csvSeedState) error {
 			return fmt.Errorf("seed user_roles %s/%s: %w", email, roleName, err)
 		}
 
-		userID, ok := state.lookupID(seedTableUsers, strings.ToLower(strings.TrimSpace(email)))
+		userID, ok := state.lookupID(seedTableUsers, scopedLookupKey(row["tenant_code"], email))
 		if !ok {
-			return fmt.Errorf("seed user_roles %s/%s: user %q not found", email, roleName, email)
+			return fmt.Errorf("seed user_roles %s/%s: user %q not found in tenant %q", email, roleName, email, row["tenant_code"])
 		}
 		roleID, err := resolveScopedID(state, seedTableRoles, row["tenant_code"], roleName, "role")
 		if err != nil {
@@ -533,7 +533,7 @@ func (s *Seed) seedEmployees(tx *sqlx.Tx, state *csvSeedState) error {
 		if err != nil {
 			return fmt.Errorf("seed employees %s: %w", employeeNo, err)
 		}
-		userID, err := resolveUserID(state, row["user_email"])
+		userID, err := resolveUserID(state, row["tenant_code"], row["user_email"])
 		if err != nil {
 			return fmt.Errorf("seed employees %s: %w", employeeNo, err)
 		}
@@ -599,14 +599,14 @@ func resolveTenantID(state *csvSeedState, tenantCode string) (*string, error) {
 	return &id, nil
 }
 
-func resolveUserID(state *csvSeedState, email string) (*string, error) {
+func resolveUserID(state *csvSeedState, tenantCode string, email string) (*string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
 	if email == "" {
 		return nil, nil
 	}
-	id, ok := state.lookupID(seedTableUsers, email)
+	id, ok := state.lookupID(seedTableUsers, scopedLookupKey(tenantCode, email))
 	if !ok {
-		return nil, fmt.Errorf("user %q not found", email)
+		return nil, fmt.Errorf("user %q not found in tenant %q", email, tenantCode)
 	}
 	return &id, nil
 }
