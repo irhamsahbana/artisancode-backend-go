@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP WITH TIME ZONE,
     deleted_at TIMESTAMP WITH TIME ZONE,
 
-    CONSTRAINT users_email_unique UNIQUE (email),
+    CONSTRAINT users_tenant_id_email_unique UNIQUE (tenant_id, email),
     FOREIGN KEY (tenant_id) REFERENCES tenants (id),
     FOREIGN KEY (company_id) REFERENCES org_units (id)
 );

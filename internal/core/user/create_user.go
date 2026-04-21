@@ -15,7 +15,7 @@ func (c *userCore) CreateUser(ctx context.Context, data coreentity.User) (*coree
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:create_user:CreateUser")
 	defer span.End()
 
-	emailExists, err := c.repo.ExistsActiveUserByEmail(ctx, data.Email)
+	emailExists, err := c.repo.ExistsActiveUserByEmailAndTenant(ctx, data.Email, data.TenantID)
 	if err != nil {
 		return nil, err
 	}

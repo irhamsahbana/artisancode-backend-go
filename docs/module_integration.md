@@ -95,9 +95,21 @@ Gunakan interface dari `internal/ports/...` untuk dependency lintas modul.
 Contoh yang memang aktif:
 
 - `employee` core memakai `UserRepository`
+- `userinvitation` core memakai `UserRepository` dan `EmployeeRepository`
 - `worklocation` core memakai `OrgUnitRepository`
 - `attendance` core memakai `CompanyRepository` dan `StorageRepository`
 - `export_job` core memakai `AttendanceRepository`, `StorageRepository`, dan message publisher
+
+Catatan invitation flow:
+
+- module `user-invitations` diregister di `internal/setup/http_dependency.go`
+- route `GET /user-invitations/accept` dan `POST /user-invitations/accept` bersifat public
+- route create/list/resend/revoke invitation diproteksi auth di handler per-route
+
+Catatan employee flow:
+
+- `CreateEmployee` tidak lagi otomatis membuat record `users`
+- akses login employee sekarang diharapkan lewat invitation/activation flow terpisah
 
 Aturan:
 

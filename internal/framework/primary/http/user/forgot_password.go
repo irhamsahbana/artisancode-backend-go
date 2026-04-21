@@ -36,14 +36,17 @@ func (h *userHandler) forgotPassword(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	if err := h.limitForgotPassword(c, req.Email); err != nil {
+	if err := h.limitForgotPassword(c, req.Email, req.TenantCode); err != nil {
 		return err
 	}
 
 	user := mapper.ForgotPasswordReqToCore(ctx, *req)
 	err := h.core.ForgotPassword(ctx, user)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"email": req.Email}).Msg("Forgot password service error")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
+			"email":       req.Email,
+			"tenant_code": req.TenantCode,
+		}).Msg("Forgot password service error")
 		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}

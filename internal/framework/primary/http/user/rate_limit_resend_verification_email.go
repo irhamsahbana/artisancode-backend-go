@@ -17,13 +17,14 @@ const (
 	resendVerificationEmailWindow   = 15 * time.Minute
 )
 
-func (h *userHandler) limitResendVerificationEmail(c *fiber.Ctx, email string) error {
+func (h *userHandler) limitResendVerificationEmail(c *fiber.Ctx, email, tenantCode string) error {
 	if h.rateLimiter == nil {
 		return nil
 	}
 
 	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
-	cooldownKey := fmt.Sprintf("resend-verification-cooldown:%s:%s", normalizedEmail, c.IP())
+	normalizedTenantCode := strings.ToUpper(strings.TrimSpace(tenantCode))
+	cooldownKey := fmt.Sprintf("resend-verification-cooldown:%s:%s:%s", normalizedTenantCode, normalizedEmail, c.IP())
 	allowed, retryAfter := h.rateLimiter.Allow(cooldownKey, 1, resendVerificationEmailCooldown)
 	if !allowed {
 		c.Set("Retry-After", fmt.Sprintf("%.0f", retryAfter.Seconds()))
@@ -32,7 +33,7 @@ func (h *userHandler) limitResendVerificationEmail(c *fiber.Ctx, email string) e
 		)
 	}
 
-	burstKey := fmt.Sprintf("resend-verification-burst:%s:%s", normalizedEmail, c.IP())
+	burstKey := fmt.Sprintf("resend-verification-burst:%s:%s:%s", normalizedTenantCode, normalizedEmail, c.IP())
 	allowed, retryAfter = h.rateLimiter.Allow(burstKey, resendVerificationEmailLimit, resendVerificationEmailWindow)
 	if allowed {
 		return nil

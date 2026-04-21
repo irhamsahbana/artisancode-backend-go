@@ -12,7 +12,7 @@ func (c *userCore) ResendVerificationEmail(ctx context.Context, user coreentity.
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:resend_verification_email:ResendVerificationEmail")
 	defer span.End()
 
-	foundUser, err := c.repo.FindActiveUserByEmail(ctx, user.Email)
+	foundUser, err := c.repo.FindActiveUserByEmailAndTenant(ctx, user.Email, user.TenantCode)
 	if err != nil {
 		return err
 	}

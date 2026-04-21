@@ -1,8 +1,6 @@
 package email
 
 import (
-	"strings"
-
 	"codebase-app/internal/infrastructure/config"
 )
 
@@ -145,25 +143,18 @@ func buildBaseTemplateData(input AuthTemplateInput) AuthEmailTemplateData {
 func buildAssetURL(path string) string {
 	base := config.Envs.FrontendURL.ClientBaseURL
 	if base == "" {
-		base = "http://localhost:5000"
+		base = "http://localhost:3030"
 	}
 	return base + path
 }
 
 func buildLogoURL() string {
-	base := config.Envs.FrontendURL.ClientBaseURL
-	if isLocalhostURL(base) {
-		return presenseLogoDataURI
+	if config.Envs != nil {
+		customLogoURL := config.Envs.App.EmailLogoURL
+		if customLogoURL != "" {
+			return customLogoURL
+		}
 	}
 
 	return buildAssetURL("/favicon.png")
 }
-
-func isLocalhostURL(raw string) bool {
-	normalized := strings.ToLower(strings.TrimSpace(raw))
-	return normalized == "" ||
-		strings.Contains(normalized, "localhost") ||
-		strings.Contains(normalized, "127.0.0.1")
-}
-
-const presenseLogoDataURI = "data:image/png;base64,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"

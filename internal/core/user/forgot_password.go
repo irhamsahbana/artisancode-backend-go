@@ -12,7 +12,7 @@ func (c *userCore) ForgotPassword(ctx context.Context, user coreentity.User) err
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:forgot_password:ForgotPassword")
 	defer span.End()
 
-	foundUser, err := c.repo.FindActiveUserByEmail(ctx, user.Email)
+	foundUser, err := c.repo.FindActiveUserByEmailAndTenant(ctx, user.Email, user.TenantCode)
 	if err != nil {
 		if customErr, ok := err.(*errmsg.CustomError); ok && customErr.Msg == "User not found" {
 			return nil

@@ -17,13 +17,14 @@ const (
 	forgotPasswordWindow   = 15 * time.Minute
 )
 
-func (h *userHandler) limitForgotPassword(c *fiber.Ctx, email string) error {
+func (h *userHandler) limitForgotPassword(c *fiber.Ctx, email, tenantCode string) error {
 	if h.rateLimiter == nil {
 		return nil
 	}
 
 	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
-	cooldownKey := fmt.Sprintf("forgot-password-cooldown:%s:%s", normalizedEmail, c.IP())
+	normalizedTenantCode := strings.ToUpper(strings.TrimSpace(tenantCode))
+	cooldownKey := fmt.Sprintf("forgot-password-cooldown:%s:%s:%s", normalizedTenantCode, normalizedEmail, c.IP())
 	allowed, retryAfter := h.rateLimiter.Allow(cooldownKey, 1, forgotPasswordCooldown)
 	if !allowed {
 		c.Set("Retry-After", fmt.Sprintf("%.0f", retryAfter.Seconds()))
@@ -32,7 +33,7 @@ func (h *userHandler) limitForgotPassword(c *fiber.Ctx, email string) error {
 		)
 	}
 
-	burstKey := fmt.Sprintf("forgot-password-burst:%s:%s", normalizedEmail, c.IP())
+	burstKey := fmt.Sprintf("forgot-password-burst:%s:%s:%s", normalizedTenantCode, normalizedEmail, c.IP())
 	allowed, retryAfter = h.rateLimiter.Allow(burstKey, forgotPasswordLimit, forgotPasswordWindow)
 	if allowed {
 		return nil

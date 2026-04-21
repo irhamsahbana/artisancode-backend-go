@@ -17,6 +17,7 @@ type Employee struct {
 	LocationID       *string
 	ShiftID          *string
 	Status           string
+	AccessStatus     string
 	JoinDate         *string
 	JoinDateTimezone *string
 }

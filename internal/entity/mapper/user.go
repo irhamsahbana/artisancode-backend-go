@@ -63,16 +63,18 @@ func VerifyEmailReqToCore(ctx context.Context, req restentity.VerifyEmailReq) co
 func ResendVerificationEmailReqToCore(ctx context.Context, req restentity.ResendVerificationEmailReq) coreentity.User {
 	uc := common.GetUserContext(ctx)
 	return coreentity.User{
-		UserCtx: uc,
-		Email:   req.Email,
+		UserCtx:    uc,
+		Email:      req.Email,
+		TenantCode: req.TenantCode,
 	}
 }
 
 func ForgotPasswordReqToCore(ctx context.Context, req restentity.ForgotPasswordReq) coreentity.User {
 	uc := common.GetUserContext(ctx)
 	return coreentity.User{
-		UserCtx: uc,
-		Email:   req.Email,
+		UserCtx:    uc,
+		Email:      req.Email,
+		TenantCode: req.TenantCode,
 	}
 }
 

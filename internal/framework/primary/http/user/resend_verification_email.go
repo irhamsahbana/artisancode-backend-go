@@ -36,14 +36,17 @@ func (h *userHandler) resendVerificationEmail(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	if err := h.limitResendVerificationEmail(c, req.Email); err != nil {
+	if err := h.limitResendVerificationEmail(c, req.Email, req.TenantCode); err != nil {
 		return err
 	}
 
 	user := mapper.ResendVerificationEmailReqToCore(ctx, *req)
 	err := h.core.ResendVerificationEmail(ctx, user)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"email": req.Email}).Msg("Resend verification email service error")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
+			"email":       req.Email,
+			"tenant_code": req.TenantCode,
+		}).Msg("Resend verification email service error")
 		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}

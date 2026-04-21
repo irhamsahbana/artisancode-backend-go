@@ -54,7 +54,7 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 
 	emailChanged := existing.Email != data.Email
 	if emailChanged {
-		emailExists, err := c.userRepo.ExistsActiveUserByEmail(ctx, data.Email)
+		emailExists, err := c.userRepo.ExistsActiveUserByEmailAndTenant(ctx, data.Email, data.TenantID)
 		if err != nil {
 			return err
 		}

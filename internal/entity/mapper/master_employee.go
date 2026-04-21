@@ -19,6 +19,7 @@ func EmployeeFromCoreToRest(item coreentity.Employee) restentity.Employee {
 		LocationID:       item.LocationID,
 		ShiftID:          item.ShiftID,
 		Status:           item.Status,
+		AccessStatus:     item.AccessStatus,
 		JoinDate:         item.JoinDate,
 		JoinDateTimezone: item.JoinDateTimezone,
 	}

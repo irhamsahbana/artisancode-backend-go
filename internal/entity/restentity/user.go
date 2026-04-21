@@ -41,11 +41,13 @@ type VerifyEmailReq struct {
 }
 
 type ResendVerificationEmailReq struct {
-	Email string `json:"email" validate:"required,email"`
+	Email      string `json:"email" validate:"required,email"`
+	TenantCode string `json:"tenant_code" validate:"required,min=2,max=5,uppercase,alphanum"`
 }
 
 type ForgotPasswordReq struct {
-	Email string `json:"email" validate:"required,email"`
+	Email      string `json:"email" validate:"required,email"`
+	TenantCode string `json:"tenant_code" validate:"required,min=2,max=5,uppercase,alphanum"`
 }
 
 type ResetPasswordReq struct {

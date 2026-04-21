@@ -15,7 +15,7 @@ func (c *userCore) UpdateUser(ctx context.Context, data coreentity.User) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:update_user:UpdateUser")
 	defer span.End()
 
-	emailExists, err := c.repo.ExistsActiveUserByEmailExcludeUser(ctx, data.Email, data.ID)
+	emailExists, err := c.repo.ExistsActiveUserByEmailAndTenantExcludeUser(ctx, data.Email, data.TenantID, data.ID)
 	if err != nil {
 		return err
 	}

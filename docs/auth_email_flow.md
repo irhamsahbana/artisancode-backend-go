@@ -52,9 +52,15 @@ Public auth routes:
 - `POST /users/forgot-password`
 - `POST /users/reset-password`
 
+Tenant-aware request payloads:
+
+- `POST /users/login` requires `email`, `password`, and `tenant_code`
+- `POST /users/resend-verification-email` requires `email` and `tenant_code`
+- `POST /users/forgot-password` requires `email` and `tenant_code`
+
 ## Rate Limiting
 
-Sensitive email-triggering routes are limited by email + client IP:
+Sensitive email-triggering routes are limited by tenant code + email + client IP:
 
 - resend verification email:
   - cooldown: 1 request per 60 seconds
@@ -93,7 +99,9 @@ Environment config:
 
 - `APP_PRODUCT_NAME`
 - `APP_WEBSITE_URL`
+- `APP_EMAIL_LOGO_URL` (optional, overrides default email logo asset URL)
 - `APP_SUPPORT_EMAIL`
+- `FRONTEND_CLIENT_BASE_URL` (used to build the default logo asset URL when `APP_EMAIL_LOGO_URL` is empty)
 
 ## Preview Command
 

@@ -28,13 +28,27 @@ func (r *employeeRepo) GetEmployee(ctx context.Context, filter coreentity.Employ
 		LocationID       *string        `db:"location_id"`
 		ShiftID          *string        `db:"shift_id"`
 		Status           string         `db:"status"`
+		AccessStatus     string         `db:"access_status"`
 		JoinDate         *string        `db:"join_date"`
 		JoinDateTimezone *string        `db:"join_date_timezone"`
 	}
 
 	query := `
 		SELECT id, tenant_id, employee_no, full_name, email, user_id, org_unit_id, job_position_id,
-			location_id, shift_id, status, join_date, join_date_timezone
+			location_id, shift_id, status,
+			CASE
+				WHEN user_id IS NOT NULL THEN 'active'
+				WHEN EXISTS (
+					SELECT 1
+					FROM user_invitations ui
+					WHERE ui.employee_id = employees.id
+						AND ui.status = 'pending'
+						AND ui.expires_at >= NOW()
+						AND ui.deleted_at IS NULL
+				) THEN 'invited'
+				ELSE 'no_access'
+			END AS access_status,
+			join_date, join_date_timezone
 		FROM employees
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
@@ -60,6 +74,7 @@ func (r *employeeRepo) GetEmployee(ctx context.Context, filter coreentity.Employ
 		LocationID:       data.LocationID,
 		ShiftID:          data.ShiftID,
 		Status:           data.Status,
+		AccessStatus:     data.AccessStatus,
 		JoinDate:         data.JoinDate,
 		JoinDateTimezone: data.JoinDateTimezone,
 	}, nil

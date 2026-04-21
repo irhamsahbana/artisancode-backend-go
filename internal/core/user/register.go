@@ -16,15 +16,6 @@ func (c *userCore) RegisterOwner(ctx context.Context, user coreentity.User, tena
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:register:RegisterOwner")
 	defer span.End()
 
-	exist, err := c.repo.ExistsActiveUserByEmail(ctx, user.Email)
-	if err != nil {
-		return nil, err
-	}
-	if exist {
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{"email": user.Email}).Msg("Email already registered")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
-	}
-
 	tenantExist, err := c.repo.ExistsTenantByCode(ctx, tenant.Code)
 	if err != nil {
 		return nil, err

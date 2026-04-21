@@ -14,6 +14,7 @@ import (
 	rbacCore "codebase-app/internal/core/rbac"
 	storageCore "codebase-app/internal/core/storage"
 	userCore "codebase-app/internal/core/user"
+	userInvitationCore "codebase-app/internal/core/userinvitation"
 	worklocationCore "codebase-app/internal/core/worklocation"
 	workshiftCore "codebase-app/internal/core/workshift"
 	attendanceHandler "codebase-app/internal/framework/primary/http/attendance"
@@ -26,6 +27,7 @@ import (
 	rbacHandler "codebase-app/internal/framework/primary/http/rbac"
 	storageHandler "codebase-app/internal/framework/primary/http/storage"
 	userHandler "codebase-app/internal/framework/primary/http/user"
+	userInvitationHandler "codebase-app/internal/framework/primary/http/userinvitation"
 	worklocationHandler "codebase-app/internal/framework/primary/http/worklocation"
 	workshiftHandler "codebase-app/internal/framework/primary/http/workshift"
 	attendanceRepo "codebase-app/internal/framework/secondary/db/postgres/attendance"
@@ -38,6 +40,7 @@ import (
 	rbacRepo "codebase-app/internal/framework/secondary/db/postgres/rbac"
 	storageRepo "codebase-app/internal/framework/secondary/db/postgres/storage"
 	userRepo "codebase-app/internal/framework/secondary/db/postgres/user"
+	userInvitationRepo "codebase-app/internal/framework/secondary/db/postgres/userinvitation"
 	worklocationRepo "codebase-app/internal/framework/secondary/db/postgres/worklocation"
 	workshiftRepo "codebase-app/internal/framework/secondary/db/postgres/workshift"
 
@@ -96,6 +99,9 @@ func HttpDependencies() {
 	storageRepository := storageRepo.NewStorageRepository(storageRepo.StorageRepositoryConfig{
 		DB: db,
 	})
+	userInvitationRepository := userInvitationRepo.NewUserInvitationRepository(userInvitationRepo.UserInvitationRepositoryConfig{
+		DB: db,
+	})
 
 	userCoreInst := userCore.NewUserCore(userCore.UserCoreConfig{
 		Repo:       userRepository,
@@ -129,6 +135,11 @@ func HttpDependencies() {
 		Repo:     employeeRepository,
 		UserRepo: userRepository,
 	})
+	userInvitationCoreInst := userInvitationCore.NewUserInvitationCore(userInvitationCore.UserInvitationCoreConfig{
+		Repo:         userInvitationRepository,
+		UserRepo:     userRepository,
+		EmployeeRepo: employeeRepository,
+	})
 	attendanceCoreInst := attendanceCore.NewAttendanceCore(attendanceCore.AttendanceCoreConfig{
 		Repo:        attendanceRepository,
 		CompanyRepo: companyRepository,
@@ -150,6 +161,9 @@ func HttpDependencies() {
 		Core:        userCoreInst,
 		RateLimiter: authRateLimiter,
 	}).Register(app.Group("/users"))
+	userInvitationHandler.NewUserInvitationHandler(userInvitationHandler.UserInvitationHandlerConfig{
+		Core: userInvitationCoreInst,
+	}).Register(app.Group("/user-invitations"))
 	companyHandler.NewCompanyHandler(companyHandler.CompanyHandlerConfig{
 		Core: companyCoreInst,
 	}).Register(app.Group("/companies", middleware.Auth))

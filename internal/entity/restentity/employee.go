@@ -12,6 +12,7 @@ type Employee struct {
 	LocationID       *string `json:"location_id"`
 	ShiftID          *string `json:"shift_id"`
 	Status           string  `json:"status"`
+	AccessStatus     string  `json:"access_status"`
 	JoinDate         *string `json:"join_date"`
 	JoinDateTimezone *string `json:"join_date_timezone"`
 }

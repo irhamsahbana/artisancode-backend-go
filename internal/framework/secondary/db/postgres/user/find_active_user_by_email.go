@@ -13,8 +13,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userRepo) FindActiveUserByEmail(ctx context.Context, email string) (*coreentity.User, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:find_active_user_by_email:FindActiveUserByEmail")
+func (r *userRepo) FindActiveUserByEmailAndTenantID(ctx context.Context, email, tenantID string) (*coreentity.User, error) {
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:find_active_user_by_email:FindActiveUserByEmailAndTenantID")
 	defer span.End()
 
 	query := `
@@ -32,7 +32,7 @@ func (r *userRepo) FindActiveUserByEmail(ctx context.Context, email string) (*co
 		FROM users u
 		JOIN tenants t ON t.id = u.tenant_id
 		LEFT JOIN org_units c ON c.id = u.company_id AND c.category = 'company'
-		WHERE u.email = ? AND u.deleted_at IS NULL
+		WHERE u.email = ? AND u.tenant_id = ? AND u.deleted_at IS NULL
 		LIMIT 1
 	`
 
@@ -49,14 +49,20 @@ func (r *userRepo) FindActiveUserByEmail(ctx context.Context, email string) (*co
 		EmailVerifiedAt sql.NullTime `db:"email_verified_at"`
 	}
 
-	err := r.db.GetContext(ctx, &row, r.db.Rebind(query), email)
+	err := r.db.GetContext(ctx, &row, r.db.Rebind(query), email, tenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{"email": email}).Msg("User not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
+				"email":     email,
+				"tenant_id": tenantID,
+			}).Msg("User not found")
 			return nil, errmsg.NewCustomErrors(400).SetMessage("User not found")
 		}
 
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"email": email}).Msg("Failed to get user by email")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
+			"email":     email,
+			"tenant_id": tenantID,
+		}).Msg("Failed to get user by email and tenant")
 		return nil, err
 	}
 
