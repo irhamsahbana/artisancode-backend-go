@@ -68,6 +68,43 @@ func TestResolveUserIDByEmail(t *testing.T) {
 	}
 }
 
+func TestResolveUserIDFallsBackToUniqueEmailWhenTenantEmpty(t *testing.T) {
+	state := &csvSeedState{
+		ids: map[string]map[string]string{
+			seedTableUsers: {
+				scopedLookupKey("BERUA", "beruang@beruang.com"): "owner-001",
+			},
+		},
+	}
+
+	id, err := resolveUserID(state, "", "beruang@beruang.com")
+	if err != nil {
+		t.Fatalf("resolveUserID returned error: %v", err)
+	}
+	if id == nil || *id != "owner-001" {
+		t.Fatalf("resolveUserID returned %v, want %q", id, "owner-001")
+	}
+}
+
+func TestResolveUserIDReturnsAmbiguousWhenEmailExistsInMultipleTenants(t *testing.T) {
+	state := &csvSeedState{
+		ids: map[string]map[string]string{
+			seedTableUsers: {
+				scopedLookupKey("BERUA", "shared@example.com"): "user-001",
+				scopedLookupKey("KOPI", "shared@example.com"):  "user-002",
+			},
+		},
+	}
+
+	_, err := resolveUserID(state, "", "shared@example.com")
+	if err == nil {
+		t.Fatal("resolveUserID expected ambiguous error, got nil")
+	}
+	if !strings.Contains(err.Error(), "ambiguous") {
+		t.Fatalf("resolveUserID error = %q, want ambiguous", err.Error())
+	}
+}
+
 func TestTenantScopedRolePermissionsHaveScopedRolesAndPermissions(t *testing.T) {
 	state, err := newCSVSeedState()
 	if err != nil {

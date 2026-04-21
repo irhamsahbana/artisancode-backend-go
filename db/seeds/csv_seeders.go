@@ -320,9 +320,9 @@ func (s *Seed) seedUserRoles(tx *sqlx.Tx, state *csvSeedState) error {
 			return fmt.Errorf("seed user_roles %s/%s: %w", email, roleName, err)
 		}
 
-		userID, ok := state.lookupID(seedTableUsers, scopedLookupKey(row["tenant_code"], email))
-		if !ok {
-			return fmt.Errorf("seed user_roles %s/%s: user %q not found in tenant %q", email, roleName, email, row["tenant_code"])
+		userID, err := resolveUserID(state, row["tenant_code"], email)
+		if err != nil {
+			return fmt.Errorf("seed user_roles %s/%s: %w", email, roleName, err)
 		}
 		roleID, err := resolveScopedID(state, seedTableRoles, row["tenant_code"], roleName, "role")
 		if err != nil {
@@ -345,7 +345,7 @@ func (s *Seed) seedUserRoles(tx *sqlx.Tx, state *csvSeedState) error {
 			VALUES (?, ?)
 			ON CONFLICT (user_id, role_id) DO NOTHING
 		`
-		if _, err := tx.Exec(tx.Rebind(query), userID, roleID); err != nil {
+		if _, err := tx.Exec(tx.Rebind(query), *userID, roleID); err != nil {
 			return fmt.Errorf("seed user_roles %s/%s: %w", email, roleName, err)
 		}
 	}
@@ -604,11 +604,38 @@ func resolveUserID(state *csvSeedState, tenantCode string, email string) (*strin
 	if email == "" {
 		return nil, nil
 	}
-	id, ok := state.lookupID(seedTableUsers, scopedLookupKey(tenantCode, email))
-	if !ok {
-		return nil, fmt.Errorf("user %q not found in tenant %q", email, tenantCode)
+
+	if strings.TrimSpace(tenantCode) != "" {
+		id, ok := state.lookupID(seedTableUsers, scopedLookupKey(tenantCode, email))
+		if !ok {
+			return nil, fmt.Errorf("user %q not found in tenant %q", email, tenantCode)
+		}
+		return &id, nil
 	}
-	return &id, nil
+
+	entries, ok := state.ids[seedTableUsers]
+	if !ok {
+		return nil, fmt.Errorf("user %q not found", email)
+	}
+
+	var matchedID string
+	matches := 0
+	suffix := "::" + email
+	for key, id := range entries {
+		if strings.HasSuffix(key, suffix) {
+			matchedID = id
+			matches++
+		}
+	}
+
+	if matches == 0 {
+		return nil, fmt.Errorf("user %q not found", email)
+	}
+	if matches > 1 {
+		return nil, fmt.Errorf("user %q is ambiguous across tenants", email)
+	}
+
+	return &matchedID, nil
 }
 
 func resolveScopedID(state *csvSeedState, tableName string, scope string, value string, label string) (string, error) {
