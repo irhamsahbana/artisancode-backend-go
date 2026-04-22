@@ -57,6 +57,7 @@ func (c *userInvitationCore) CreateInvitation(ctx context.Context, data coreenti
 	}
 
 	created.AcceptToken = rawToken
+	created.EmailSent = c.trySendInvitationEmail(ctx, created)
 	return created, nil
 }
 

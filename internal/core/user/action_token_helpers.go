@@ -12,7 +12,6 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/config"
-	emailint "codebase-app/internal/integration/email"
 	"codebase-app/pkg/errmsg"
 )
 
@@ -118,10 +117,11 @@ func buildFrontendActionURL(path, rawToken string) string {
 }
 
 type queuedEmailPayload struct {
-	To      []string `json:"to"`
-	Subject string   `json:"subject"`
-	Body    string   `json:"body"`
-	IsHTML  bool     `json:"is_html"`
+	Email             string `json:"email"`
+	UserName          string `json:"user_name"`
+	TenantName        string `json:"tenant_name"`
+	ActionLink        string `json:"action_link"`
+	PreferredLanguage string `json:"preferred_language"`
 }
 
 func (c *userCore) enqueueVerificationEmail(ctx context.Context, userName, email, tenantName, verificationLink, preferredLanguage string) error {
@@ -129,21 +129,12 @@ func (c *userCore) enqueueVerificationEmail(ctx context.Context, userName, email
 		return errmsg.NewCustomErrors(500).SetMessage("Email message bus is not configured")
 	}
 
-	rendered, err := emailint.BuildVerificationEmail(emailint.AuthTemplateInput{
+	return c.bus.PublishJSON(ctx, common.MessageSubjectEmailVerification, queuedEmailPayload{
+		Email:             email,
 		UserName:          userName,
 		TenantName:        tenantName,
 		ActionLink:        verificationLink,
 		PreferredLanguage: preferredLanguage,
-	})
-	if err != nil {
-		return err
-	}
-
-	return c.bus.PublishJSON(ctx, common.MessageSubjectEmailVerification, queuedEmailPayload{
-		To:      []string{email},
-		Subject: rendered.Subject,
-		Body:    rendered.Body,
-		IsHTML:  true,
 	})
 }
 
@@ -152,20 +143,11 @@ func (c *userCore) enqueuePasswordResetEmail(ctx context.Context, userName, emai
 		return errmsg.NewCustomErrors(500).SetMessage("Email message bus is not configured")
 	}
 
-	rendered, err := emailint.BuildPasswordResetEmail(emailint.AuthTemplateInput{
+	return c.bus.PublishJSON(ctx, common.MessageSubjectEmailForgotPassword, queuedEmailPayload{
+		Email:             email,
 		UserName:          userName,
 		TenantName:        tenantName,
 		ActionLink:        resetLink,
 		PreferredLanguage: preferredLanguage,
-	})
-	if err != nil {
-		return err
-	}
-
-	return c.bus.PublishJSON(ctx, common.MessageSubjectEmailForgotPassword, queuedEmailPayload{
-		To:      []string{email},
-		Subject: rendered.Subject,
-		Body:    rendered.Body,
-		IsHTML:  true,
 	})
 }

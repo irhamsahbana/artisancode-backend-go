@@ -24,15 +24,22 @@ func (r *userInvitationRepo) ExistsActiveInvitation(ctx context.Context, tenantI
 				AND status = 'pending'
 				AND expires_at >= NOW()
 				AND deleted_at IS NULL
-				AND (
-					(employee_id IS NULL AND ? IS NULL)
-					OR employee_id = ?
-				)
+	`
+	args := []any{tenantID, email, roleCode}
+
+	if employeeID == nil || *employeeID == "" {
+		query += ` AND employee_id IS NULL`
+	} else {
+		query += ` AND employee_id = ?`
+		args = append(args, *employeeID)
+	}
+
+	query += `
 		)
 	`
 
 	var exists bool
-	if err := r.db.GetContext(ctx, &exists, r.db.Rebind(query), tenantID, email, roleCode, employeeID, employeeID); err != nil {
+	if err := r.db.GetContext(ctx, &exists, r.db.Rebind(query), args...); err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil
 		}

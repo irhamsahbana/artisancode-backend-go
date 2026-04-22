@@ -1,4 +1,4 @@
-package consumer
+package shared
 
 import "go.opentelemetry.io/otel/propagation"
 

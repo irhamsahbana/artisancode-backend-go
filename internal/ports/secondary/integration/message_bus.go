@@ -27,7 +27,7 @@ type MessageBusSubscriptionConfig struct {
 }
 
 type MessageBusSubscription interface {
-	Consume(handler func(MessageBusMessage)) (MessageBusSubscriptionContext, error)
+	Consume(ctx context.Context, handler func(context.Context, MessageBusMessage)) (MessageBusSubscriptionContext, error)
 }
 
 type MessageBusSubscriptionContext interface {
@@ -38,6 +38,6 @@ type MessageBusMessage interface {
 	Subject() string
 	Data() []byte
 	Headers() map[string][]string
-	Ack() error
-	Nak(reason string) error
+	Ack(ctx context.Context) error
+	Nak(ctx context.Context, reason string) error
 }

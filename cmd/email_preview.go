@@ -44,8 +44,19 @@ func RunEmailPreview(cmd *flag.FlagSet, args []string) {
 		log.Fatal().Err(err).Msg("Failed to build password reset email preview")
 	}
 
+	invitationPreview, err := emailint.BuildInvitationEmail(emailint.AuthTemplateInput{
+		UserName:          *userName,
+		TenantName:        *tenantName,
+		ActionLink:        "https://artisanco.de/preview/invitation",
+		PreferredLanguage: *language,
+	})
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to build invitation email preview")
+	}
+
 	verificationPath := filepath.Join(*outputDir, "verification.html")
 	resetPath := filepath.Join(*outputDir, "password_reset.html")
+	invitationPath := filepath.Join(*outputDir, "invitation.html")
 
 	if err := os.WriteFile(verificationPath, []byte(verificationPreview.Body), 0o644); err != nil {
 		log.Fatal().Err(err).Str("path", verificationPath).Msg("Failed to write verification email preview")
@@ -55,9 +66,14 @@ func RunEmailPreview(cmd *flag.FlagSet, args []string) {
 		log.Fatal().Err(err).Str("path", resetPath).Msg("Failed to write password reset email preview")
 	}
 
+	if err := os.WriteFile(invitationPath, []byte(invitationPreview.Body), 0o644); err != nil {
+		log.Fatal().Err(err).Str("path", invitationPath).Msg("Failed to write invitation email preview")
+	}
+
 	log.Info().
 		Str("verification_preview", verificationPath).
 		Str("password_reset_preview", resetPath).
+		Str("invitation_preview", invitationPath).
 		Str("language", *language).
 		Msg("Email previews generated successfully")
 }

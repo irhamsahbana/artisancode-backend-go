@@ -110,6 +110,52 @@ func BuildPasswordResetEmail(input AuthTemplateInput) (*RenderedEmailTemplate, e
 	}, nil
 }
 
+func BuildInvitationEmail(input AuthTemplateInput) (*RenderedEmailTemplate, error) {
+	data := buildBaseTemplateData(input)
+
+	if input.PreferredLanguage == "en" {
+		data.Eyebrow = "Workspace access"
+		data.Title = "Your access to " + input.TenantName + " is ready"
+		data.Greeting = "Hello " + input.UserName + ","
+		data.Body = "Your administrator has invited you to Presense. Open the link below to create your password and start signing in."
+		data.ActionLabel = "Create Password"
+		data.ExpiryText = "7 days"
+		data.ExpiryLabel = "This activation link will expire in 7 days."
+		data.HelpText = "If you were not expecting this invite, you can ignore this email and contact your administrator."
+		data.SupportLabel = "Need help?"
+		data.FooterNote = "Presense is a product by artisanco.de built for calm, reliable attendance workflows."
+		body, err := RenderTemplate("invitation.html", data)
+		if err != nil {
+			return nil, err
+		}
+		return &RenderedEmailTemplate{
+			Subject: "Your access is ready - " + input.TenantName,
+			Body:    body,
+		}, nil
+	}
+
+	data.Eyebrow = "Akses workspace"
+	data.Title = "Akses Anda ke " + input.TenantName + " sudah siap"
+	data.Greeting = "Halo " + input.UserName + ","
+	data.Body = "Administrator Anda telah mengundang Anda ke Presense. Buka tautan di bawah untuk membuat kata sandi dan mulai masuk."
+	data.ActionLabel = "Buat Kata Sandi"
+	data.ExpiryText = "7 hari"
+	data.ExpiryLabel = "Tautan aktivasi ini akan kedaluwarsa dalam 7 hari."
+	data.HelpText = "Jika Anda tidak mengharapkan undangan ini, abaikan email ini dan hubungi administrator Anda."
+	data.SupportLabel = "Butuh bantuan?"
+	data.FooterNote = "Presense adalah produk dari artisanco.de yang dirancang untuk alur absensi yang tenang dan andal."
+
+	body, err := RenderTemplate("invitation.html", data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RenderedEmailTemplate{
+		Subject: "Akses Anda sudah siap - " + input.TenantName,
+		Body:    body,
+	}, nil
+}
+
 func buildBaseTemplateData(input AuthTemplateInput) AuthEmailTemplateData {
 	appName := config.Envs.App.ProductName
 	if appName == "" {

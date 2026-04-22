@@ -8,6 +8,7 @@ import (
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
 
@@ -72,6 +73,19 @@ func (r *userInvitationRepo) GetInvitations(ctx context.Context, filter coreenti
 	if filter.RoleCode != "" {
 		query += ` AND ui.role_code = ?`
 		args = append(args, filter.RoleCode)
+	}
+	if len(filter.EmployeeIDs) == 1 {
+		query += ` AND ui.employee_id = ?`
+		args = append(args, filter.EmployeeIDs[0])
+	}
+	if len(filter.EmployeeIDs) > 1 {
+		inQuery, inArgs, err := sqlx.In(` AND ui.employee_id IN (?)`, filter.EmployeeIDs)
+		if err != nil {
+			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter.EmployeeIDs).Msg("Failed to build employee invitation filter")
+			return nil, 0, err
+		}
+		query += inQuery
+		args = append(args, inArgs...)
 	}
 	if filter.Status != "" {
 		if filter.Status == coreentity.UserInvitationStatusExpired {

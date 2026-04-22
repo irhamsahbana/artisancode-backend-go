@@ -55,6 +55,7 @@ type Config struct {
 	FrontendURL struct {
 		ClientBaseURL     string `env:"FRONTEND_CLIENT_BASE_URL" env-default:"http://localhost:5000"`
 		AdminBaseURL      string `env:"FRONTEND_ADMIN_BASE_URL" env-default:"http://localhost:6000"`
+		Invitation        string `env:"FRONTEND_INVITATION_URL" env-default:"/auth/invitation"`
 		EmailVerification string `env:"FRONTEND_EMAIL_VERIFICATION_URL" env-default:"/auth/email-verification"`
 		PasswordReset     string `env:"FRONTEND_PASSWORD_RESET_URL" env-default:"/auth/reset-password"`
 	}
@@ -72,24 +73,22 @@ type Config struct {
 		BaseURL string `env:"OPENAI_API_BASE_URL" env-default:"https://api.openai.com/v1"`
 	}
 	Mail struct {
-		Host     string `env:"MAIL_SMTP_HOST" env-default:"smtp.gmail.com"`
-		Port     int    `env:"MAIL_SMTP_PORT" env-default:"587"`
-		Username string `env:"MAIL_SMTP_USERNAME"`
-		Password string `env:"MAIL_SMTP_PASSWORD"`
-		From     string `env:"MAIL_SMTP_FROM" env-default:""`
+		Host           string `env:"MAIL_SMTP_HOST" env-default:"smtp.gmail.com"`
+		Port           int    `env:"MAIL_SMTP_PORT" env-default:"587"`
+		Username       string `env:"MAIL_SMTP_USERNAME"`
+		Password       string `env:"MAIL_SMTP_PASSWORD"`
+		From           string `env:"MAIL_SMTP_FROM" env-default:""`
+		TimeoutSeconds int    `env:"MAIL_SMTP_TIMEOUT_SECONDS" env-default:"30"`
 	}
 	AdminEmail struct {
 		Address string `env:"ADMIN_EMAIL_ADDRESS" env-default:"irham.sahbana@venatronics.com"`
 	}
-	EmailVerificationQueueNats struct {
-		NatsURL string `env:"NATS_URL" env-default:"nats://localhost:4222"`
-	}
 	MessageBus struct {
-		Driver                 string `env:"MESSAGE_BUS_DRIVER" env-default:"postgres"`
-		PostgresPollIntervalMS int    `env:"MESSAGE_BUS_POSTGRES_POLL_INTERVAL_MS" env-default:"1000"`
-		PostgresBatchSize      int    `env:"MESSAGE_BUS_POSTGRES_BATCH_SIZE" env-default:"10"`
-		RetryDelaySeconds      int    `env:"MESSAGE_BUS_RETRY_DELAY_SECONDS" env-default:"30"`
-		MaxAttempts            int    `env:"MESSAGE_BUS_MAX_ATTEMPTS" env-default:"5"`
+		PostgresPollIntervalMS int `env:"MESSAGE_BUS_POSTGRES_POLL_INTERVAL_MS" env-default:"1000"`
+		PostgresBatchSize      int `env:"MESSAGE_BUS_POSTGRES_BATCH_SIZE" env-default:"10"`
+		RetryDelaySeconds      int `env:"MESSAGE_BUS_RETRY_DELAY_SECONDS" env-default:"30"`
+		MaxAttempts            int `env:"MESSAGE_BUS_MAX_ATTEMPTS" env-default:"5"`
+		ProcessingTimeoutSecs  int `env:"MESSAGE_BUS_PROCESSING_TIMEOUT_SECONDS" env-default:"300"`
 	}
 	Scheduler struct {
 		StorageCleanupSpec         string `env:"SCHEDULER_STORAGE_CLEANUP_SPEC" env-default:"*/30 * * * *"`

@@ -6,10 +6,11 @@ import (
 )
 
 type Config struct {
-	PollInterval time.Duration
-	BatchSize    int
-	RetryDelay   time.Duration
-	MaxAttempts  int
+	PollInterval      time.Duration
+	BatchSize         int
+	RetryDelay        time.Duration
+	MaxAttempts       int
+	ProcessingTimeout time.Duration
 }
 
 func (c Config) normalized() Config {
@@ -25,6 +26,9 @@ func (c Config) normalized() Config {
 	}
 	if cfg.MaxAttempts <= 0 {
 		cfg.MaxAttempts = 5
+	}
+	if cfg.ProcessingTimeout <= 0 {
+		cfg.ProcessingTimeout = 5 * time.Minute
 	}
 
 	return cfg

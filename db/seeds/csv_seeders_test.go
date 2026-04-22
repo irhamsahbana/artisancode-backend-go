@@ -177,3 +177,25 @@ func TestEmployeeUsersHaveEmailVerifiedAt(t *testing.T) {
 		}
 	}
 }
+
+func TestOwnerSeedHasEmailVerifiedAt(t *testing.T) {
+	state, err := newCSVSeedState()
+	if err != nil {
+		t.Fatalf("newCSVSeedState returned error: %v", err)
+	}
+
+	for _, row := range state.files[seedTableUsers].rows {
+		email := strings.TrimSpace(row["email"])
+		if email != "beruang@beruang.com" {
+			continue
+		}
+
+		if strings.TrimSpace(row["email_verified_at"]) == "" {
+			t.Fatalf("owner user %q is missing email_verified_at", email)
+		}
+
+		return
+	}
+
+	t.Fatal("owner seed user beruang@beruang.com is missing")
+}

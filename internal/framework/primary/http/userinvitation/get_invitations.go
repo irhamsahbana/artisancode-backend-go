@@ -7,6 +7,7 @@ import (
 	"codebase-app/internal/entity/mapper"
 	"codebase-app/internal/entity/restentity"
 	"codebase-app/internal/infrastructure/tracing"
+	"codebase-app/pkg"
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 	"codebase-app/pkg/types"
@@ -39,14 +40,23 @@ func (h *userInvitationHandler) getInvitations(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
+	employeeIDs, err := pkg.Explode(req.EmployeeIDs, ",", func(value string) (string, error) {
+		return value, nil
+	})
+	if err != nil {
+		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, req.EmployeeIDs).Msg("Failed to parse employee IDs")
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
+	}
+
 	filter := coreentity.UserInvitationListFilter{
-		UserCtx:  common.GetUserContext(ctx),
-		TenantID: common.GetUserContext(ctx).TenantID,
-		Q:        req.Q,
-		RoleCode: req.RoleCode,
-		Status:   req.Status,
-		Page:     req.Page,
-		Paginate: req.Paginate,
+		UserCtx:     common.GetUserContext(ctx),
+		TenantID:    common.GetUserContext(ctx).TenantID,
+		Q:           req.Q,
+		RoleCode:    req.RoleCode,
+		Status:      req.Status,
+		EmployeeIDs: employeeIDs,
+		Page:        req.Page,
+		Paginate:    req.Paginate,
 	}
 
 	items, total, err := h.core.GetInvitations(ctx, filter)

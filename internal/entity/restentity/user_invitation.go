@@ -33,12 +33,14 @@ type CreateUserInvitationResp struct {
 	ID          string    `json:"id"`
 	AcceptToken string    `json:"accept_token"`
 	ExpiresAt   time.Time `json:"expires_at"`
+	EmailSent   bool      `json:"email_sent"`
 }
 
 type GetUserInvitationsReq struct {
-	Q        string `query:"q" validate:"omitempty,min=2"`
-	RoleCode string `query:"role_code" validate:"omitempty,oneof=admin employee"`
-	Status   string `query:"status" validate:"omitempty,oneof=pending accepted expired revoked"`
+	Q           string `query:"q" validate:"omitempty,min=2"`
+	RoleCode    string `query:"role_code" validate:"omitempty,oneof=admin employee"`
+	Status      string `query:"status" validate:"omitempty,oneof=pending accepted expired revoked"`
+	EmployeeIDs string `query:"employee_ids"`
 	types.MetaQuery
 }
 
@@ -59,6 +61,7 @@ type ResendUserInvitationResp struct {
 	ID          string    `json:"id"`
 	AcceptToken string    `json:"accept_token"`
 	ExpiresAt   time.Time `json:"expires_at"`
+	EmailSent   bool      `json:"email_sent"`
 }
 
 type RevokeUserInvitationReq struct {

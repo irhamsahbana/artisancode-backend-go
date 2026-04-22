@@ -36,8 +36,8 @@ func (m *postgresMessage) Headers() map[string][]string {
 	return m.headers
 }
 
-func (m *postgresMessage) Ack() error {
-	ctx, span := tracing.StartSpan(context.Background(), "internal:framework:secondary:publisher:postgres:message:Ack")
+func (m *postgresMessage) Ack(ctx context.Context) error {
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgres:message:Ack")
 	defer span.End()
 
 	query := `
@@ -59,8 +59,8 @@ func (m *postgresMessage) Ack() error {
 	return nil
 }
 
-func (m *postgresMessage) Nak(reason string) error {
-	ctx, span := tracing.StartSpan(context.Background(), "internal:framework:secondary:publisher:postgres:message:Nak")
+func (m *postgresMessage) Nak(ctx context.Context, reason string) error {
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgres:message:Nak")
 	defer span.End()
 
 	tx, err := m.db.BeginTxx(ctx, nil)

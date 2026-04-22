@@ -46,6 +46,7 @@ func (c *userInvitationCore) ResendInvitation(ctx context.Context, data coreenti
 		return nil, err
 	}
 	updated.AcceptToken = rawToken
+	updated.EmailSent = c.trySendInvitationEmail(ctx, updated)
 
 	return updated, nil
 }

@@ -27,8 +27,6 @@ func (a *App) build(ctx context.Context) error {
 	a.emailSubscription = deps.EmailSubscription
 	a.exportSubscription = deps.ExportSubscription
 	a.exportCore = deps.ExportCore
-	a.exportPublisher = deps.ExportPublisher
-	a.subscriptionManager = deps.SubscriptionManager
 
 	if a.shutdown == nil {
 		a.shutdown = deps.Shutdown

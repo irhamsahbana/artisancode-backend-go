@@ -16,12 +16,10 @@ import (
 )
 
 type ConsumerDependencies struct {
-	EmailSubscription   integrationPorts.MessageBusSubscription
-	ExportSubscription  integrationPorts.MessageBusSubscription
-	ExportCore          corePorts.ExportJobCore
-	ExportPublisher     integrationPorts.MessagePublisher
-	SubscriptionManager integrationPorts.MessageSubscriptionManager
-	Shutdown            func() error
+	EmailSubscription  integrationPorts.MessageBusSubscription
+	ExportSubscription integrationPorts.MessageBusSubscription
+	ExportCore         corePorts.ExportJobCore
+	Shutdown           func() error
 }
 
 func NewConsumerDependencies(
@@ -81,11 +79,9 @@ func NewConsumerDependencies(
 	})
 
 	return ConsumerDependencies{
-		EmailSubscription:   emailSubscription,
-		ExportSubscription:  exportSubscription,
-		ExportCore:          exportCore,
-		ExportPublisher:     bus,
-		SubscriptionManager: subscriptionManager,
-		Shutdown:            shutdown,
+		EmailSubscription:  emailSubscription,
+		ExportSubscription: exportSubscription,
+		ExportCore:         exportCore,
+		Shutdown:           shutdown,
 	}, nil
 }

@@ -49,5 +49,6 @@ func (h *userInvitationHandler) resendInvitation(c *fiber.Ctx) error {
 		ID:          item.ID,
 		AcceptToken: item.AcceptToken,
 		ExpiresAt:   item.ExpiresAt,
-	}, ""))
+		EmailSent:   item.EmailSent,
+	}, invitationResponseMessage(item.EmailSent)))
 }

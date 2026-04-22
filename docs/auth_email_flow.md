@@ -8,6 +8,7 @@ Current covered flows:
 
 - email verification after register
 - resend verification email
+- employee or admin invitation email
 - forgot password
 - reset password
 - local email template preview generation
@@ -39,6 +40,8 @@ Purposes currently used:
 
 - `email_verification`
 - `password_reset`
+
+Invitation acceptance currently uses `user_invitations.accept_token_hash` and is delivered through the invitation flow, not `user_action_tokens`.
 
 ## HTTP Endpoints
 
@@ -81,6 +84,7 @@ Templates live in:
 
 - `internal/integration/email/templates/verification.html`
 - `internal/integration/email/templates/password_reset.html`
+- `internal/integration/email/templates/invitation.html`
 
 Shared render/build logic lives in:
 
@@ -102,6 +106,26 @@ Environment config:
 - `APP_EMAIL_LOGO_URL` (optional, overrides default email logo asset URL)
 - `APP_SUPPORT_EMAIL`
 - `FRONTEND_CLIENT_BASE_URL` (used to build the default logo asset URL when `APP_EMAIL_LOGO_URL` is empty)
+- `FRONTEND_INVITATION_URL` (used to build employee/admin invitation links in outgoing email)
+
+## Invitation Delivery
+
+Employee and admin access invitation now uses email as the primary delivery path.
+
+Trigger points:
+
+- `POST /user-invitations`
+- `POST /user-invitations/:id/resend`
+
+Behavior:
+
+- handler creates or refreshes invitation data
+- core renders the invitation email with tenant language preference
+- message is published to `email.invitation`
+- consumer sends the HTML email through the configured SMTP transport
+- HTTP response includes `email_sent` so UI can hide manual fallback details when delivery is queued successfully
+
+Manual token/link sharing should be treated as a fallback only when `email_sent=false`.
 
 ## Preview Command
 
@@ -125,6 +149,7 @@ Outputs:
 
 - `verification.html`
 - `password_reset.html`
+- `invitation.html`
 
 ## Frontend Expectations
 

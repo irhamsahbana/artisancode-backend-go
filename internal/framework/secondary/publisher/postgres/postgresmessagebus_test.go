@@ -83,9 +83,9 @@ func TestConsumeAndAckMarksProcessed(t *testing.T) {
 	}
 
 	received := make(chan string, 1)
-	consumeCtx, err := subscription.Consume(func(msg integrationPorts.MessageBusMessage) {
+	consumeCtx, err := subscription.Consume(context.Background(), func(ctx context.Context, msg integrationPorts.MessageBusMessage) {
 		received <- string(msg.Data())
-		if ackErr := msg.Ack(); ackErr != nil {
+		if ackErr := msg.Ack(ctx); ackErr != nil {
 			t.Errorf("expected ack to succeed, got %v", ackErr)
 		}
 	})
@@ -158,12 +158,12 @@ func TestConsumeAndNakRequeuesMessage(t *testing.T) {
 	}
 
 	received := make(chan struct{}, 1)
-	consumeCtx, err := subscription.Consume(func(msg integrationPorts.MessageBusMessage) {
+	consumeCtx, err := subscription.Consume(context.Background(), func(ctx context.Context, msg integrationPorts.MessageBusMessage) {
 		select {
 		case received <- struct{}{}:
 		default:
 		}
-		if nakErr := msg.Nak("temporary failure"); nakErr != nil {
+		if nakErr := msg.Nak(ctx, "temporary failure"); nakErr != nil {
 			t.Errorf("expected nak to succeed, got %v", nakErr)
 		}
 	})
@@ -242,12 +242,12 @@ func TestConsumeAndNakMovesMessageToDeadLetterAfterMaxAttempts(t *testing.T) {
 	}
 
 	received := make(chan struct{}, 1)
-	consumeCtx, err := subscription.Consume(func(msg integrationPorts.MessageBusMessage) {
+	consumeCtx, err := subscription.Consume(context.Background(), func(ctx context.Context, msg integrationPorts.MessageBusMessage) {
 		select {
 		case received <- struct{}{}:
 		default:
 		}
-		if nakErr := msg.Nak("permanent failure"); nakErr != nil {
+		if nakErr := msg.Nak(ctx, "permanent failure"); nakErr != nil {
 			t.Errorf("expected nak to succeed, got %v", nakErr)
 		}
 	})
@@ -306,6 +306,185 @@ func TestConsumeAndNakMovesMessageToDeadLetterAfterMaxAttempts(t *testing.T) {
 	}
 	if deadLetter.DeadLetteredAt.IsZero() {
 		t.Fatal("expected dead_lettered_at to be set")
+	}
+}
+
+func TestConsumeRecoversHandlerPanicAndRequeuesMessage(t *testing.T) {
+	db := openTestDB(t)
+	prepareMessageQueueTable(t, db)
+	truncateMessageQueueTables(t, db)
+
+	publisher := NewPublisher(db)
+	manager := NewSubscriptionManager(db, Config{
+		PollInterval:      10 * time.Millisecond,
+		BatchSize:         1,
+		RetryDelay:        50 * time.Millisecond,
+		MaxAttempts:       3,
+		ProcessingTimeout: time.Minute,
+	})
+
+	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+		ConsumerName: "test-consumer-panic",
+		Subjects:     []string{"test.consume.panic"},
+	})
+	if err != nil {
+		t.Fatalf("expected consumer creation to succeed, got %v", err)
+	}
+
+	received := make(chan struct{}, 1)
+	consumeCtx, err := subscription.Consume(context.Background(), func(_ context.Context, msg integrationPorts.MessageBusMessage) {
+		select {
+		case received <- struct{}{}:
+		default:
+		}
+
+		panic("boom")
+	})
+	if err != nil {
+		t.Fatalf("expected consume to start, got %v", err)
+	}
+	defer consumeCtx.Stop()
+
+	err = publisher.PublishJSON(context.Background(), "test.consume.panic", map[string]any{
+		"job": "panic",
+	})
+	if err != nil {
+		t.Fatalf("expected publish to succeed, got %v", err)
+	}
+
+	select {
+	case <-received:
+	case <-time.After(3 * time.Second):
+		t.Fatal("expected consumer to receive queued message")
+	}
+
+	time.Sleep(100 * time.Millisecond)
+
+	var row struct {
+		Status       string         `db:"status"`
+		AttemptCount int            `db:"attempt_count"`
+		LastError    sql.NullString `db:"last_error"`
+	}
+
+	err = db.Get(&row, `
+		SELECT status, attempt_count, last_error
+		FROM message_queue
+		WHERE subject = $1
+		ORDER BY created_at DESC
+		LIMIT 1
+	`, "test.consume.panic")
+	if err != nil {
+		t.Fatalf("expected requeued row, got %v", err)
+	}
+
+	if row.Status != "pending" {
+		t.Fatalf("expected pending status after panic recovery, got %s", row.Status)
+	}
+	if row.AttemptCount != 1 {
+		t.Fatalf("expected attempt_count 1 after panic recovery, got %d", row.AttemptCount)
+	}
+	if !row.LastError.Valid || !strings.Contains(row.LastError.String, "handler panic: boom") {
+		t.Fatalf("expected last_error to include panic reason, got %+v", row.LastError)
+	}
+}
+
+func TestConsumeClaimsStaleProcessingMessage(t *testing.T) {
+	db := openTestDB(t)
+	prepareMessageQueueTable(t, db)
+	truncateMessageQueueTables(t, db)
+
+	manager := NewSubscriptionManager(db, Config{
+		PollInterval:      10 * time.Millisecond,
+		BatchSize:         1,
+		RetryDelay:        50 * time.Millisecond,
+		MaxAttempts:       3,
+		ProcessingTimeout: 50 * time.Millisecond,
+	})
+
+	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+		ConsumerName: "test-consumer-reclaim",
+		Subjects:     []string{"test.consume.reclaim"},
+	})
+	if err != nil {
+		t.Fatalf("expected consumer creation to succeed, got %v", err)
+	}
+
+	staleLockedAt := time.Now().UTC().Add(-1 * time.Minute)
+	_, err = db.Exec(`
+		INSERT INTO message_queue (
+			subject,
+			payload_json,
+			headers_json,
+			status,
+			consumer_name,
+			locked_at,
+			available_at,
+			attempt_count,
+			created_at,
+			updated_at
+		) VALUES (
+			$1,
+			$2::jsonb,
+			$3::jsonb,
+			'processing',
+			$4,
+			$5,
+			CURRENT_TIMESTAMP,
+			1,
+			CURRENT_TIMESTAMP,
+			CURRENT_TIMESTAMP
+		)
+	`, "test.consume.reclaim", `{"job":"reclaim"}`, `{}`, "stale-consumer", staleLockedAt)
+	if err != nil {
+		t.Fatalf("expected stale processing row insert to succeed, got %v", err)
+	}
+
+	received := make(chan struct{}, 1)
+	consumeCtx, err := subscription.Consume(context.Background(), func(ctx context.Context, msg integrationPorts.MessageBusMessage) {
+		select {
+		case received <- struct{}{}:
+		default:
+		}
+		if ackErr := msg.Ack(ctx); ackErr != nil {
+			t.Errorf("expected ack to succeed, got %v", ackErr)
+		}
+	})
+	if err != nil {
+		t.Fatalf("expected consume to start, got %v", err)
+	}
+	defer consumeCtx.Stop()
+
+	select {
+	case <-received:
+	case <-time.After(3 * time.Second):
+		t.Fatal("expected consumer to reclaim stale processing message")
+	}
+
+	var row struct {
+		Status       string         `db:"status"`
+		ProcessedAt  sql.NullTime   `db:"processed_at"`
+		ConsumerName sql.NullString `db:"consumer_name"`
+	}
+
+	err = db.Get(&row, `
+		SELECT status, processed_at, consumer_name
+		FROM message_queue
+		WHERE subject = $1
+		ORDER BY created_at DESC
+		LIMIT 1
+	`, "test.consume.reclaim")
+	if err != nil {
+		t.Fatalf("expected reclaimed row, got %v", err)
+	}
+
+	if row.Status != "processed" {
+		t.Fatalf("expected processed status after stale reclaim, got %s", row.Status)
+	}
+	if !row.ProcessedAt.Valid {
+		t.Fatal("expected processed_at to be set after stale reclaim")
+	}
+	if !row.ConsumerName.Valid || row.ConsumerName.String != "test-consumer-reclaim" {
+		t.Fatalf("expected consumer_name to be reassigned, got %+v", row.ConsumerName)
 	}
 }
 

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"codebase-app/internal/adapter"
-	natsConsumerModule "codebase-app/internal/framework/primary/consumer/natsjestream"
 	postgresConsumerModule "codebase-app/internal/framework/primary/consumer/postgres"
 	"codebase-app/internal/infrastructure/config"
 	infraLogging "codebase-app/internal/infrastructure/logging"
@@ -64,19 +63,9 @@ func RunConsumer(cmd *flag.FlagSet, args []string) {
 
 	log.Info().Msg("Running consumer")
 
-	var app interface {
-		Run(ctx context.Context) error
-	}
-
-	if envs.MessageBus.Driver == "postgres" {
-		app = postgresConsumerModule.NewApp(postgresConsumerModule.AppConfig{
-			Shutdown: adapter.Adapters.Unsync,
-		})
-	} else {
-		app = natsConsumerModule.NewApp(postgresConsumerModule.AppConfig{
-			Shutdown: adapter.Adapters.Unsync,
-		})
-	}
+	app := postgresConsumerModule.NewApp(postgresConsumerModule.AppConfig{
+		Shutdown: adapter.Adapters.Unsync,
+	})
 
 	err = app.Run(context.Background())
 	if err != nil {

@@ -3,30 +3,20 @@ package consumer
 import (
 	infraTracing "codebase-app/internal/infrastructure/tracing"
 	"context"
-	"os"
-	"os/signal"
 
 	"github.com/rs/zerolog/log"
 )
 
 func (a *App) waitForShutdown(ctx context.Context) error {
-	ctx, span := infraTracing.StartSpan(ctx, "consumer.WaitForShutdown")
+	ctx, span := infraTracing.StartSpan(ctx, "internal:framework:primary:consumer:postgres:shutdown:waitForShutdown")
 	defer span.End()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
+	<-ctx.Done()
 
-	log.Ctx(ctx).Info().Msg("Consumer gracefully stopped")
-
-	if a.shutdown == nil {
+	if ctx.Err() == nil {
 		return nil
 	}
 
-	err := a.shutdown()
-	if err != nil {
-		infraTracing.RecordError(span, err)
-	}
-
-	return err
+	log.Ctx(ctx).Info().Err(ctx.Err()).Msg("Consumer shutdown signal received")
+	return nil
 }

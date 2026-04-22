@@ -8,7 +8,6 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
-	"codebase-app/pkg/errmsg"
 
 	"github.com/rs/zerolog/log"
 )
@@ -56,7 +55,7 @@ func (r *userRepo) FindActiveUserByEmailAndTenantID(ctx context.Context, email, 
 				"email":     email,
 				"tenant_id": tenantID,
 			}).Msg("User not found")
-			return nil, errmsg.NewCustomErrors(400).SetMessage("User not found")
+			return nil, nil
 		}
 
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{

@@ -38,16 +38,18 @@ type UserInvitation struct {
 	LastSentAt   time.Time
 	CreatedAt    time.Time
 	UpdatedAt    *time.Time
+	EmailSent    bool
 }
 
 type UserInvitationListFilter struct {
-	UserCtx  common.UserContext
-	TenantID string
-	Q        string
-	RoleCode string
-	Status   string
-	Page     int
-	Paginate int
+	UserCtx     common.UserContext
+	TenantID    string
+	Q           string
+	RoleCode    string
+	Status      string
+	EmployeeIDs []string
+	Page        int
+	Paginate    int
 }
 
 type UserInvitationAcceptPayload struct {

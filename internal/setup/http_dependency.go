@@ -139,6 +139,7 @@ func HttpDependencies() {
 		Repo:         userInvitationRepository,
 		UserRepo:     userRepository,
 		EmployeeRepo: employeeRepository,
+		Bus:          bus,
 	})
 	attendanceCoreInst := attendanceCore.NewAttendanceCore(attendanceCore.AttendanceCoreConfig{
 		Repo:        attendanceRepository,

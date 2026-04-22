@@ -2,17 +2,27 @@ package consumer
 
 import (
 	"codebase-app/internal/entity/common"
+	exportjobconsumer "codebase-app/internal/framework/primary/consumer/postgres/export_job"
+	sharedconsumer "codebase-app/internal/framework/primary/consumer/postgres/shared"
+	userconsumer "codebase-app/internal/framework/primary/consumer/postgres/user"
+	userinvitationconsumer "codebase-app/internal/framework/primary/consumer/postgres/userinvitation"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 	"context"
 	"errors"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel"
 )
 
 func (a *App) Run(ctx context.Context) error {
-	ctx, span := infraTracing.StartSpan(ctx, "consumer.Run")
+	ctx, stopSignals := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	defer stopSignals()
+
+	ctx, span := infraTracing.StartSpan(ctx, "internal:framework:primary:consumer:postgres:run:Run")
 	defer span.End()
 
 	err := a.build(ctx)
@@ -27,23 +37,16 @@ func (a *App) Run(ctx context.Context) error {
 		return err
 	}
 
-	defer func() {
-		if err := a.exportPublisher.Close(); err != nil {
-			log.Error().Err(err).Msg("Failed to close export message publisher")
-		}
-		if err := a.subscriptionManager.Close(); err != nil {
-			log.Error().Err(err).Msg("Failed to close message subscription manager")
-		}
-	}()
-
-	emailConsumeCtx, err := a.emailSubscription.Consume(func(msg integrationPorts.MessageBusMessage) {
-		msgCtx := otel.GetTextMapPropagator().Extract(ctx, MessageHeadersCarrier(msg.Headers()))
+	emailConsumeCtx, err := a.emailSubscription.Consume(ctx, func(consumeCtx context.Context, msg integrationPorts.MessageBusMessage) {
+		msgCtx := otel.GetTextMapPropagator().Extract(consumeCtx, sharedconsumer.MessageHeadersCarrier(msg.Headers()))
 
 		switch msg.Subject() {
 		case common.MessageSubjectEmailVerification:
-			EmailVerificationHandler(msgCtx, msg)
+			userconsumer.EmailVerificationHandler(msgCtx, msg)
 		case common.MessageSubjectEmailForgotPassword:
-			ForgotPasswordHandler(msgCtx, msg)
+			userconsumer.ForgotPasswordHandler(msgCtx, msg)
+		case common.MessageSubjectEmailInvitation:
+			userinvitationconsumer.InvitationHandler(msgCtx, msg)
 		default:
 		}
 	})
@@ -53,7 +56,7 @@ func (a *App) Run(ctx context.Context) error {
 	}
 	defer emailConsumeCtx.Stop()
 
-	exportConsumeCtx, err := a.exportSubscription.Consume(ExportJobRequestedHandler(ctx, a.exportCore))
+	exportConsumeCtx, err := a.exportSubscription.Consume(ctx, exportjobconsumer.RequestedHandler(a.exportCore))
 	if err != nil {
 		emailConsumeCtx.Stop()
 		infraTracing.RecordError(span, err)
@@ -64,6 +67,14 @@ func (a *App) Run(ctx context.Context) error {
 	err = a.waitForShutdown(ctx)
 	if err != nil {
 		infraTracing.RecordError(span, err)
+	}
+
+	if shutdownErr := a.shutdownResources(ctx); shutdownErr != nil {
+		if err == nil {
+			err = shutdownErr
+		} else {
+			log.Ctx(ctx).Error().Err(shutdownErr).Msg("failed to shutdown resources cleanly")
+		}
 	}
 
 	return err
@@ -79,12 +90,22 @@ func (a *App) validate() error {
 	if a.exportCore == nil {
 		return errors.New("export job processor is required")
 	}
-	if a.exportPublisher == nil {
-		return errors.New("export publisher is required")
-	}
-	if a.subscriptionManager == nil {
-		return errors.New("message subscription manager is required")
-	}
 
 	return nil
+}
+
+func (a *App) shutdownResources(ctx context.Context) error {
+	ctx, span := infraTracing.StartSpan(ctx, "internal:framework:primary:consumer:postgres:run:shutdownResources")
+	defer span.End()
+
+	if a.shutdown == nil {
+		return nil
+	}
+
+	err := a.shutdown()
+	if err != nil {
+		infraTracing.RecordError(span, err)
+	}
+
+	return err
 }

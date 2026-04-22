@@ -51,5 +51,6 @@ func (h *userInvitationHandler) createInvitation(c *fiber.Ctx) error {
 		ID:          created.ID,
 		AcceptToken: created.AcceptToken,
 		ExpiresAt:   created.ExpiresAt,
-	}, ""))
+		EmailSent:   created.EmailSent,
+	}, invitationResponseMessage(created.EmailSent)))
 }

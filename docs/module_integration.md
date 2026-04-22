@@ -72,13 +72,24 @@ Karena itu, saat menambah route baru:
 
 Consumer runtime saat ini tidak me-register HTTP route. Yang dibuat adalah dependency untuk subscription manager dan handler loop.
 
+Struktur primary consumer Postgres sekarang dibagi per feature agar konsisten dengan pola split HTTP:
+
+- `internal/framework/primary/consumer/postgres/`
+  - bootstrap runtime consumer (`app.go`, `build.go`, `run.go`, `shutdown.go`)
+- `internal/framework/primary/consumer/postgres/user/`
+  - consumer untuk email verification dan forgot password
+- `internal/framework/primary/consumer/postgres/userinvitation/`
+  - consumer untuk email invitation
+- `internal/framework/primary/consumer/postgres/export_job/`
+  - consumer untuk export job
+- `internal/framework/primary/consumer/postgres/shared/`
+  - helper shared untuk carrier header message dan util email/logging consumer
+
 `NewConsumerDependencies(...)` saat ini menyiapkan:
 
 - email subscription
 - export job subscription
 - export job core
-- export job publisher
-- subscription manager
 - shutdown callback
 
 Jika menambah consumer baru:
@@ -87,6 +98,7 @@ Jika menambah consumer baru:
 2. inject dependency yang dibutuhkan core/processor
 3. expose hasilnya di `ConsumerDependencies`
 4. assign hasilnya di `internal/framework/primary/consumer/postgres/build.go`
+5. tempatkan handler di folder feature consumer yang sesuai, bukan menaruh semua file handler langsung di root `consumer/postgres`
 
 ## Cross-Module Dependencies
 

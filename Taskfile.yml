@@ -50,10 +50,7 @@ tasks:
       - go run ./cmd/bin/main.go consumer
   consumer-postgres:
     cmds:
-      - MESSAGE_BUS_DRIVER=postgres go run ./cmd/bin/main.go consumer
-  consumer-nats:
-    cmds:
-      - MESSAGE_BUS_DRIVER=nats go run ./cmd/bin/main.go consumer
+      - go run ./cmd/bin/main.go consumer
   build:
     cmds:
       - go build -o ./kpf-app ./cmd/bin/main.go
@@ -93,9 +90,6 @@ tasks:
   lint-ci:
     cmds:
       - golangci-lint run
-  nats:
-    cmds:
-      - nats-server --js
   commit:
     cmds:
       - task lint-fix

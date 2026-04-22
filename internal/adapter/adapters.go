@@ -14,7 +14,6 @@ import (
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox/files"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	"github.com/nats-io/nats.go/jetstream"
 	"github.com/openai/openai-go/v3"
 	"github.com/rs/zerolog/log"
 	tele "gopkg.in/telebot.v3"
@@ -32,10 +31,8 @@ type Validator interface {
 
 type Adapter struct {
 	// Driving Adapters / Primary Adapters
-	RestServer           *fiber.App
-	WsServer             *http.Server
-	EmailConsumerNats    jetstream.Consumer
-	EmailConsumerCtxNats jetstream.ConsumeContext
+	RestServer *fiber.App
+	WsServer   *http.Server
 
 	//Driven Adapters / Secondary Adapters
 	Postgres                   *sqlx.DB
@@ -93,12 +90,6 @@ func (a *Adapter) Unsync() error {
 			errs = append(errs, err.Error())
 		}
 		log.Info().Msg("Postgres disconnected")
-	}
-
-	if a.EmailConsumerNats != nil || a.EmailConsumerCtxNats != nil {
-		consumerCtx := a.EmailConsumerCtxNats
-		consumerCtx.Stop()
-		log.Info().Msg("Email NATS consumer disconnected")
 	}
 
 	// if a.VenamonGolog != nil {

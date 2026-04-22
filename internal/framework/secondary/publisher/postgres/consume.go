@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -24,8 +25,8 @@ type postgresConsumer struct {
 
 var _ integrationPorts.MessageBusSubscription = &postgresConsumer{}
 
-func (c *postgresConsumer) Consume(handler func(integrationPorts.MessageBusMessage)) (integrationPorts.MessageBusSubscriptionContext, error) {
-	ctx, cancel := context.WithCancel(context.Background())
+func (c *postgresConsumer) Consume(ctx context.Context, handler func(context.Context, integrationPorts.MessageBusMessage)) (integrationPorts.MessageBusSubscriptionContext, error) {
+	ctx, cancel := context.WithCancel(ctx)
 
 	consumeCtx := &postgresConsumeContext{
 		cancel: cancel,
@@ -40,7 +41,7 @@ func (c *postgresConsumer) Consume(handler func(integrationPorts.MessageBusMessa
 	return consumeCtx, nil
 }
 
-func (c *postgresConsumer) consumeLoop(ctx context.Context, handler func(integrationPorts.MessageBusMessage)) {
+func (c *postgresConsumer) consumeLoop(ctx context.Context, handler func(context.Context, integrationPorts.MessageBusMessage)) {
 	ticker := time.NewTicker(c.cfg.PollInterval)
 	defer ticker.Stop()
 
@@ -68,7 +69,7 @@ func (c *postgresConsumer) consumeLoop(ctx context.Context, handler func(integra
 	}
 }
 
-func (c *postgresConsumer) consumeBatch(ctx context.Context, handler func(integrationPorts.MessageBusMessage)) (int, error) {
+func (c *postgresConsumer) consumeBatch(ctx context.Context, handler func(context.Context, integrationPorts.MessageBusMessage)) (int, error) {
 	messages := make([]*postgresMessage, 0, c.cfg.BatchSize)
 	for range c.cfg.BatchSize {
 		msg, err := c.claimMessage(ctx)
@@ -83,10 +84,36 @@ func (c *postgresConsumer) consumeBatch(ctx context.Context, handler func(integr
 	}
 
 	for _, msg := range messages {
-		handler(msg)
+		c.handleMessage(ctx, handler, msg)
 	}
 
 	return len(messages), nil
+}
+
+func (c *postgresConsumer) handleMessage(ctx context.Context, handler func(context.Context, integrationPorts.MessageBusMessage), msg *postgresMessage) {
+	msgCtx := ctx
+	cancel := func() {}
+	if c.cfg.ProcessingTimeout > 0 {
+		msgCtx, cancel = context.WithTimeout(ctx, c.cfg.ProcessingTimeout)
+	}
+	defer cancel()
+
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Ctx(msgCtx).Error().
+				Any("panic", recovered).
+				Bytes("stack", debug.Stack()).
+				Str("subject", msg.Subject()).
+				Msg("Message handler panicked")
+
+			reason := fmt.Sprintf("handler panic: %v", recovered)
+			if err := msg.Nak(msgCtx, reason); err != nil {
+				log.Ctx(msgCtx).Error().Err(err).Str("subject", msg.Subject()).Msg("Failed to negative-acknowledge panicked message")
+			}
+		}
+	}()
+
+	handler(msgCtx, msg)
 }
 
 func (c *postgresConsumer) claimMessage(ctx context.Context) (*postgresMessage, error) {
@@ -106,20 +133,24 @@ func (c *postgresConsumer) claimMessage(ctx context.Context) (*postgresMessage, 
 		PayloadJSON string `db:"payload_json"`
 		HeadersJSON string `db:"headers_json"`
 	}
+	processingCutoff := time.Now().UTC().Add(-c.cfg.ProcessingTimeout)
 
 	query := `
 		SELECT id, subject, payload_json::text AS payload_json, headers_json::text AS headers_json
 		FROM message_queue
 		WHERE deleted_at IS NULL
-		  AND status = 'pending'
-		  AND available_at <= CURRENT_TIMESTAMP
+		  AND (
+			(status = 'pending' AND available_at <= CURRENT_TIMESTAMP)
+			OR
+			(status = 'processing' AND locked_at IS NOT NULL AND locked_at <= ?)
+		  )
 		  AND ` + buildSubjectPredicate(c.def.Subjects) + `
-		ORDER BY available_at ASC, created_at ASC
+		ORDER BY COALESCE(available_at, locked_at) ASC, created_at ASC
 		FOR UPDATE SKIP LOCKED
 		LIMIT 1
 	`
 
-	err = tx.GetContext(ctx, &row, query)
+	err = tx.GetContext(ctx, &row, c.db.Rebind(query), processingCutoff)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			if commitErr := tx.Commit(); commitErr != nil {

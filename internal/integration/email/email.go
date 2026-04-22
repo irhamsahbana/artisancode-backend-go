@@ -1,13 +1,16 @@
 package email
 
 import (
+	"codebase-app/internal/infrastructure/config"
 	"codebase-app/internal/infrastructure/tracing"
 	"context"
 	"crypto/tls"
 	"fmt"
+	"net"
 	"net/smtp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -69,7 +72,7 @@ func (s *EmailSender) buildMessage(payload EmailPayload) []byte {
 }
 
 func (s *EmailSender) Send(ctx context.Context, payload EmailPayload) {
-	if err := s.send(payload); err != nil {
+	if err := s.send(ctx, payload); err != nil {
 		log.Ctx(ctx).Error().Err(err).
 			Str("to", strings.Join(payload.To, ", ")).
 			Str("subject", payload.Subject).
@@ -82,25 +85,43 @@ func (s *EmailSender) Send(ctx context.Context, payload EmailPayload) {
 	}
 }
 
-func (s *EmailSender) SendSync(payload EmailPayload) error {
-	return s.send(payload)
+func (s *EmailSender) SendSync(ctx context.Context, payload EmailPayload) error {
+	return s.send(ctx, payload)
 }
 
-func (s *EmailSender) send(payload EmailPayload) error {
+func (s *EmailSender) send(ctx context.Context, payload EmailPayload) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	address := fmt.Sprintf("%s:%s", s.host, s.port)
 
 	auth := smtp.PlainAuth("", s.username, s.password, s.host)
+	timeout := smtpTimeout()
 
 	tlsconfig := &tls.Config{
 		InsecureSkipVerify: false,
 		ServerName:         s.host,
 	}
 
-	conn, err := tls.Dial("tcp", address, tlsconfig)
+	dialer := &net.Dialer{Timeout: timeout}
+	rawConn, err := dialer.DialContext(ctx, "tcp", address)
 	if err != nil {
-		return fmt.Errorf("failed to dial TLS connection: %w", err)
+		return fmt.Errorf("failed to dial SMTP connection: %w", err)
+	}
+	conn := tls.Client(rawConn, tlsconfig)
+	if err := conn.HandshakeContext(ctx); err != nil {
+		_ = rawConn.Close()
+		return fmt.Errorf("failed to establish TLS handshake: %w", err)
 	}
 	defer conn.Close()
+
+	if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
+		return fmt.Errorf("failed to set SMTP connection deadline: %w", err)
+	}
 
 	c, err := smtp.NewClient(conn, s.host)
 	if err != nil {
@@ -150,4 +171,12 @@ func SendEmail(ctx context.Context, payload EmailPayload) {
 		return
 	}
 	sender.Send(ctx, payload)
+}
+
+func smtpTimeout() time.Duration {
+	if config.Envs != nil && config.Envs.Mail.TimeoutSeconds > 0 {
+		return time.Duration(config.Envs.Mail.TimeoutSeconds) * time.Second
+	}
+
+	return 30 * time.Second
 }
