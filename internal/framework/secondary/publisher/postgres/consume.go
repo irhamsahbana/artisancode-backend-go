@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"runtime/debug"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"codebase-app/internal/infrastructure/tracing"
@@ -26,22 +28,31 @@ type postgresConsumer struct {
 var _ integrationPorts.MessageBusSubscription = &postgresConsumer{}
 
 func (c *postgresConsumer) Consume(ctx context.Context, handler func(context.Context, integrationPorts.MessageBusMessage)) (integrationPorts.MessageBusSubscriptionContext, error) {
-	ctx, cancel := context.WithCancel(ctx)
+	runCtx, cancel := context.WithCancel(context.WithoutCancel(ctx))
 
 	consumeCtx := &postgresConsumeContext{
 		cancel: cancel,
+		done:   make(chan struct{}),
 	}
 	consumeCtx.wg.Add(1)
 
 	go func() {
 		defer consumeCtx.wg.Done()
-		c.consumeLoop(ctx, handler)
+		c.consumeLoop(runCtx, consumeCtx, handler)
+	}()
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			consumeCtx.cancelForStop()
+		case <-consumeCtx.done:
+		}
 	}()
 
 	return consumeCtx, nil
 }
 
-func (c *postgresConsumer) consumeLoop(ctx context.Context, handler func(context.Context, integrationPorts.MessageBusMessage)) {
+func (c *postgresConsumer) consumeLoop(ctx context.Context, consumeCtx *postgresConsumeContext, handler func(context.Context, integrationPorts.MessageBusMessage)) {
 	ticker := time.NewTicker(c.cfg.PollInterval)
 	defer ticker.Stop()
 
@@ -52,8 +63,11 @@ func (c *postgresConsumer) consumeLoop(ctx context.Context, handler func(context
 		default:
 		}
 
-		processed, err := c.consumeBatch(ctx, handler)
+		processed, err := c.consumeBatch(ctx, consumeCtx, handler)
 		if err != nil {
+			if isShutdownError(consumeCtx, err) {
+				return
+			}
 			log.Ctx(ctx).Error().Err(err).Msg("Failed to consume message queue batch")
 		}
 
@@ -69,10 +83,14 @@ func (c *postgresConsumer) consumeLoop(ctx context.Context, handler func(context
 	}
 }
 
-func (c *postgresConsumer) consumeBatch(ctx context.Context, handler func(context.Context, integrationPorts.MessageBusMessage)) (int, error) {
+func (c *postgresConsumer) consumeBatch(ctx context.Context, consumeCtx *postgresConsumeContext, handler func(context.Context, integrationPorts.MessageBusMessage)) (int, error) {
 	messages := make([]*postgresMessage, 0, c.cfg.BatchSize)
 	for range c.cfg.BatchSize {
-		msg, err := c.claimMessage(ctx)
+		if consumeCtx.isStopping() {
+			break
+		}
+
+		msg, err := c.claimMessage(ctx, consumeCtx)
 		if err != nil {
 			return len(messages), err
 		}
@@ -84,7 +102,7 @@ func (c *postgresConsumer) consumeBatch(ctx context.Context, handler func(contex
 	}
 
 	for _, msg := range messages {
-		c.handleMessage(ctx, handler, msg)
+		c.handleMessage(context.WithoutCancel(ctx), handler, msg)
 	}
 
 	return len(messages), nil
@@ -116,12 +134,15 @@ func (c *postgresConsumer) handleMessage(ctx context.Context, handler func(conte
 	handler(msgCtx, msg)
 }
 
-func (c *postgresConsumer) claimMessage(ctx context.Context) (*postgresMessage, error) {
+func (c *postgresConsumer) claimMessage(ctx context.Context, consumeCtx *postgresConsumeContext) (*postgresMessage, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgres:consume:claimMessage")
 	defer span.End()
 
 	tx, err := c.db.BeginTxx(ctx, nil)
 	if err != nil {
+		if isShutdownError(consumeCtx, err) {
+			return nil, err
+		}
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to begin message queue transaction")
 		return nil, err
 	}
@@ -154,6 +175,9 @@ func (c *postgresConsumer) claimMessage(ctx context.Context) (*postgresMessage, 
 	if err != nil {
 		if err == sql.ErrNoRows {
 			if commitErr := tx.Commit(); commitErr != nil {
+				if isShutdownError(consumeCtx, commitErr) {
+					return nil, commitErr
+				}
 				log.Ctx(ctx).Error().Err(commitErr).Msg("Failed to commit empty queue claim")
 				return nil, commitErr
 			}
@@ -161,6 +185,9 @@ func (c *postgresConsumer) claimMessage(ctx context.Context) (*postgresMessage, 
 			return nil, nil
 		}
 
+		if isShutdownError(consumeCtx, err) {
+			return nil, err
+		}
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to claim queued message")
 		return nil, err
 	}
@@ -176,11 +203,17 @@ func (c *postgresConsumer) claimMessage(ctx context.Context) (*postgresMessage, 
 
 	_, err = tx.ExecContext(ctx, c.db.Rebind(updateQuery), c.def.ConsumerName, row.ID)
 	if err != nil {
+		if isShutdownError(consumeCtx, err) {
+			return nil, err
+		}
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to mark queued message as processing")
 		return nil, err
 	}
 
 	if err = tx.Commit(); err != nil {
+		if isShutdownError(consumeCtx, err) {
+			return nil, err
+		}
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to commit queued message claim")
 		return nil, err
 	}
@@ -204,15 +237,30 @@ func (c *postgresConsumer) claimMessage(ctx context.Context) (*postgresMessage, 
 }
 
 type postgresConsumeContext struct {
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
+	cancel   context.CancelFunc
+	done     chan struct{}
+	stopOnce sync.Once
+	stopping atomic.Bool
+	wg       sync.WaitGroup
 }
 
 var _ integrationPorts.MessageBusSubscriptionContext = &postgresConsumeContext{}
 
 func (c *postgresConsumeContext) Stop() {
-	c.cancel()
+	c.cancelForStop()
+	c.stopOnce.Do(func() {
+		close(c.done)
+	})
 	c.wg.Wait()
+}
+
+func (c *postgresConsumeContext) cancelForStop() {
+	c.stopping.Store(true)
+	c.cancel()
+}
+
+func (c *postgresConsumeContext) isStopping() bool {
+	return c.stopping.Load()
 }
 
 func buildSubjectPredicate(subjects []string) string {
@@ -232,4 +280,14 @@ func buildSubjectPredicate(subjects []string) string {
 	}
 
 	return "(" + strings.Join(predicates, " OR ") + ")"
+}
+
+func isShutdownError(ctx *postgresConsumeContext, err error) bool {
+	if err == nil {
+		return false
+	}
+	if !ctx.isStopping() {
+		return false
+	}
+	return errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
 }

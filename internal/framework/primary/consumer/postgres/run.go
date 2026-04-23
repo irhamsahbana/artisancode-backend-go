@@ -54,7 +54,6 @@ func (a *App) Run(ctx context.Context) error {
 		infraTracing.RecordError(span, err)
 		return err
 	}
-	defer emailConsumeCtx.Stop()
 
 	exportConsumeCtx, err := a.exportSubscription.Consume(ctx, exportjobconsumer.RequestedHandler(a.exportCore))
 	if err != nil {
@@ -62,12 +61,14 @@ func (a *App) Run(ctx context.Context) error {
 		infraTracing.RecordError(span, err)
 		return err
 	}
-	defer exportConsumeCtx.Stop()
 
 	err = a.waitForShutdown(ctx)
 	if err != nil {
 		infraTracing.RecordError(span, err)
 	}
+
+	exportConsumeCtx.Stop()
+	emailConsumeCtx.Stop()
 
 	if shutdownErr := a.shutdownResources(ctx); shutdownErr != nil {
 		if err == nil {

@@ -136,6 +136,79 @@ func TestConsumeAndAckMarksProcessed(t *testing.T) {
 	}
 }
 
+func TestStopWaitsForInFlightMessageWithoutCancelingProcessingContext(t *testing.T) {
+	db := openTestDB(t)
+	prepareMessageQueueTable(t, db)
+	truncateMessageQueueTables(t, db)
+
+	publisher := NewPublisher(db)
+	manager := NewSubscriptionManager(db, Config{
+		PollInterval:      10 * time.Millisecond,
+		BatchSize:         1,
+		RetryDelay:        50 * time.Millisecond,
+		MaxAttempts:       3,
+		ProcessingTimeout: time.Second,
+	})
+
+	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+		ConsumerName: "test-consumer-graceful-stop",
+		Subjects:     []string{"test.consume.graceful-stop"},
+	})
+	if err != nil {
+		t.Fatalf("expected consumer creation to succeed, got %v", err)
+	}
+
+	handlerStarted := make(chan struct{})
+	releaseHandler := make(chan struct{})
+	consumeCtx, err := subscription.Consume(context.Background(), func(ctx context.Context, msg integrationPorts.MessageBusMessage) {
+		close(handlerStarted)
+		<-releaseHandler
+
+		if ctx.Err() != nil {
+			t.Errorf("expected processing context to stay active during graceful stop, got %v", ctx.Err())
+		}
+		if ackErr := msg.Ack(ctx); ackErr != nil {
+			t.Errorf("expected ack to succeed after graceful stop starts, got %v", ackErr)
+		}
+	})
+	if err != nil {
+		t.Fatalf("expected consume to start, got %v", err)
+	}
+
+	err = publisher.PublishJSON(context.Background(), "test.consume.graceful-stop", map[string]any{
+		"job": "graceful-stop",
+	})
+	if err != nil {
+		t.Fatalf("expected publish to succeed, got %v", err)
+	}
+
+	select {
+	case <-handlerStarted:
+	case <-time.After(3 * time.Second):
+		t.Fatal("expected consumer to start processing queued message")
+	}
+
+	stopped := make(chan struct{})
+	go func() {
+		consumeCtx.Stop()
+		close(stopped)
+	}()
+
+	select {
+	case <-stopped:
+		t.Fatal("expected stop to wait for in-flight handler")
+	case <-time.After(50 * time.Millisecond):
+	}
+
+	close(releaseHandler)
+
+	select {
+	case <-stopped:
+	case <-time.After(3 * time.Second):
+		t.Fatal("expected stop to finish after in-flight handler returns")
+	}
+}
+
 func TestConsumeAndNakRequeuesMessage(t *testing.T) {
 	db := openTestDB(t)
 	prepareMessageQueueTable(t, db)
