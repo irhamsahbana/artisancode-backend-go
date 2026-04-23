@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/infrastructure/tracing"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 
@@ -23,7 +24,7 @@ func NewSubscriptionManager(db *sqlx.DB, cfg Config) integrationPorts.MessageSub
 	}
 }
 
-func (m *consumerManager) CreateSubscription(ctx context.Context, cfg integrationPorts.MessageBusSubscriptionConfig) (integrationPorts.MessageBusSubscription, error) {
+func (m *consumerManager) CreateSubscription(ctx context.Context, cfg common.MessageBusSubscriptionConfig) (integrationPorts.MessageBusSubscription, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgres:create_subscription:CreateSubscription")
 	defer span.End()
 

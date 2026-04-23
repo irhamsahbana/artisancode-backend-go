@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"codebase-app/internal/entity/common"
 	secondarypostgres "codebase-app/internal/framework/secondary/db/postgres"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 
@@ -74,7 +75,7 @@ func TestConsumeAndAckMarksProcessed(t *testing.T) {
 		MaxAttempts:  3,
 	})
 
-	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), common.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-ack",
 		Subjects:     []string{"test.consume.ack"},
 	})
@@ -150,7 +151,7 @@ func TestStopWaitsForInFlightMessageWithoutCancelingProcessingContext(t *testing
 		ProcessingTimeout: time.Second,
 	})
 
-	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), common.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-graceful-stop",
 		Subjects:     []string{"test.consume.graceful-stop"},
 	})
@@ -222,7 +223,7 @@ func TestConsumeAndNakRequeuesMessage(t *testing.T) {
 		MaxAttempts:  3,
 	})
 
-	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), common.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-nak",
 		Subjects:     []string{"test.consume.nak"},
 	})
@@ -306,7 +307,7 @@ func TestConsumeAndNakMovesMessageToDeadLetterAfterMaxAttempts(t *testing.T) {
 		MaxAttempts:  1,
 	})
 
-	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), common.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-dead-letter",
 		Subjects:     []string{"test.consume.dead-letter"},
 	})
@@ -396,7 +397,7 @@ func TestConsumeRecoversHandlerPanicAndRequeuesMessage(t *testing.T) {
 		ProcessingTimeout: time.Minute,
 	})
 
-	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), common.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-panic",
 		Subjects:     []string{"test.consume.panic"},
 	})
@@ -474,7 +475,7 @@ func TestConsumeClaimsStaleProcessingMessage(t *testing.T) {
 		ProcessingTimeout: 50 * time.Millisecond,
 	})
 
-	subscription, err := manager.CreateSubscription(context.Background(), integrationPorts.MessageBusSubscriptionConfig{
+	subscription, err := manager.CreateSubscription(context.Background(), common.MessageBusSubscriptionConfig{
 		ConsumerName: "test-consumer-reclaim",
 		Subjects:     []string{"test.consume.reclaim"},
 	})

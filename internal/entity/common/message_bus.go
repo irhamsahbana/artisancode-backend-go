@@ -1,5 +1,7 @@
 package common
 
+import "time"
+
 const (
 	MessageSubjectEmailVerification   = "email.verification"
 	MessageSubjectEmailForgotPassword = "email.forgot-password"
@@ -14,3 +16,14 @@ const (
 	MessageStreamExportJobService   = "export-job-service"
 	MessageConsumerExportJobService = "export-job-service-consumer"
 )
+
+type MessageBusSubscriptionConfig struct {
+	StreamName          string
+	StreamDescription   string
+	Subjects            []string
+	MaxBytes            int64
+	MaxAge              time.Duration
+	ConsumerName        string
+	Durable             string
+	ConsumerDescription string
+}

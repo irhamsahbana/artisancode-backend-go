@@ -2,7 +2,8 @@ package integration
 
 import (
 	"context"
-	"time"
+
+	"codebase-app/internal/entity/common"
 )
 
 type MessagePublisher interface {
@@ -11,19 +12,8 @@ type MessagePublisher interface {
 }
 
 type MessageSubscriptionManager interface {
-	CreateSubscription(ctx context.Context, cfg MessageBusSubscriptionConfig) (MessageBusSubscription, error)
+	CreateSubscription(ctx context.Context, cfg common.MessageBusSubscriptionConfig) (MessageBusSubscription, error)
 	Close() error
-}
-
-type MessageBusSubscriptionConfig struct {
-	StreamName          string
-	StreamDescription   string
-	Subjects            []string
-	MaxBytes            int64
-	MaxAge              time.Duration
-	ConsumerName        string
-	Durable             string
-	ConsumerDescription string
 }
 
 type MessageBusSubscription interface {

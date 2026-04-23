@@ -33,7 +33,7 @@ func NewConsumerDependencies(
 		subscriptionManager = adapter.Adapters.MessageSubscriptionManager
 	)
 
-	emailSubscription, err := subscriptionManager.CreateSubscription(ctx, integrationPorts.MessageBusSubscriptionConfig{
+	emailSubscription, err := subscriptionManager.CreateSubscription(ctx, common.MessageBusSubscriptionConfig{
 		StreamName:          common.MessageStreamEmailService,
 		StreamDescription:   "Email service stream",
 		Subjects:            []string{common.MessageSubjectEmailAll},
@@ -47,7 +47,7 @@ func NewConsumerDependencies(
 		return ConsumerDependencies{}, err
 	}
 
-	exportSubscription, err := subscriptionManager.CreateSubscription(ctx, integrationPorts.MessageBusSubscriptionConfig{
+	exportSubscription, err := subscriptionManager.CreateSubscription(ctx, common.MessageBusSubscriptionConfig{
 		StreamName:          common.MessageStreamExportJobService,
 		StreamDescription:   "Export job service stream",
 		Subjects:            []string{common.MessageSubjectExportJobRequested},

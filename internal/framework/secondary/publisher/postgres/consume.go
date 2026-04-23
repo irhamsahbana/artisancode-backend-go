@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/infrastructure/tracing"
 	integrationPorts "codebase-app/internal/ports/secondary/integration"
 
@@ -22,7 +23,7 @@ import (
 type postgresConsumer struct {
 	db  *sqlx.DB
 	cfg Config
-	def integrationPorts.MessageBusSubscriptionConfig
+	def common.MessageBusSubscriptionConfig
 }
 
 var _ integrationPorts.MessageBusSubscription = &postgresConsumer{}
