@@ -37,9 +37,10 @@ func (r *storageRepo) CreateFile(ctx context.Context, data coreentity.File) (*co
 		createdAt time.Time
 	)
 
-	err := r.db.QueryRowxContext(
+	exec := r.executor(ctx)
+	err := exec.QueryRowxContext(
 		ctx,
-		r.db.Rebind(query),
+		exec.Rebind(query),
 		data.TenantID,
 		data.CreatedBy,
 		common.FileStatusPending,

@@ -15,18 +15,6 @@ func (c *userCore) UpdateUser(ctx context.Context, data coreentity.User) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:update_user:UpdateUser")
 	defer span.End()
 
-	emailExists, err := c.repo.ExistsActiveUserByEmailAndTenantExcludeUser(ctx, data.Email, data.TenantID, data.ID)
-	if err != nil {
-		return err
-	}
-	if emailExists {
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
-			"email":   data.Email,
-			"user_id": data.ID,
-		}).Msg("Email already registered")
-		return errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
-	}
-
 	if data.Password != "" {
 		hashedPassword, err := hashPassword(data.Password)
 		if err != nil {
@@ -36,5 +24,19 @@ func (c *userCore) UpdateUser(ctx context.Context, data coreentity.User) error {
 		data.Password = hashedPassword
 	}
 
-	return c.repo.UpdateUser(ctx, data)
+	return c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		emailExists, err := c.repo.ExistsActiveUserByEmailAndTenantExcludeUser(txCtx, data.Email, data.TenantID, data.ID)
+		if err != nil {
+			return err
+		}
+		if emailExists {
+			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, map[string]string{
+				"email":   data.Email,
+				"user_id": data.ID,
+			}).Msg("Email already registered")
+			return errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
+		}
+
+		return c.repo.UpdateUser(txCtx, data)
+	})
 }

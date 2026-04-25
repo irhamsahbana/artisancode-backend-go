@@ -17,7 +17,8 @@ func (r *userInvitationRepo) MarkInvitationAccepted(ctx context.Context, invitat
 		WHERE id = ? AND deleted_at IS NULL
 	`
 
-	result, err := r.db.ExecContext(ctx, r.db.Rebind(query), invitationID)
+	exec := r.executor(ctx)
+	result, err := exec.ExecContext(ctx, exec.Rebind(query), invitationID)
 	if err != nil {
 		return err
 	}

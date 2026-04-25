@@ -105,6 +105,15 @@ func (r *repo) DeleteEmployee(ctx context.Context, filter coreentity.EmployeeDel
 3. **Extensibility**: Easy to add new filter criteria without breaking existing signatures
 4. **Consistency**: Same pattern across all repository methods
 
+## Transaction Boundary
+
+- Transaction boundaries for multi-step business flows must be in `internal/core/<module>`, not spread across multiple repository methods.
+- Postgres repositories must use the executor from `context.Context` so that multiple repository calls within one use case can share the same transaction.
+- Repository methods must not open their own transactions just to chain multiple business operations across repositories; that is the responsibility of the core/application service.
+- The exception is only for repository operations that are indeed a single internal claim/locking unit that is not exposed as cross-module orchestration.
+- Message publish written to Postgres `message_queue` can participate in the same transaction as long as the publisher also uses the executor from context.
+- Side effects outside of Postgres such as S3, email provider, or HTTP callback cannot be considered ACID just with DB transaction; for those cases use patterns like outbox/consumer if full reliability is needed.
+
 ## Tracing
 
 All repository and core methods should use OpenTelemetry tracing for observability:

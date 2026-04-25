@@ -53,7 +53,8 @@ func (r *employeeRepo) GetEmployee(ctx context.Context, filter coreentity.Employ
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &data, exec.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Employee not found")

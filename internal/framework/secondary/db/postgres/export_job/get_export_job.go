@@ -62,7 +62,8 @@ func (r *exportJobRepo) GetExportJob(ctx context.Context, filter coreentity.Expo
 		LIMIT 1
 	`
 
-	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.TenantID, filter.ID)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &data, exec.Rebind(query), filter.TenantID, filter.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Export job not found")

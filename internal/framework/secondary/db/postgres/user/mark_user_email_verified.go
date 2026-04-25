@@ -19,7 +19,8 @@ func (r *userRepo) MarkUserEmailVerified(ctx context.Context, userID string) err
 		WHERE id = ? AND deleted_at IS NULL
 	`
 
-	_, err := r.db.ExecContext(ctx, r.db.Rebind(query), userID)
+	exec := r.executor(ctx)
+	_, err := exec.ExecContext(ctx, exec.Rebind(query), userID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
 			"user_id": userID,

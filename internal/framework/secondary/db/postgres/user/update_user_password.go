@@ -19,7 +19,8 @@ func (r *userRepo) UpdateUserPassword(ctx context.Context, userID, tenantID, has
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	_, err := r.db.ExecContext(ctx, r.db.Rebind(query), hashedPassword, userID, tenantID)
+	exec := r.executor(ctx)
+	_, err := exec.ExecContext(ctx, exec.Rebind(query), hashedPassword, userID, tenantID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
 			"user_id":   userID,

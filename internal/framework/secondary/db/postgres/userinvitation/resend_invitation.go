@@ -21,7 +21,8 @@ func (r *userInvitationRepo) ResendInvitation(ctx context.Context, data coreenti
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	result, err := r.db.ExecContext(ctx, r.db.Rebind(query), data.TokenHash, data.ExpiresAt, data.LastSentAt, data.ID, data.TenantID)
+	exec := r.executor(ctx)
+	result, err := exec.ExecContext(ctx, exec.Rebind(query), data.TokenHash, data.ExpiresAt, data.LastSentAt, data.ID, data.TenantID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to resend invitation")
 		return err

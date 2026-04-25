@@ -7,7 +7,7 @@ import (
 	"codebase-app/internal/framework/primary/consumer/postgres/shared"
 	"codebase-app/internal/infrastructure/tracing"
 	emailint "codebase-app/internal/integration/email"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 
 	"github.com/rs/zerolog/log"
 )

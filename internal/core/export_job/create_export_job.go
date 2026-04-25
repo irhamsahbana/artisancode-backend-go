@@ -25,23 +25,20 @@ func (c *exportJobCore) CreateExportJob(ctx context.Context, data coreentity.Exp
 		return nil, errmsg.NewCustomErrors(500).SetMessage("Export job message bus is not configured")
 	}
 
-	item, err := c.repo.CreateExportJob(ctx, data)
-	if err != nil {
-		return nil, err
-	}
+	var item *coreentity.ExportJob
+	err := c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		createdItem, txErr := c.repo.CreateExportJob(txCtx, data)
+		if txErr != nil {
+			return txErr
+		}
+		item = createdItem
 
-	err = c.bus.PublishJSON(ctx, common.MessageSubjectExportJobRequested, coreentity.ExportJobRequestedEvent{
-		JobID:    item.ID,
-		TenantID: item.TenantID,
+		return c.bus.PublishJSON(txCtx, common.MessageSubjectExportJobRequested, coreentity.ExportJobRequestedEvent{
+			JobID:    item.ID,
+			TenantID: item.TenantID,
+		})
 	})
 	if err != nil {
-		errorMessage := err.Error()
-		_ = c.repo.UpdateExportJob(ctx, coreentity.ExportJobUpdate{
-			TenantID:     item.TenantID,
-			ID:           item.ID,
-			Status:       coreentity.ExportJobStatusFailed,
-			ErrorMessage: &errorMessage,
-		})
 		return nil, err
 	}
 

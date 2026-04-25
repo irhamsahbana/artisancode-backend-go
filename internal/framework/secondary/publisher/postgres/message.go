@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"codebase-app/internal/infrastructure/tracing"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"

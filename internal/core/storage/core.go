@@ -2,8 +2,8 @@ package core
 
 import (
 	corePorts "codebase-app/internal/ports/core"
+	"codebase-app/internal/ports/integration"
 	portsRepo "codebase-app/internal/ports/secondary/db"
-	"codebase-app/internal/ports/secondary/integration"
 )
 
 type storageCore struct {

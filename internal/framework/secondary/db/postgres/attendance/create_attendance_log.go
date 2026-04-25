@@ -35,9 +35,10 @@ func (r *attendanceRepo) CreateAttendanceLog(ctx context.Context, data coreentit
 		createdAt time.Time
 	)
 
-	err = r.db.QueryRowxContext(
+	exec := r.executor(ctx)
+	err = exec.QueryRowxContext(
 		ctx,
-		r.db.Rebind(query),
+		exec.Rebind(query),
 		data.TenantID,
 		data.EmployeeID,
 		data.AttendanceDate,

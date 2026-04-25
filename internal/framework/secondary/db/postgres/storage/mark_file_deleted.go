@@ -24,9 +24,10 @@ func (r *storageRepo) MarkFileDeleted(ctx context.Context, tenantID, id string) 
 	`
 
 	now := time.Now().UTC()
-	_, err := r.db.ExecContext(
+	exec := r.executor(ctx)
+	_, err := exec.ExecContext(
 		ctx,
-		r.db.Rebind(query),
+		exec.Rebind(query),
 		common.FileStatusDeleted,
 		now,
 		now,

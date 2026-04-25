@@ -32,7 +32,8 @@ func (r *attendanceRepo) GetWorkShift(ctx context.Context, filter coreentity.Wor
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &data, exec.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Work shift not found")

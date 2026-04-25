@@ -20,7 +20,8 @@ func (r *employeeRepo) AssignUser(ctx context.Context, tenantID, employeeID, use
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	result, err := r.db.ExecContext(ctx, r.db.Rebind(query), userID, employeeID, tenantID)
+	exec := r.executor(ctx)
+	result, err := exec.ExecContext(ctx, exec.Rebind(query), userID, employeeID, tenantID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
 			"tenant_id":   tenantID,

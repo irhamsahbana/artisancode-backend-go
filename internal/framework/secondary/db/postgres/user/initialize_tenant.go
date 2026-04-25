@@ -8,59 +8,14 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
-
-	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
-
-func (r *userRepo) ExistsTenantByCode(ctx context.Context, code string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:ExistsTenantByCode")
-	defer span.End()
-
-	var existing string
-	query := `SELECT id FROM tenants WHERE code = ? AND deleted_at IS NULL`
-	err := r.db.GetContext(ctx, &existing, r.db.Rebind(query), code)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"code": code}).Msg("Failed to check tenant existence")
-		return false, err
-	}
-	return existing != "", nil
-}
-
-func (r *userRepo) InsertTenant(ctx context.Context, tenant coreentity.Tenant) (string, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:InsertTenant")
-	defer span.End()
-
-	query := `
-		INSERT INTO tenants (name, code)
-		VALUES (?, ?)
-		RETURNING id
-	`
-
-	var tenantID string
-	err := r.db.GetContext(ctx, &tenantID, r.db.Rebind(query), tenant.Name, tenant.Code)
-	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, tenant).Msg("Failed to insert tenant")
-		return "", err
-	}
-	return tenantID, nil
-}
 
 func (r *userRepo) InitializeTenant(ctx context.Context, tenantID string, companyName string, preferredLanguage string) (string, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:InitializeTenant")
 	defer span.End()
 
-	payload := map[string]string{"tenantID": tenantID, "companyName": companyName}
-
-	tx, err := r.db.BeginTxx(ctx, nil)
-	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to begin transaction")
-		return "", err
-	}
-	defer tx.Rollback()
+	tx := r.executor(ctx)
 
 	companyID, err := r.insertDefaultCompany(ctx, tx, tenantID, companyName, preferredLanguage)
 	if err != nil {
@@ -82,15 +37,15 @@ func (r *userRepo) InitializeTenant(ctx context.Context, tenantID string, compan
 		return "", err
 	}
 
-	if err = tx.Commit(); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to commit transaction")
-		return "", err
-	}
-
 	return companyID, nil
 }
 
-func (r *userRepo) insertDefaultCompany(ctx context.Context, tx *sqlx.Tx, tenantID string, companyName string, preferredLanguage string) (string, error) {
+func (r *userRepo) insertDefaultCompany(ctx context.Context, tx interface {
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	Rebind(string) string
+}, tenantID string, companyName string, preferredLanguage string) (string, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:insertDefaultCompany")
 	defer span.End()
 
@@ -118,7 +73,12 @@ func (r *userRepo) insertDefaultCompany(ctx context.Context, tx *sqlx.Tx, tenant
 	return companyID, nil
 }
 
-func (r *userRepo) copyRoles(ctx context.Context, tx *sqlx.Tx, tenantID string) error {
+func (r *userRepo) copyRoles(ctx context.Context, tx interface {
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	Rebind(string) string
+}, tenantID string) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyRoles")
 	defer span.End()
 
@@ -157,7 +117,12 @@ func (r *userRepo) copyRoles(ctx context.Context, tx *sqlx.Tx, tenantID string) 
 	return nil
 }
 
-func (r *userRepo) copyPermissions(ctx context.Context, tx *sqlx.Tx, tenantID string) error {
+func (r *userRepo) copyPermissions(ctx context.Context, tx interface {
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	Rebind(string) string
+}, tenantID string) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyPermissions")
 	defer span.End()
 
@@ -194,7 +159,12 @@ func (r *userRepo) copyPermissions(ctx context.Context, tx *sqlx.Tx, tenantID st
 	return nil
 }
 
-func (r *userRepo) copyRolePermissions(ctx context.Context, tx *sqlx.Tx, tenantID string) error {
+func (r *userRepo) copyRolePermissions(ctx context.Context, tx interface {
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	Rebind(string) string
+}, tenantID string) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyRolePermissions")
 	defer span.End()
 

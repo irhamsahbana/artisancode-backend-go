@@ -74,7 +74,8 @@ func (r *storageRepo) GetFile(ctx context.Context, filter coreentity.FileFilter)
 
 	query = strings.TrimSpace(query) + " LIMIT 1"
 
-	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), args...)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &data, exec.Rebind(query), args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errmsg.NewCustomErrors(404).SetMessage("File not found")

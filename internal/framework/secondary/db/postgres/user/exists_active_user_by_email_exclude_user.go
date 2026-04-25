@@ -21,7 +21,8 @@ func (r *userRepo) ExistsActiveUserByEmailAndTenantExcludeUser(ctx context.Conte
 		WHERE email = ? AND tenant_id = ? AND id <> ? AND deleted_at IS NULL
 	`
 
-	err := r.db.GetContext(ctx, &existing, r.db.Rebind(query), email, tenantID, excludeUserID)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &existing, exec.Rebind(query), email, tenantID, excludeUserID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil

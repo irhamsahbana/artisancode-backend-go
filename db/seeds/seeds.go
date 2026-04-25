@@ -10,17 +10,21 @@ import (
 )
 
 const (
-	seedTableTenants       = "tenants"
-	seedTablePermissions   = "permissions"
-	seedTableRoles         = "roles"
-	seedTableRolePerms     = "role_permissions"
-	seedTableOrgUnits      = "org_units"
-	seedTableUsers         = "users"
-	seedTableUserRoles     = "user_roles"
-	seedTableJobPositions  = "job_positions"
-	seedTableWorkLocations = "work_locations"
-	seedTableWorkShifts    = "work_shifts"
-	seedTableEmployees     = "employees"
+	seedTableTenants                 = "tenants"
+	seedTablePermissions             = "permissions"
+	seedTableRoles                   = "roles"
+	seedTableRolePerms               = "role_permissions"
+	seedTableOrgUnits                = "org_units"
+	seedTableUsers                   = "users"
+	seedTableUserRoles               = "user_roles"
+	seedTableJobPositions            = "job_positions"
+	seedTableWorkLocations           = "work_locations"
+	seedTableWorkShifts              = "work_shifts"
+	seedTableEmployees               = "employees"
+	seedTableInternalUsers           = "internal_users"
+	seedTableInternalProducts        = "internal_products"
+	seedTableInternalProductPricings = "internal_product_pricings"
+	seedTableInternalProductPrices   = "internal_product_prices"
 )
 
 var seedGroups = map[string][]string{
@@ -34,8 +38,11 @@ var seedGroups = map[string][]string{
 	"work_shift":        {seedTableTenants, seedTableWorkShifts},
 	"employee":          {seedTableTenants, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableOrgUnits, seedTableUsers, seedTableUserRoles, seedTableJobPositions, seedTableWorkLocations, seedTableWorkShifts, seedTableEmployees},
 	"template":          {seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableOrgUnits},
-	"all":               {seedTableTenants, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableUsers, seedTableUserRoles},
-	"all_with_template": {seedTableTenants, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableOrgUnits, seedTableUsers, seedTableUserRoles, seedTableJobPositions, seedTableWorkLocations, seedTableWorkShifts, seedTableEmployees},
+	"all":               {seedTableTenants, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableUsers, seedTableUserRoles, seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
+	"all_with_template": {seedTableTenants, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableOrgUnits, seedTableUsers, seedTableUserRoles, seedTableJobPositions, seedTableWorkLocations, seedTableWorkShifts, seedTableEmployees, seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
+	"internal_users":    {seedTableInternalUsers},
+	"internal_catalog":  {seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
+	"all_internal":      {seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
 }
 
 type Seed struct {
@@ -117,6 +124,14 @@ func (s *Seed) seedTable(tx *sqlx.Tx, state *csvSeedState, tableName string) err
 		return s.seedWorkShifts(tx, state)
 	case seedTableEmployees:
 		return s.seedEmployees(tx, state)
+	case seedTableInternalUsers:
+		return s.seedInternalUsers(tx, state)
+	case seedTableInternalProducts:
+		return s.seedInternalProducts(tx, state)
+	case seedTableInternalProductPricings:
+		return s.seedInternalProductPricings(tx, state)
+	case seedTableInternalProductPrices:
+		return s.seedInternalProductPrices(tx, state)
 	default:
 		return fmt.Errorf("unsupported seed table %q", tableName)
 	}

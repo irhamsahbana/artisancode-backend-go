@@ -26,7 +26,8 @@ func (r *userInvitationRepo) CreateInvitation(ctx context.Context, data coreenti
 		CreatedAt string `db:"created_at"`
 	}
 
-	err := r.db.GetContext(ctx, &created, r.db.Rebind(query),
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &created, exec.Rebind(query),
 		data.TenantID,
 		data.EmployeeID,
 		data.Email,

@@ -10,9 +10,10 @@ import (
 	attendanceRepo "codebase-app/internal/framework/secondary/db/postgres/attendance"
 	exportJobRepo "codebase-app/internal/framework/secondary/db/postgres/export_job"
 	storageRepo "codebase-app/internal/framework/secondary/db/postgres/storage"
+	postgresTx "codebase-app/internal/framework/secondary/db/postgres/transaction"
 	storage "codebase-app/internal/integration/storage"
 	corePorts "codebase-app/internal/ports/core"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 )
 
 type ConsumerDependencies struct {
@@ -30,6 +31,7 @@ func NewConsumerDependencies(
 		db                  = adapter.Adapters.Postgres
 		bus                 = adapter.Adapters.MessagePublisher
 		s3                  = storage.NewStorageIntegration(adapter.Adapters.Storage)
+		tx                  = postgresTx.NewTransactor(db)
 		subscriptionManager = adapter.Adapters.MessageSubscriptionManager
 	)
 
@@ -74,6 +76,7 @@ func NewConsumerDependencies(
 		Repo:           exportJobRepository,
 		AttendanceRepo: attendanceRepository,
 		StorageRepo:    storageRepository,
+		Tx:             tx,
 		S3:             s3,
 		Bus:            bus,
 	})

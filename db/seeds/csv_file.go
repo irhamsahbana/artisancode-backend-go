@@ -23,17 +23,21 @@ type csvSeedState struct {
 }
 
 var csvSeedFiles = map[string]string{
-	seedTableTenants:       "tenants.csv",
-	seedTablePermissions:   "permissions.csv",
-	seedTableRoles:         "roles.csv",
-	seedTableRolePerms:     "role_permissions.csv",
-	seedTableOrgUnits:      "org_units.csv",
-	seedTableUsers:         "users.csv",
-	seedTableUserRoles:     "user_roles.csv",
-	seedTableJobPositions:  "job_positions.csv",
-	seedTableWorkLocations: "work_locations.csv",
-	seedTableWorkShifts:    "work_shifts.csv",
-	seedTableEmployees:     "employees.csv",
+	seedTableTenants:                 "tenants.csv",
+	seedTablePermissions:             "permissions.csv",
+	seedTableRoles:                   "roles.csv",
+	seedTableRolePerms:               "role_permissions.csv",
+	seedTableOrgUnits:                "org_units.csv",
+	seedTableUsers:                   "users.csv",
+	seedTableUserRoles:               "user_roles.csv",
+	seedTableJobPositions:            "job_positions.csv",
+	seedTableWorkLocations:           "work_locations.csv",
+	seedTableWorkShifts:              "work_shifts.csv",
+	seedTableEmployees:               "employees.csv",
+	seedTableInternalUsers:           "internal_users.csv",
+	seedTableInternalProducts:        "internal_products.csv",
+	seedTableInternalProductPricings: "internal_product_pricings.csv",
+	seedTableInternalProductPrices:   "internal_product_prices.csv",
 }
 
 const helperColumnPrefix = "helper__"
@@ -87,6 +91,16 @@ var helperColumnsByFile = map[string]map[string]struct{}{
 		"location_name":            {},
 		"shift_tenant_code":        {},
 		"shift_name":               {},
+	},
+	seedTableInternalUsers: {
+		"password_plain": {},
+	},
+	seedTableInternalProductPricings: {
+		"product_code": {},
+	},
+	seedTableInternalProductPrices: {
+		"product_code": {},
+		"pricing_code": {},
 	},
 }
 
@@ -220,6 +234,18 @@ func (s *csvSeedState) rebuildLookups() {
 	}
 	for _, row := range s.files[seedTableEmployees].rows {
 		register(seedTableEmployees, scopedLookupKey(row["tenant_code"], row["employee_no"]), row["id"])
+	}
+	for _, row := range s.files[seedTableInternalUsers].rows {
+		register(seedTableInternalUsers, tenantLookupKey(row["email"]), row["id"])
+	}
+	for _, row := range s.files[seedTableInternalProducts].rows {
+		register(seedTableInternalProducts, row["code"], row["id"])
+	}
+	for _, row := range s.files[seedTableInternalProductPricings].rows {
+		register(seedTableInternalProductPricings, row["product_code"]+"::"+row["code"], row["id"])
+	}
+	for _, row := range s.files[seedTableInternalProductPrices].rows {
+		register(seedTableInternalProductPrices, row["product_code"]+"::"+row["pricing_code"]+"::"+row["currency_code"]+"::"+row["started_at"], row["id"])
 	}
 }
 

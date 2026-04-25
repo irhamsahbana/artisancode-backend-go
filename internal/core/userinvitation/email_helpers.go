@@ -8,6 +8,7 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/config"
+	"codebase-app/pkg/errmsg"
 
 	"github.com/rs/zerolog/log"
 )
@@ -28,14 +29,14 @@ func buildInvitationActionURL(rawToken string) string {
 	)
 }
 
-func (c *userInvitationCore) trySendInvitationEmail(ctx context.Context, item *coreentity.UserInvitation) bool {
+func (c *userInvitationCore) trySendInvitationEmail(ctx context.Context, item *coreentity.UserInvitation) (bool, error) {
 	if item == nil {
-		return false
+		return false, nil
 	}
 
 	if c.bus == nil {
 		log.Ctx(ctx).Warn().Str("invitation_id", item.ID).Msg("Invitation email bus is not configured")
-		return false
+		return false, errmsg.NewCustomErrors(500).SetMessage("Invitation email bus is not configured")
 	}
 
 	preferredLanguage, err := c.userRepo.GetTenantPreferredLanguage(ctx, item.TenantID)
@@ -58,8 +59,8 @@ func (c *userInvitationCore) trySendInvitationEmail(ctx context.Context, item *c
 	})
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Str("invitation_id", item.ID).Msg("Failed to enqueue invitation email")
-		return false
+		return false, err
 	}
 
-	return true
+	return true, nil
 }

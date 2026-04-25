@@ -1,0 +1,3 @@
+id,email,full_name,helper__password_plain,role_code,status
+019dbbc5-a86d-7bc7-8f7b-0c4a012c5031,admin@press.com,Internal Super Admin,password,super_admin,active
+019dbbc5-aa6d-7b9c-9889-a504120190f3,operator@press.com,Internal Operator,password,operator,active

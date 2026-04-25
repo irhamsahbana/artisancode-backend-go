@@ -112,6 +112,14 @@ type Config struct {
 			RedirectURL  string `env:"GOOGLE_REDIRECT_URL"`
 		}
 	}
+	Doku struct {
+		ClientID       string `env:"DOKU_CLIENT_ID"`
+		SecretKey      string `env:"DOKU_SECRET_KEY"`
+		PublicKey      string `env:"DOKU_PUBLIC_KEY"`
+		BaseURL        string `env:"DOKU_BASE_URL"`
+		CallbackURL    string `env:"DOKU_CALLBACK_URL"`
+		TimeoutSeconds int    `env:"DOKU_TIMEOUT_SECONDS" env-default:"30"`
+	}
 }
 
 // Option is Configure type return func.

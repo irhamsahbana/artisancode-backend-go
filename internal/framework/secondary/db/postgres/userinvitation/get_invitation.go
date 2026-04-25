@@ -108,7 +108,8 @@ func (r *userInvitationRepo) getInvitation(ctx context.Context, query string, ar
 	}
 
 	var row dao
-	if err := r.db.GetContext(ctx, &row, r.db.Rebind(query), args...); err != nil {
+	exec := r.executor(ctx)
+	if err := exec.GetContext(ctx, &row, exec.Rebind(query), args...); err != nil {
 		return nil, err
 	}
 

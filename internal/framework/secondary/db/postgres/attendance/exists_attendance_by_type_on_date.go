@@ -26,7 +26,8 @@ func (r *attendanceRepo) ExistsAttendanceByTypeOnDate(ctx context.Context, tenan
 	`
 
 	var exists bool
-	err := r.db.GetContext(ctx, &exists, r.db.Rebind(query), tenantID, employeeID, attendanceDate, attendanceType)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &exists, exec.Rebind(query), tenantID, employeeID, attendanceDate, attendanceType)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
 			"tenant_id":       tenantID,

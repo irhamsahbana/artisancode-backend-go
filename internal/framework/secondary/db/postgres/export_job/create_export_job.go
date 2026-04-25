@@ -34,9 +34,10 @@ func (r *exportJobRepo) CreateExportJob(ctx context.Context, data coreentity.Exp
 		createdAt time.Time
 	)
 
-	err := r.db.QueryRowxContext(
+	exec := r.executor(ctx)
+	err := exec.QueryRowxContext(
 		ctx,
-		r.db.Rebind(query),
+		exec.Rebind(query),
 		data.TenantID,
 		data.RequestedBy,
 		data.ResourceType,

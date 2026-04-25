@@ -37,16 +37,28 @@ func (c *userInvitationCore) ResendInvitation(ctx context.Context, data coreenti
 	item.ExpiresAt = time.Now().Add(invitationExpiryDuration)
 	item.LastSentAt = time.Now()
 
-	if err := c.repo.ResendInvitation(ctx, *item); err != nil {
-		return nil, err
-	}
+	var updated *coreentity.UserInvitation
+	err = c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		if err := c.repo.ResendInvitation(txCtx, *item); err != nil {
+			return err
+		}
 
-	updated, err := c.repo.GetInvitationByID(ctx, data.UserCtx.TenantID, data.ID)
+		updatedItem, err := c.repo.GetInvitationByID(txCtx, data.UserCtx.TenantID, data.ID)
+		if err != nil {
+			return err
+		}
+		updatedItem.AcceptToken = rawToken
+		emailSent, err := c.trySendInvitationEmail(txCtx, updatedItem)
+		if err != nil {
+			return err
+		}
+		updatedItem.EmailSent = emailSent
+		updated = updatedItem
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	updated.AcceptToken = rawToken
-	updated.EmailSent = c.trySendInvitationEmail(ctx, updated)
 
 	return updated, nil
 }

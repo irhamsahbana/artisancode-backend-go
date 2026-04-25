@@ -1,0 +1,4 @@
+id,helper__product_code,helper__pricing_code,currency_code,amount,started_at,ended_at,metadata
+019dbbc5-b1e8-7d84-94ad-ef1ed80f976e,CORE_HR,MONTHLY,IDR,199000,2026-01-01T00:00:00Z,,{}
+019dbbc5-b38c-7dfe-a964-edc794ee5392,CORE_HR,MONTHLY,USD,15,2026-01-01T00:00:00Z,,{}
+019dbbc5-b4ba-7da4-8553-9269a5260cd5,ATTENDANCE_PRO,ANNUAL,IDR,1999000,2026-01-01T00:00:00Z,,{}

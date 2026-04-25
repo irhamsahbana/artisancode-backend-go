@@ -5,7 +5,7 @@ import (
 
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/infrastructure/tracing"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 
 	"github.com/jmoiron/sqlx"
 )

@@ -7,7 +7,7 @@ import (
 	"codebase-app/internal/entity/coreentity"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
 	corePorts "codebase-app/internal/ports/core"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 
 	"github.com/rs/zerolog/log"
 )

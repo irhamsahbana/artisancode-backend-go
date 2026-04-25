@@ -55,7 +55,8 @@ func (r *userRepo) GetValidUserActionToken(ctx context.Context, tokenHash, purpo
 		TenantName string       `db:"tenant_name"`
 	}
 
-	err := r.db.GetContext(ctx, &row, r.db.Rebind(query), tokenHash, purpose)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &row, exec.Rebind(query), tokenHash, purpose)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{

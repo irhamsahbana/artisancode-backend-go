@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	emailint "codebase-app/internal/integration/email"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 
 	// import "codebase-app/internal/pkg/validator"
 	firebase "firebase.google.com/go"

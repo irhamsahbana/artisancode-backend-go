@@ -2,7 +2,7 @@ package consumer
 
 import (
 	corePorts "codebase-app/internal/ports/core"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 )
 
 type App struct {

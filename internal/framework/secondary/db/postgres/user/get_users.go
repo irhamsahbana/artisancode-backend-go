@@ -59,7 +59,8 @@ func (r *userRepo) GetUsers(ctx context.Context, filter coreentity.UserListFilte
 	`
 	args = append(args, filter.Paginate, (filter.Page-1)*filter.Paginate)
 
-	if err := r.db.SelectContext(ctx, &rows, r.db.Rebind(query), args...); err != nil {
+	exec := r.executor(ctx)
+	if err := exec.SelectContext(ctx, &rows, exec.Rebind(query), args...); err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to query users")
 		return nil, 0, err
 	}

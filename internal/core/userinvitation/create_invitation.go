@@ -33,15 +33,6 @@ func (c *userInvitationCore) CreateInvitation(ctx context.Context, data coreenti
 		return nil, err
 	}
 
-	exists, err := c.repo.ExistsActiveInvitation(ctx, data.TenantID, data.Email, data.RoleCode, data.EmployeeID)
-	if err != nil {
-		return nil, err
-	}
-	if exists {
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Active invitation already exists")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("An active invitation already exists")
-	}
-
 	rawToken, tokenHash, err := generateInvitationToken()
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to generate invitation token")
@@ -51,13 +42,34 @@ func (c *userInvitationCore) CreateInvitation(ctx context.Context, data coreenti
 	data.AcceptToken = rawToken
 	data.TokenHash = tokenHash
 
-	created, err := c.repo.CreateInvitation(ctx, data)
+	var created *coreentity.UserInvitation
+	err = c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		exists, err := c.repo.ExistsActiveInvitation(txCtx, data.TenantID, data.Email, data.RoleCode, data.EmployeeID)
+		if err != nil {
+			return err
+		}
+		if exists {
+			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, data).Msg("Active invitation already exists")
+			return errmsg.NewCustomErrors(400).SetMessage("An active invitation already exists")
+		}
+
+		created, err = c.repo.CreateInvitation(txCtx, data)
+		if err != nil {
+			return err
+		}
+
+		created.AcceptToken = rawToken
+		emailSent, err := c.trySendInvitationEmail(txCtx, created)
+		if err != nil {
+			return err
+		}
+		created.EmailSent = emailSent
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	created.AcceptToken = rawToken
-	created.EmailSent = c.trySendInvitationEmail(ctx, created)
 	return created, nil
 }
 

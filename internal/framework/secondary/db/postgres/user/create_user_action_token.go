@@ -20,7 +20,8 @@ func (r *userRepo) CreateUserActionToken(ctx context.Context, token coreentity.U
 		) VALUES (?, ?, ?, ?)
 	`
 
-	_, err := r.db.ExecContext(ctx, r.db.Rebind(query), token.UserID, token.Purpose, token.TokenHash, token.ExpiresAt)
+	exec := r.executor(ctx)
+	_, err := exec.ExecContext(ctx, exec.Rebind(query), token.UserID, token.Purpose, token.TokenHash, token.ExpiresAt)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, token).Msg("Failed to create user action token")
 		return err

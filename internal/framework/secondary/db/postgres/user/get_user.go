@@ -50,7 +50,8 @@ func (r *userRepo) GetUser(ctx context.Context, filter coreentity.User) (*coreen
 		GROUP BY u.id, u.name, u.username, u.email, u.company_id, c.name
 	`
 
-	if err := r.db.GetContext(ctx, &row, r.db.Rebind(query), filter.ID, filter.TenantID); err != nil {
+	exec := r.executor(ctx)
+	if err := exec.GetContext(ctx, &row, exec.Rebind(query), filter.ID, filter.TenantID); err != nil {
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("User not found")
 			return nil, errmsg.NewCustomErrors(404).SetMessage("User not found")

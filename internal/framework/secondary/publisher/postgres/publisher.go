@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
+	postgresTx "codebase-app/internal/framework/secondary/db/postgres/transaction"
 	"codebase-app/internal/infrastructure/tracing"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
@@ -53,7 +54,8 @@ func (p *publisher) PublishJSON(ctx context.Context, subject string, payload any
 		) VALUES (?, ?::jsonb, ?::jsonb, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	`
 
-	_, err = p.db.ExecContext(ctx, p.db.Rebind(query), subject, string(data), string(headersJSON))
+	exec := postgresTx.ExecutorFromContext(ctx, p.db)
+	_, err = exec.ExecContext(ctx, exec.Rebind(query), subject, string(data), string(headersJSON))
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to insert message into queue")
 		return err

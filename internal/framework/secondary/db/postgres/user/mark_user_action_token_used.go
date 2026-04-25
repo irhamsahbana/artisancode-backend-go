@@ -19,7 +19,8 @@ func (r *userRepo) MarkUserActionTokenUsed(ctx context.Context, tokenID string) 
 		WHERE id = ? AND used_at IS NULL AND deleted_at IS NULL
 	`
 
-	_, err := r.db.ExecContext(ctx, r.db.Rebind(query), tokenID)
+	exec := r.executor(ctx)
+	_, err := exec.ExecContext(ctx, exec.Rebind(query), tokenID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
 			"token_id": tokenID,

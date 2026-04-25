@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 )
@@ -19,6 +20,10 @@ var clearDataTables = []string{
 	"storage_files",
 	"message_queue",
 	"message_queue_dead_letters",
+	"internal_product_prices",
+	"internal_product_pricings",
+	"internal_products",
+	"internal_users",
 	"employees",
 	"user_roles",
 	"role_permissions",
@@ -64,26 +69,11 @@ func RunClearData(cmd *flag.FlagSet, args []string) {
 }
 
 func clearAllApplicationData(ctx context.Context, db rebindExecutor) error {
-	query := `
+	query := fmt.Sprintf(`
 		TRUNCATE TABLE
-			attendance_logs,
-			export_jobs,
-			storage_file_links,
-			storage_files,
-			message_queue,
-			employees,
-			user_roles,
-			role_permissions,
-			work_locations,
-			work_shifts,
-			job_positions,
-			users,
-			roles,
-			permissions,
-			org_units,
-			tenants
+			%s
 		RESTART IDENTITY CASCADE
-	`
+	`, strings.Join(clearDataTables, ",\n\t\t\t"))
 
 	_, err := db.ExecContext(ctx, db.Rebind(query))
 	if err != nil {

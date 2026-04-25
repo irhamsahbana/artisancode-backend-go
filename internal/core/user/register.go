@@ -16,46 +16,55 @@ func (c *userCore) RegisterOwner(ctx context.Context, user coreentity.User, tena
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:register:RegisterOwner")
 	defer span.End()
 
-	tenantExist, err := c.repo.ExistsTenantByCode(ctx, tenant.Code)
-	if err != nil {
-		return nil, err
-	}
-	if tenantExist {
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{"tenantCode": tenant.Code}).Msg("Tenant code already registered")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Tenant code is already registered")
-	}
+	var result *coreentity.RegisterResult
+	err := c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		tenantExist, err := c.repo.ExistsTenantByCode(txCtx, tenant.Code)
+		if err != nil {
+			return err
+		}
+		if tenantExist {
+			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, map[string]string{"tenantCode": tenant.Code}).Msg("Tenant code already registered")
+			return errmsg.NewCustomErrors(400).SetMessage("Tenant code is already registered")
+		}
 
-	tenantID, err := c.createTenant(ctx, tenant)
-	if err != nil {
-		return nil, err
-	}
+		tenantID, err := c.createTenant(txCtx, tenant)
+		if err != nil {
+			return err
+		}
 
-	ownerRole, err := c.getOwnerRole(ctx, tenantID)
-	if err != nil {
-		return nil, err
-	}
+		ownerRole, err := c.getOwnerRole(txCtx, tenantID)
+		if err != nil {
+			return err
+		}
 
-	userID, err := c.createOwnerUser(ctx, user, tenantID, ownerRole.ID)
-	if err != nil {
-		return nil, err
-	}
+		userID, err := c.createOwnerUser(txCtx, user, tenantID, ownerRole.ID)
+		if err != nil {
+			return err
+		}
 
-	err = c.issueEmailVerification(ctx, coreentity.User{
-		ID:                userID,
-		Name:              user.Name,
-		Email:             user.Email,
-		TenantID:          tenantID,
-		TenantName:        user.TenantName,
-		PreferredLanguage: tenant.PreferredLanguage,
+		err = c.issueEmailVerification(txCtx, coreentity.User{
+			ID:                userID,
+			Name:              user.Name,
+			Email:             user.Email,
+			TenantID:          tenantID,
+			TenantName:        user.TenantName,
+			PreferredLanguage: tenant.PreferredLanguage,
+		})
+		if err != nil {
+			return err
+		}
+
+		result = &coreentity.RegisterResult{
+			Email:                user.Email,
+			VerificationRequired: true,
+		}
+		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return &coreentity.RegisterResult{
-		Email:                user.Email,
-		VerificationRequired: true,
-	}, nil
+	return result, nil
 }
 
 func (c *userCore) createTenant(ctx context.Context, tenant coreentity.Tenant) (string, error) {

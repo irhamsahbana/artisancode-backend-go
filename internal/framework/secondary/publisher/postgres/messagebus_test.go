@@ -11,7 +11,7 @@ import (
 
 	"codebase-app/internal/entity/common"
 	secondarypostgres "codebase-app/internal/framework/secondary/db/postgres"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 
 	"github.com/jmoiron/sqlx"
 )

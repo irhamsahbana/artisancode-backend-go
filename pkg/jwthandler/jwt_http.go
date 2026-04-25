@@ -15,7 +15,7 @@ func GenerateTokenString(payload CostumClaimsPayload) (string, error) {
 		TenantName:  payload.TenantName,
 		UserName:    payload.UserName,
 		Roles:       payload.Roles,
-		CompanyID:  payload.CompanyID,
+		CompanyID:   payload.CompanyID,
 		CompanyName: payload.CompanyName,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   "user",
@@ -48,6 +48,48 @@ func ParseTokenString(tokenString string) (*CustomClaims, error) {
 
 	if !token.Valid {
 		log.Error().Msg("jwthandler::ParseTokenString - Invalid token")
+		return nil, err
+	}
+
+	return claims, nil
+}
+
+func GenerateInternalUserTokenString(payload InternalUserClaimsPayload) (string, error) {
+	claims := InternalUserClaims{
+		UserID:   payload.UserID,
+		UserName: payload.UserName,
+		Roles:    payload.Roles,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   "internal_user",
+			Issuer:    "codebase-app",
+			ExpiresAt: jwt.NewNumericDate(payload.TokenExpiration),
+			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
+			NotBefore: jwt.NewNumericDate(time.Now().UTC()),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &claims)
+	tokenString, err := token.SignedString([]byte(config.Envs.Guard.JwtPrivateKey))
+	if err != nil {
+		log.Error().Err(err).Msg("jwthandler::GenerateInternalUserTokenString - Error while signing token")
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func ParseInternalUserTokenString(tokenString string) (*InternalUserClaims, error) {
+	claims := &InternalUserClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.Envs.Guard.JwtPrivateKey), nil
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("jwthandler::ParseInternalUserTokenString - Error while parsing token")
+		return nil, err
+	}
+
+	if !token.Valid || claims.Subject != "internal_user" {
+		log.Error().Msg("jwthandler::ParseInternalUserTokenString - Invalid token")
 		return nil, err
 	}
 

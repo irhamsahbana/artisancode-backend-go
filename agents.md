@@ -1,8 +1,8 @@
 # AGENTS
 
-Panduan backend dipisah ke folder `docs/`.
+Backend guidance is split into the `docs/` folder.
 
-Kalau sebuah task mengubah workflow backend, konvensi coding, atau perilaku agent, update `agents.md` ini dan dokumen `docs/` yang relevan dalam task yang sama bila memungkinkan.
+If a task changes backend workflow, coding conventions, or agent behavior, update this `agents.md` file and the relevant `docs/` files in the same task when practical.
 
 ## Documentation Index
 
@@ -17,44 +17,67 @@ Kalau sebuah task mengubah workflow backend, konvensi coding, atau perilaku agen
 - [Error Handling](./docs/error_handling.md)
 - [Handler Pattern](./docs/handler_pattern.md)
 - [Parameter Convention](./docs/parameter_convention.md)
-- [Storage Upload Flow](./docs/storage_upload_flow.md)
-- [Mobile Attendance V1](./docs/mobile_attendance_v1.md)
 - [Auth Email Flow](./docs/auth_email_flow.md)
+
 
 ## Backend Reality Check
 
-Arsitektur aktif backend saat ini:
+The active backend production architecture currently centers on these layers:
 
-- HTTP bootstrap ada di `internal/framework/primary/http/`
-- HTTP dependency wiring ada di `internal/setup/http_dependency.go`
-- Consumer bootstrap ada di `internal/framework/primary/consumer/postgres/`
-- Consumer dependency wiring ada di `internal/setup/consumer_dependency.go`
-- Business logic aktif ada di `internal/core/<module>`
-- HTTP handler aktif ada di `internal/framework/primary/http/<module>`
-- Postgres repository aktif ada di `internal/framework/secondary/db/postgres/<module>`
-- Shared contracts tetap di `internal/ports/...`
-- `internal/module/` saat ini bukan struktur dominan produksi; yang tersisa hanya template/eksperimen
+- HTTP bootstrap lives in `internal/framework/primary/http/`
+- HTTP dependency wiring lives in `internal/setup/http_dependency.go`
+- Consumer bootstrap lives in `internal/framework/primary/consumer/postgres/`
+- Consumer dependency wiring lives in `internal/setup/consumer_dependency.go`
+- Active business logic lives in `internal/core/<module>`
+- Active HTTP handlers live in `internal/framework/primary/http/<module>`
+- Active Postgres repositories live in `internal/framework/secondary/db/postgres/<module>`
+- Shared contracts remain in `internal/ports/...`
+- `internal/module/` is no longer the dominant production structure; what remains there is template/experimental code
 
-Jangan mendokumentasikan `internal/module/<module>` sebagai pola utama backend kalau perubahanmu menyentuh kode produksi yang aktif sekarang.
+Do not document `internal/module/<module>` as the primary backend pattern when your change touches the active production codebase.
+
+## Shell And Commands
+
+- Prefer the existing `Makefile` as the main command surface when a target exists.
+- `Taskfile.yml` is present, but `make` is the clearer documented entry point for routine backend work in this repo.
+- Common commands:
+  - `make help`
+  - `make dev`
+  - `go test ./...`
+  - `make lint-ci`
+  - `make lint-fix`
+  - `make ws`
+  - `go run ./cmd/bin/main.go consumer`
+  - `make scheduler`
+  - `make migrate cmd=up`
+  - `make create-migration name=create_users_table`
+  - `make seed table=rbac`
+- There is no dedicated Make test target right now. Use direct `go test` commands for verification, starting with the touched package when possible and escalating to `go test ./...` for broader changes.
+- When changing queued email templates or copy, render previews with `go run ./cmd/bin/main.go email-preview`.
+- When changing storage upload cleanup or message queue cleanup behavior, use the existing helpers:
+  - `make test-storage-upload`
+  - `make cleanup-storage-orphans`
+  - `make cleanup-message-queue`
 
 ## Quick Rules
 
 ### Layering
 
-- Handler hanya menangani HTTP concern, validasi request, mapping, dan response.
-- Core berisi business rule dan orkestrasi lintas dependency.
-- Repository Postgres menangani query SQL dan mapping scan result.
-- Handler tidak boleh mengirim `restentity` langsung ke core.
-- Core tidak boleh mengimpor `restentity`.
+- Handlers only handle HTTP concerns, request validation, mapping, and responses.
+- Core contains business rules and orchestration across dependencies.
+- Postgres repositories handle SQL queries and scan-result mapping.
+- Handlers must not send `restentity` directly into core.
+- Core must not import `restentity`.
 
 ### File Split Pattern
 
-- Gunakan satu file per operasi utama di handler/core/repository bila modul memang sudah mengikuti pola split.
-- `handler.go`, `core.go`, dan `repo.go` dipakai untuk struct, config, constructor, dan method registrasi dasar.
-- Helper yang hanya dipakai oleh satu operasi boleh tinggal di file operasi itu.
-- Helper shared lintas operasi boleh punya file helper sendiri bila itu membuat modul lebih jelas.
+- Use one file per main operation in handler/core/repository when the module already follows the split-file pattern.
+- `handler.go`, `core.go`, and `repo.go` are for struct definitions, config, constructors, and basic registration methods.
+- Helpers used by only one operation may stay in that operation file.
+- Helpers shared across operations may have their own file when that improves clarity.
+- For database migrations, use one migration file per primary schema change unit; related tables should be split into separate sequential timestamped files.
 
-Contoh pola yang aktif sekarang:
+Current active pattern example:
 
 ```text
 internal/framework/primary/http/attendance/
@@ -70,16 +93,16 @@ internal/framework/primary/http/attendance/
 
 ### Dependency Injection
 
-- HTTP module wiring terpusat di `internal/setup/http_dependency.go`.
-- Consumer wiring terpusat di `internal/setup/consumer_dependency.go`.
-- Constructor gunakan config struct pattern.
-- Dependency lintas modul harus lewat contract di `internal/ports/...`, bukan instantiate diam-diam di core/handler.
+- HTTP module wiring is centralized in `internal/setup/http_dependency.go`.
+- Consumer wiring is centralized in `internal/setup/consumer_dependency.go`.
+- Constructors should use the config-struct pattern.
+- Cross-module dependencies must flow through contracts in `internal/ports/...`, not through ad-hoc instantiation inside core or handlers.
 
 ### Request Context
 
-- Tenant scope ambil dari `common.GetUserContext(ctx)`, bukan dari request body/query.
-- `restentity` tidak menyimpan `TenantID`.
-- `common.UserContext` saat ini memuat:
+- Tenant scope must come from `common.GetUserContext(ctx)`, not from request body or query parameters.
+- `restentity` does not store `TenantID`.
+- `common.UserContext` currently includes:
   - `UserID`
   - `UserName`
   - `TenantID`
@@ -90,40 +113,46 @@ internal/framework/primary/http/attendance/
 
 ### Tracing
 
-- Semua function yang menerima `ctx` harus punya `tracing.StartSpan`.
-- Format span:
-  - handler HTTP: `internal:framework:primary:http:<module>:<file>:<function>`
+- Every function that receives `ctx` must start a `tracing.StartSpan`.
+- Span format:
+  - HTTP handler: `internal:framework:primary:http:<module>:<file>:<function>`
   - core: `internal:core:<module>:<file>:<function>`
   - postgres repository: `internal:framework:secondary:db:postgres:<module>:<file>:<function>`
 
 ### Logging
 
-- Pakai `log.Ctx(ctx)` kalau ada context.
-- Parse/validation error di handler pakai `Warn`.
-- Business rejection yang memang expected di core umumnya `Warn`.
-- Error tak terduga atau kegagalan DB/integration pakai `Error`.
+- Use `log.Ctx(ctx)` whenever context is available.
+- Parse and validation errors in handlers should use `Warn`.
+- Expected business rejections in core should generally use `Warn`.
+- Unexpected errors or DB/integration failures should use `Error`.
 
 ### Localization
 
-- Jangan parse `Accept-Language` sendiri di feature module.
-- HTTP app sudah memasang `WithRequestLanguage()` lalu `LocalizeJSONResponse()`.
-- Gunakan `pkg/errmsg` supaya `message` dan `errors` ikut diterjemahkan otomatis.
+- Do not parse `Accept-Language` inside feature modules.
+- The HTTP app already installs `WithRequestLanguage()` and `LocalizeJSONResponse()`.
+- Use `pkg/errmsg` so `message` and `errors` are translated automatically.
 
 ### Current Public/Protected Bootstrap Notes
 
-- `internal/framework/primary/http/build.go` mendaftarkan middleware global, metrics, dan memanggil `setup.HttpDependencies()`.
-- User auth public routes diregister di `/users`.
-- Sebagian besar route bisnis diproteksi dari `app.Group(..., middleware.Auth)` di setup layer.
-- Storage punya kombinasi route protected dan route signed-public-ish untuk file private:
+- `internal/framework/primary/http/build.go` registers global middleware, metrics, and calls `setup.HttpDependencies()`.
+- User auth public routes are registered under `/users`.
+- Most business routes are protected from `app.Group(..., middleware.Auth)` in the setup layer.
+- Storage has a mix of protected routes and signed-public-ish routes for private files:
   - protected: `/storage/upload-url`, `/storage/upload`, `/storage/*`
   - signed URL validation: `/storage/private/*`
 
 ### Consumers and Jobs
 
-- Consumer dependency aktif saat ini mencakup email subscription dan export job subscription.
-- Cron task yang sudah ada mencakup:
+- Active consumer dependencies currently include email subscriptions and export job subscriptions.
+- Existing cron tasks include:
   - `cleanup-expired-storage-files`
   - `process-export-jobs`
   - `cleanup-processed-message-queue`
 
-Kalau menambah consumer baru atau cron task baru, dokumentasikan di `docs/module_integration.md` atau dokumen domain terkait.
+If you add a new consumer or cron task, document it in `docs/module_integration.md` or the relevant domain document.
+
+## PRD Location
+
+- Store backend PRDs in `docs/PRD/`.
+- Keep PRD content in Indonesian.
+- Treat `docs/PRD/` as local/generated working documentation and do not reference it as mandatory committed engineering documentation.

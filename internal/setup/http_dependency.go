@@ -8,6 +8,9 @@ import (
 	companyCore "codebase-app/internal/core/company"
 	employeeCore "codebase-app/internal/core/employee"
 	exportJobCore "codebase-app/internal/core/export_job"
+	internalClientCore "codebase-app/internal/core/internalclient"
+	internalProductCore "codebase-app/internal/core/internalproduct"
+	internalUserCore "codebase-app/internal/core/internaluser"
 	jobpositionCore "codebase-app/internal/core/jobposition"
 	meCore "codebase-app/internal/core/me"
 	orgunitCore "codebase-app/internal/core/orgunit"
@@ -15,12 +18,16 @@ import (
 	storageCore "codebase-app/internal/core/storage"
 	userCore "codebase-app/internal/core/user"
 	userInvitationCore "codebase-app/internal/core/userinvitation"
+	webhookCore "codebase-app/internal/core/webhook"
 	worklocationCore "codebase-app/internal/core/worklocation"
 	workshiftCore "codebase-app/internal/core/workshift"
 	attendanceHandler "codebase-app/internal/framework/primary/http/attendance"
 	companyHandler "codebase-app/internal/framework/primary/http/company"
 	employeeHandler "codebase-app/internal/framework/primary/http/employee"
 	exportJobHandler "codebase-app/internal/framework/primary/http/export_job"
+	internalClientHandler "codebase-app/internal/framework/primary/http/internalclient"
+	internalProductHandler "codebase-app/internal/framework/primary/http/internalproduct"
+	internalUserHandler "codebase-app/internal/framework/primary/http/internaluser"
 	jobpositionHandler "codebase-app/internal/framework/primary/http/jobposition"
 	meHandler "codebase-app/internal/framework/primary/http/me"
 	orgunitHandler "codebase-app/internal/framework/primary/http/orgunit"
@@ -28,22 +35,28 @@ import (
 	storageHandler "codebase-app/internal/framework/primary/http/storage"
 	userHandler "codebase-app/internal/framework/primary/http/user"
 	userInvitationHandler "codebase-app/internal/framework/primary/http/userinvitation"
+	webhookHandler "codebase-app/internal/framework/primary/http/webhook"
 	worklocationHandler "codebase-app/internal/framework/primary/http/worklocation"
 	workshiftHandler "codebase-app/internal/framework/primary/http/workshift"
 	attendanceRepo "codebase-app/internal/framework/secondary/db/postgres/attendance"
 	companyRepo "codebase-app/internal/framework/secondary/db/postgres/company"
 	employeeRepo "codebase-app/internal/framework/secondary/db/postgres/employee"
 	exportJobRepo "codebase-app/internal/framework/secondary/db/postgres/export_job"
+	internalClientRepo "codebase-app/internal/framework/secondary/db/postgres/internalclient"
+	internalProductRepo "codebase-app/internal/framework/secondary/db/postgres/internalproduct"
+	internalUserRepo "codebase-app/internal/framework/secondary/db/postgres/internaluser"
 	jobpositionRepo "codebase-app/internal/framework/secondary/db/postgres/jobposition"
 	meRepo "codebase-app/internal/framework/secondary/db/postgres/me"
 	orgunitRepo "codebase-app/internal/framework/secondary/db/postgres/orgunit"
 	rbacRepo "codebase-app/internal/framework/secondary/db/postgres/rbac"
 	storageRepo "codebase-app/internal/framework/secondary/db/postgres/storage"
+	postgresTx "codebase-app/internal/framework/secondary/db/postgres/transaction"
 	userRepo "codebase-app/internal/framework/secondary/db/postgres/user"
 	userInvitationRepo "codebase-app/internal/framework/secondary/db/postgres/userinvitation"
 	worklocationRepo "codebase-app/internal/framework/secondary/db/postgres/worklocation"
 	workshiftRepo "codebase-app/internal/framework/secondary/db/postgres/workshift"
 
+	dokuIntegration "codebase-app/internal/integration/doku"
 	storage "codebase-app/internal/integration/storage"
 
 	"github.com/gofiber/fiber/v2"
@@ -61,6 +74,7 @@ func HttpDependencies() {
 		db  = adapter.Adapters.Postgres
 		bus = adapter.Adapters.MessagePublisher
 		s3  = storage.NewStorageIntegration(adapter.Adapters.Storage)
+		tx  = postgresTx.NewTransactor(db)
 	)
 
 	userRepository := userRepo.NewUserRepository(userRepo.UserRepositoryConfig{
@@ -102,9 +116,19 @@ func HttpDependencies() {
 	userInvitationRepository := userInvitationRepo.NewUserInvitationRepository(userInvitationRepo.UserInvitationRepositoryConfig{
 		DB: db,
 	})
+	internalProductRepository := internalProductRepo.NewInternalProductRepository(internalProductRepo.InternalProductRepositoryConfig{
+		DB: db,
+	})
+	internalClientRepository := internalClientRepo.NewInternalClientRepository(internalClientRepo.InternalClientRepositoryConfig{
+		DB: db,
+	})
+	internalUserRepository := internalUserRepo.NewInternalUserRepository(internalUserRepo.InternalUserRepositoryConfig{
+		DB: db,
+	})
 
 	userCoreInst := userCore.NewUserCore(userCore.UserCoreConfig{
 		Repo:       userRepository,
+		Tx:         tx,
 		TokenCache: tokenCache,
 		Bus:        bus,
 	})
@@ -139,24 +163,41 @@ func HttpDependencies() {
 		Repo:         userInvitationRepository,
 		UserRepo:     userRepository,
 		EmployeeRepo: employeeRepository,
+		Tx:           tx,
 		Bus:          bus,
 	})
+	dokuClient := dokuIntegration.NewClientFromEnv()
 	attendanceCoreInst := attendanceCore.NewAttendanceCore(attendanceCore.AttendanceCoreConfig{
 		Repo:        attendanceRepository,
 		CompanyRepo: companyRepository,
 		StorageRepo: storageRepository,
+		Tx:          tx,
 		S3:          s3,
 	})
 	exportJobCoreInst := exportJobCore.NewExportJobCore(exportJobCore.ExportJobCoreConfig{
 		Repo:           exportJobRepository,
 		AttendanceRepo: attendanceRepository,
 		StorageRepo:    storageRepository,
+		Tx:             tx,
 		S3:             s3,
 		Bus:            bus,
+	})
+	internalProductCoreInst := internalProductCore.NewInternalProductCore(internalProductCore.InternalProductCoreConfig{
+		Repo: internalProductRepository,
+	})
+	internalClientCoreInst := internalClientCore.NewInternalClientCore(internalClientCore.InternalClientCoreConfig{
+		Repo: internalClientRepository,
+	})
+	internalUserCoreInst := internalUserCore.NewInternalUserCore(internalUserCore.InternalUserCoreConfig{
+		Repo:       internalUserRepository,
+		TokenCache: tokenCache,
 	})
 	storageCoreInst := storageCore.NewStorageCore(s3, storageRepository)
 	meCoreInst := meCore.NewMeCore(meCore.MeCoreConfig{
 		Repo: meRepository,
+	})
+	webhookCoreInst := webhookCore.NewWebhookCore(webhookCore.WebhookCoreConfig{
+		DOKUVerifier: dokuClient,
 	})
 	userHandler.NewUserHandler(userHandler.UserHandlerConfig{
 		Core:        userCoreInst,
@@ -190,11 +231,23 @@ func HttpDependencies() {
 	exportJobHandler.NewExportJobHandler(exportJobHandler.ExportJobHandlerConfig{
 		Core: exportJobCoreInst,
 	}).Register(app.Group("/export-jobs", middleware.Auth))
+	internalProductHandler.NewInternalProductHandler(internalProductHandler.InternalProductHandlerConfig{
+		Core: internalProductCoreInst,
+	}).Register(app.Group("/internal-products", middleware.InternalAuth))
+	internalClientHandler.NewInternalClientHandler(internalClientHandler.InternalClientHandlerConfig{
+		Core: internalClientCoreInst,
+	}).Register(app.Group("/internal-clients", middleware.InternalAuth))
+	internalUserHandler.NewInternalUserHandler(internalUserHandler.InternalUserHandlerConfig{
+		Core: internalUserCoreInst,
+	}).Register(app.Group("/internal-users"))
 	attendanceHandlerInst.RegisterSummary(app.Group("/attendance-summary", middleware.Auth))
 	attendanceHandlerInst.RegisterPolicy(app.Group("/attendance-policy", middleware.Auth))
 	meHandler.NewMeHandler(meHandler.MeHandlerConfig{
 		Core: meCoreInst,
 	}).Register(app.Group("/me", middleware.Auth))
+	webhookHandler.NewWebhookHandler(webhookHandler.WebhookHandlerConfig{
+		Core: webhookCoreInst,
+	}).Register(app.Group("/webhooks"))
 	storageHandler.NewStorageHandler(storageCoreInst).Register(app.Group("/storage"))
 	rbacHandler.NewRbacHandler(rbacHandler.RbacHandlerConfig{
 		Core: rbacCoreInst,

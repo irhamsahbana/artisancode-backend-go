@@ -2,31 +2,31 @@
 
 ## Where Wiring Lives Now
 
-Module registration tidak lagi cukup dijelaskan sebagai satu file `http_dependency.go`.
+Module registration can no longer be explained as a single `http_dependency.go` file.
 
-Wiring aktif sekarang terbagi dua:
+Active wiring is now split into two places:
 
 - `internal/setup/http_dependency.go`
-  - repository, core, handler, dan route registration untuk HTTP runtime
+  - repository, core, handler, and route registration for the HTTP runtime
 - `internal/setup/consumer_dependency.go`
-  - subscription, consumer-facing core, publisher, dan shutdown wiring untuk worker/consumer runtime
+  - subscription, consumer-facing core, publisher, and shutdown wiring for the worker/consumer runtime
 
-Kalau menambah module HTTP baru, update `http_dependency.go`.
-Kalau menambah subscription/consumer baru, update `consumer_dependency.go`.
+If you add a new HTTP module, update `http_dependency.go`.
+If you add a new subscription or consumer, update `consumer_dependency.go`.
 
 ## HTTP Registration Pattern
 
-`internal/framework/primary/http/build.go` hanya menyiapkan app dan middleware global, lalu memanggil `setup.HttpDependencies()`.
+`internal/framework/primary/http/build.go` only prepares the app and global middleware, then calls `setup.HttpDependencies()`.
 
-Di `setup.HttpDependencies()` pola registration yang dipakai sekarang adalah:
+Inside `setup.HttpDependencies()`, the current registration pattern is:
 
 1. build repository
 2. build integration/helper dependency
 3. build core
 4. build handler
-5. register route dengan `app.Group(...)`
+5. register routes with `app.Group(...)`
 
-Contoh bentuk yang dipakai:
+Example:
 
 ```go
 employeeRepository := employeeRepo.NewEmployeeRepository(employeeRepo.EmployeeRepositoryConfig{
@@ -45,86 +45,109 @@ employeeHandler.NewEmployeeHandler(employeeHandler.EmployeeHandlerConfig{
 
 ## Route Protection
 
-Proteksi route saat ini kebanyakan dipasang di setup layer lewat `app.Group(path, middleware.Auth)`, bukan di dalam setiap handler.
+Route protection is currently applied mostly in the setup layer through `app.Group(path, middleware.Auth)`, not inside every handler.
 
-Contoh yang aktif:
+Current examples:
 
 - `app.Group("/companies", middleware.Auth)`
 - `app.Group("/employees", middleware.Auth)`
 - `app.Group("/attendance-logs", middleware.Auth)`
 - `app.Group("/me", middleware.Auth)`
 
-Pengecualian yang memang dibiarkan public atau mixed:
+Known exceptions that intentionally stay public or mixed:
 
 - `/users/*`
-  - auth/public endpoints diregister di handler user
-  - CRUD tertentu diproteksi per-route di handler
+  - auth/public endpoints are registered in the user handler
+  - some CRUD routes are protected per-route in the handler
+- `/webhooks/doku`
+  - public webhook endpoint for DOKU payment callbacks
 - `/storage`
-  - upload/delete/list diproteksi
-  - `GET /storage/private/*` memakai signed URL validation middleware
+  - upload, delete, and list routes are protected
+  - `GET /storage/private/*` uses signed URL validation middleware
 
-Karena itu, saat menambah route baru:
+Because of that, when adding a new route:
 
-- kalau seluruh group harus protected, pasang `middleware.Auth` di `app.Group(...)`
-- kalau satu module punya kombinasi public dan protected route, dokumentasikan dengan jelas di `handler.go`
+- if the entire group must be protected, install `middleware.Auth` in `app.Group(...)`
+- if one module has a mix of public and protected routes, document that clearly in `handler.go`
 
 ## Consumer Registration Pattern
 
-Consumer runtime saat ini tidak me-register HTTP route. Yang dibuat adalah dependency untuk subscription manager dan handler loop.
+The consumer runtime does not register HTTP routes. It builds dependencies for the subscription manager and the handler loop.
 
-Struktur primary consumer Postgres sekarang dibagi per feature agar konsisten dengan pola split HTTP:
+The primary Postgres consumer structure is now split per feature to stay consistent with the HTTP split pattern:
 
 - `internal/framework/primary/consumer/postgres/`
-  - bootstrap runtime consumer (`app.go`, `build.go`, `run.go`, `shutdown.go`)
+  - consumer runtime bootstrap (`app.go`, `build.go`, `run.go`, `shutdown.go`)
 - `internal/framework/primary/consumer/postgres/user/`
-  - consumer untuk email verification dan forgot password
+  - consumer for email verification and forgot password
 - `internal/framework/primary/consumer/postgres/userinvitation/`
-  - consumer untuk email invitation
+  - consumer for invitation email
 - `internal/framework/primary/consumer/postgres/export_job/`
-  - consumer untuk export job
+  - consumer for export jobs
 - `internal/framework/primary/consumer/postgres/shared/`
-  - helper shared untuk carrier header message dan util email/logging consumer
+  - shared helpers for message carrier headers and consumer email/logging utilities
 
-`NewConsumerDependencies(...)` saat ini menyiapkan:
+`NewConsumerDependencies(...)` currently prepares:
 
 - email subscription
 - export job subscription
 - export job core
 - shutdown callback
 
-Jika menambah consumer baru:
+When adding a new consumer:
 
-1. buat subscription config baru
-2. inject dependency yang dibutuhkan core/processor
-3. expose hasilnya di `ConsumerDependencies`
-4. assign hasilnya di `internal/framework/primary/consumer/postgres/build.go`
-5. tempatkan handler di folder feature consumer yang sesuai, bukan menaruh semua file handler langsung di root `consumer/postgres`
+1. create a new subscription config
+2. inject the dependencies required by the core/processor
+3. expose the result through `ConsumerDependencies`
+4. assign the result in `internal/framework/primary/consumer/postgres/build.go`
+5. place handlers in the matching feature consumer folder instead of dropping all handler files into the root `consumer/postgres` folder
 
 ## Cross-Module Dependencies
 
-Gunakan interface dari `internal/ports/...` untuk dependency lintas modul.
+Use interfaces from `internal/ports/...` for cross-module dependencies.
 
-Contoh yang memang aktif:
+## Integration Adapter Pattern
 
-- `employee` core memakai `UserRepository`
-- `userinvitation` core memakai `UserRepository` dan `EmployeeRepository`
-- `worklocation` core memakai `OrgUnitRepository`
-- `attendance` core memakai `CompanyRepository` dan `StorageRepository`
-- `export_job` core memakai `AttendanceRepository`, `StorageRepository`, dan message publisher
+For outbound provider clients and other third-party service adapters, use:
 
-Catatan invitation flow:
+- `internal/integration/<provider>`
+  - concrete client, request signing, response parsing, webhook verification, and transport helpers
 
-- module `user-invitations` diregister di `internal/setup/http_dependency.go`
-- route `GET /user-invitations/accept` dan `POST /user-invitations/accept` bersifat public
-- route create/list/resend/revoke invitation diproteksi auth di handler per-route
+If an integration is used by core or handlers:
 
-Catatan employee flow:
+1. instantiate it in `internal/setup/http_dependency.go` or the relevant runtime setup
+2. inject it into core through the relevant contract/interface
+3. do not build third-party HTTP clients directly inside handlers or core
 
-- `CreateEmployee` tidak lagi otomatis membuat record `users`
-- akses login employee sekarang diharapkan lewat invitation/activation flow terpisah
+Example:
 
-Aturan:
+```text
+internal/integration/doku/
+  client.go
+  client_test.go
+```
 
-- jangan instantiate repository atau integration baru di dalam handler/core
-- jangan akses package concrete module lain langsung kalau contract sudah tersedia di `ports`
-- semua wiring lintas modul harus terlihat di `setup`
+Current examples:
+
+- `employee` core uses `UserRepository`
+- `userinvitation` core uses `UserRepository` and `EmployeeRepository`
+- `worklocation` core uses `OrgUnitRepository`
+- `attendance` core uses `CompanyRepository` and `StorageRepository`
+- `export_job` core uses `AttendanceRepository`, `StorageRepository`, and a message publisher
+
+Invitation flow notes:
+
+- the `user-invitations` module is registered in `internal/setup/http_dependency.go`
+- `GET /user-invitations/accept` and `POST /user-invitations/accept` are public routes
+- create, list, resend, and revoke invitation routes are auth-protected per-route in the handler
+
+Employee flow notes:
+
+- `CreateEmployee` no longer creates a `users` record automatically
+- employee login access is now expected to go through a separate invitation/activation flow
+
+Rules:
+
+- do not instantiate new repositories or integrations inside handlers or core
+- do not access another module's concrete package directly when a contract already exists in `ports`
+- all cross-module wiring must remain visible in `setup`

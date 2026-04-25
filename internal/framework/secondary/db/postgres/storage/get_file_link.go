@@ -46,10 +46,11 @@ func (r *storageRepo) GetFileLink(ctx context.Context, filter coreentity.Storage
 		LIMIT 1
 	`
 
-	err := r.db.GetContext(
+	exec := r.executor(ctx)
+	err := exec.GetContext(
 		ctx,
 		&data,
-		r.db.Rebind(query),
+		exec.Rebind(query),
 		filter.TenantID,
 		filter.ResourceType,
 		filter.ResourceID,

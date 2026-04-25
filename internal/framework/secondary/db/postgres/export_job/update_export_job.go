@@ -27,9 +27,10 @@ func (r *exportJobRepo) UpdateExportJob(ctx context.Context, data coreentity.Exp
 		WHERE tenant_id = ? AND id = ? AND deleted_at IS NULL
 	`
 
-	_, err := r.db.ExecContext(
+	exec := r.executor(ctx)
+	_, err := exec.ExecContext(
 		ctx,
-		r.db.Rebind(query),
+		exec.Rebind(query),
 		data.Status,
 		data.FileID,
 		data.ErrorMessage,

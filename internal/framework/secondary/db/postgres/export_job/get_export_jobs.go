@@ -66,7 +66,8 @@ func (r *exportJobRepo) GetExportJobs(ctx context.Context, filter coreentity.Exp
 
 	args := []any{filter.TenantID, filter.Paginate, (filter.Page - 1) * filter.Paginate}
 	data := make([]dao, 0)
-	err := r.db.SelectContext(ctx, &data, r.db.Rebind(query), args...)
+	exec := r.executor(ctx)
+	err := exec.SelectContext(ctx, &data, exec.Rebind(query), args...)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to query export jobs")
 		return nil, 0, err

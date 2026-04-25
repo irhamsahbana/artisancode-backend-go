@@ -7,7 +7,7 @@ import (
 	userconsumer "codebase-app/internal/framework/primary/consumer/postgres/user"
 	userinvitationconsumer "codebase-app/internal/framework/primary/consumer/postgres/userinvitation"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 	"context"
 	"errors"
 	"os"

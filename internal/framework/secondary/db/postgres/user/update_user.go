@@ -15,12 +15,6 @@ func (r *userRepo) UpdateUser(ctx context.Context, data coreentity.User) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:update_user:UpdateUser")
 	defer span.End()
 
-	tx, err := r.db.BeginTxx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
 	args := []any{
 		data.Name,
 		data.UserName,
@@ -52,7 +46,8 @@ func (r *userRepo) UpdateUser(ctx context.Context, data coreentity.User) error {
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	result, err := tx.ExecContext(ctx, tx.Rebind(query), args...)
+	exec := r.executor(ctx)
+	result, err := exec.ExecContext(ctx, exec.Rebind(query), args...)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to update user")
 		return err
@@ -66,9 +61,9 @@ func (r *userRepo) UpdateUser(ctx context.Context, data coreentity.User) error {
 		return errmsg.NewCustomErrors(404).SetMessage("User not found")
 	}
 
-	if err := r.replaceUserRolesTx(ctx, tx, data.ID, data.RoleIDs); err != nil {
+	if err := r.replaceUserRoles(ctx, exec, data.ID, data.RoleIDs); err != nil {
 		return err
 	}
 
-	return tx.Commit()
+	return nil
 }

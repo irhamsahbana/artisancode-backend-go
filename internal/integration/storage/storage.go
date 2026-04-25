@@ -5,7 +5,7 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/config"
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 	"codebase-app/pkg"
 	"codebase-app/pkg/errmsg"
 	"context"

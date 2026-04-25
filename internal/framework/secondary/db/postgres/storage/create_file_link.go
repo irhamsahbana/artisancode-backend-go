@@ -32,9 +32,10 @@ func (r *storageRepo) CreateFileLink(ctx context.Context, req coreentity.CreateS
 		createdAt time.Time
 	)
 
-	err := r.db.QueryRowxContext(
+	exec := r.executor(ctx)
+	err := exec.QueryRowxContext(
 		ctx,
-		r.db.Rebind(query),
+		exec.Rebind(query),
 		req.TenantID,
 		req.StorageFileID,
 		req.ResourceType,

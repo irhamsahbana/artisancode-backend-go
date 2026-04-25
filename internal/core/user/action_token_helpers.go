@@ -42,34 +42,31 @@ func (c *userCore) issueEmailVerification(ctx context.Context, user coreentity.U
 		return err
 	}
 
-	err = c.repo.DeleteUserActionTokensByPurpose(ctx, user.ID, coreentity.UserActionTokenPurposeEmailVerification)
-	if err != nil {
-		return err
-	}
+	return c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		err = c.repo.DeleteUserActionTokensByPurpose(txCtx, user.ID, coreentity.UserActionTokenPurposeEmailVerification)
+		if err != nil {
+			return err
+		}
 
-	err = c.repo.CreateUserActionToken(ctx, coreentity.UserActionToken{
-		UserID:    user.ID,
-		Purpose:   coreentity.UserActionTokenPurposeEmailVerification,
-		TokenHash: tokenHash,
-		ExpiresAt: time.Now().UTC().Add(emailVerificationTokenTTL),
+		err = c.repo.CreateUserActionToken(txCtx, coreentity.UserActionToken{
+			UserID:    user.ID,
+			Purpose:   coreentity.UserActionTokenPurposeEmailVerification,
+			TokenHash: tokenHash,
+			ExpiresAt: time.Now().UTC().Add(emailVerificationTokenTTL),
+		})
+		if err != nil {
+			return err
+		}
+
+		return c.enqueueVerificationEmail(
+			txCtx,
+			user.Name,
+			user.Email,
+			user.TenantName,
+			buildFrontendActionURL(config.Envs.FrontendURL.EmailVerification, rawToken),
+			user.PreferredLanguage,
+		)
 	})
-	if err != nil {
-		return err
-	}
-
-	err = c.enqueueVerificationEmail(
-		ctx,
-		user.Name,
-		user.Email,
-		user.TenantName,
-		buildFrontendActionURL(config.Envs.FrontendURL.EmailVerification, rawToken),
-		user.PreferredLanguage,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (c *userCore) issuePasswordReset(ctx context.Context, user coreentity.User) error {
@@ -78,34 +75,31 @@ func (c *userCore) issuePasswordReset(ctx context.Context, user coreentity.User)
 		return err
 	}
 
-	err = c.repo.DeleteUserActionTokensByPurpose(ctx, user.ID, coreentity.UserActionTokenPurposePasswordReset)
-	if err != nil {
-		return err
-	}
+	return c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		err = c.repo.DeleteUserActionTokensByPurpose(txCtx, user.ID, coreentity.UserActionTokenPurposePasswordReset)
+		if err != nil {
+			return err
+		}
 
-	err = c.repo.CreateUserActionToken(ctx, coreentity.UserActionToken{
-		UserID:    user.ID,
-		Purpose:   coreentity.UserActionTokenPurposePasswordReset,
-		TokenHash: tokenHash,
-		ExpiresAt: time.Now().UTC().Add(passwordResetTokenTTL),
+		err = c.repo.CreateUserActionToken(txCtx, coreentity.UserActionToken{
+			UserID:    user.ID,
+			Purpose:   coreentity.UserActionTokenPurposePasswordReset,
+			TokenHash: tokenHash,
+			ExpiresAt: time.Now().UTC().Add(passwordResetTokenTTL),
+		})
+		if err != nil {
+			return err
+		}
+
+		return c.enqueuePasswordResetEmail(
+			txCtx,
+			user.Name,
+			user.Email,
+			user.TenantName,
+			buildFrontendActionURL(config.Envs.FrontendURL.PasswordReset, rawToken),
+			user.PreferredLanguage,
+		)
 	})
-	if err != nil {
-		return err
-	}
-
-	err = c.enqueuePasswordResetEmail(
-		ctx,
-		user.Name,
-		user.Email,
-		user.TenantName,
-		buildFrontendActionURL(config.Envs.FrontendURL.PasswordReset, rawToken),
-		user.PreferredLanguage,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func buildFrontendActionURL(path, rawToken string) string {

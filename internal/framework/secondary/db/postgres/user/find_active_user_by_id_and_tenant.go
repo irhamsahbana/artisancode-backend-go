@@ -47,7 +47,8 @@ func (r *userRepo) FindActiveUserByIDAndTenant(ctx context.Context, userID, tena
 		EmailVerifiedAt sql.NullTime `db:"email_verified_at"`
 	}
 
-	err := r.db.GetContext(ctx, &row, r.db.Rebind(query), userID, tenantID)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &row, exec.Rebind(query), userID, tenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{

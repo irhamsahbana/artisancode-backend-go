@@ -24,9 +24,10 @@ func (r *storageRepo) MarkFileAttached(ctx context.Context, tenantID, id string)
 	`
 
 	now := time.Now().UTC()
-	result, err := r.db.ExecContext(
+	exec := r.executor(ctx)
+	result, err := exec.ExecContext(
 		ctx,
-		r.db.Rebind(query),
+		exec.Rebind(query),
 		common.FileStatusAttached,
 		now,
 		tenantID,

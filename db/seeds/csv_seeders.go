@@ -353,6 +353,235 @@ func (s *Seed) seedUserRoles(tx *sqlx.Tx, state *csvSeedState) error {
 	return nil
 }
 
+func (s *Seed) seedInternalUsers(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalUsers]
+	cfg := upsertConfig{
+		table:              seedTableInternalUsers,
+		columns:            []string{"email", "full_name", "password_hash", "role_code", "status"},
+		matchColumns:       []string{"email"},
+		hasUpdatedAt:       true,
+		supportsSoftDelete: true,
+	}
+
+	for _, row := range file.rows {
+		email, err := requiredCSVValue(row, "email")
+		if err != nil {
+			return fmt.Errorf("seed internal_users: %w", err)
+		}
+		fullName, err := requiredCSVValue(row, "full_name")
+		if err != nil {
+			return fmt.Errorf("seed internal_users %s: %w", email, err)
+		}
+		passwordPlain, err := requiredCSVValue(row, "password_plain")
+		if err != nil {
+			return fmt.Errorf("seed internal_users %s: %w", email, err)
+		}
+		roleCode, err := requiredCSVValue(row, "role_code")
+		if err != nil {
+			return fmt.Errorf("seed internal_users %s: %w", email, err)
+		}
+		status, err := requiredCSVValue(row, "status")
+		if err != nil {
+			return fmt.Errorf("seed internal_users %s: %w", email, err)
+		}
+
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(passwordPlain), bcrypt.DefaultCost)
+		if err != nil {
+			return fmt.Errorf("seed internal_users %s: hash password: %w", email, err)
+		}
+
+		values := map[string]any{
+			"email":         strings.ToLower(strings.TrimSpace(email)),
+			"full_name":     fullName,
+			"password_hash": string(hashedPassword),
+			"role_code":     roleCode,
+			"status":        status,
+		}
+
+		id, backfilled, err := upsertRecord(tx, cfg, row["id"], values)
+		if err != nil {
+			return fmt.Errorf("seed internal_users %s: %w", email, err)
+		}
+		if backfilled {
+			row["id"] = id
+			file.modified = true
+		}
+		state.registerID(seedTableInternalUsers, tenantLookupKey(email), id)
+	}
+
+	return nil
+}
+
+func (s *Seed) seedInternalProducts(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalProducts]
+	cfg := upsertConfig{
+		table:              seedTableInternalProducts,
+		columns:            []string{"code", "name", "description", "status", "metadata"},
+		matchColumns:       []string{"code"},
+		hasUpdatedAt:       true,
+		supportsSoftDelete: true,
+	}
+
+	for _, row := range file.rows {
+		code, err := requiredCSVValue(row, "code")
+		if err != nil {
+			return fmt.Errorf("seed internal_products: %w", err)
+		}
+		name, err := requiredCSVValue(row, "name")
+		if err != nil {
+			return fmt.Errorf("seed internal_products %s: %w", code, err)
+		}
+		status, err := requiredCSVValue(row, "status")
+		if err != nil {
+			return fmt.Errorf("seed internal_products %s: %w", code, err)
+		}
+		values := map[string]any{
+			"code":        code,
+			"name":        name,
+			"description": strings.TrimSpace(row["description"]),
+			"status":      status,
+			"metadata":    defaultJSON(row["metadata"]),
+		}
+
+		id, backfilled, err := upsertRecord(tx, cfg, row["id"], values)
+		if err != nil {
+			return fmt.Errorf("seed internal_products %s: %w", code, err)
+		}
+		if backfilled {
+			row["id"] = id
+			file.modified = true
+		}
+		state.registerID(seedTableInternalProducts, code, id)
+	}
+
+	return nil
+}
+
+func (s *Seed) seedInternalProductPricings(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalProductPricings]
+	cfg := upsertConfig{
+		table:              seedTableInternalProductPricings,
+		columns:            []string{"internal_product_id", "code", "name", "description", "status", "metadata"},
+		matchColumns:       []string{"internal_product_id", "code"},
+		hasUpdatedAt:       true,
+		supportsSoftDelete: true,
+	}
+
+	for _, row := range file.rows {
+		code, err := requiredCSVValue(row, "code")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_pricings: %w", err)
+		}
+		name, err := requiredCSVValue(row, "name")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_pricings %s: %w", code, err)
+		}
+		status, err := requiredCSVValue(row, "status")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_pricings %s: %w", code, err)
+		}
+		productCode, err := requiredCSVValue(row, "product_code")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_pricings %s: %w", code, err)
+		}
+		productID, err := resolveID(state, seedTableInternalProducts, productCode, "internal product")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_pricings %s: %w", code, err)
+		}
+
+		values := map[string]any{
+			"internal_product_id": productID,
+			"code":                code,
+			"name":                name,
+			"description":         strings.TrimSpace(row["description"]),
+			"status":              status,
+			"metadata":            defaultJSON(row["metadata"]),
+		}
+
+		id, backfilled, err := upsertRecord(tx, cfg, row["id"], values)
+		if err != nil {
+			return fmt.Errorf("seed internal_product_pricings %s: %w", code, err)
+		}
+		if backfilled {
+			row["id"] = id
+			file.modified = true
+		}
+		state.registerID(seedTableInternalProductPricings, productCode+"::"+code, id)
+	}
+
+	return nil
+}
+
+func (s *Seed) seedInternalProductPrices(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalProductPrices]
+	cfg := upsertConfig{
+		table:              seedTableInternalProductPrices,
+		columns:            []string{"internal_product_pricing_id", "currency_code", "amount", "started_at", "ended_at", "metadata"},
+		matchColumns:       []string{"internal_product_pricing_id", "currency_code", "started_at"},
+		hasUpdatedAt:       true,
+		supportsSoftDelete: true,
+	}
+
+	for _, row := range file.rows {
+		productCode, err := requiredCSVValue(row, "product_code")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_prices: %w", err)
+		}
+		pricingCode, err := requiredCSVValue(row, "pricing_code")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_prices %s/%s: %w", productCode, pricingCode, err)
+		}
+		currencyCode, err := requiredCSVValue(row, "currency_code")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_prices %s/%s: %w", productCode, pricingCode, err)
+		}
+		amount, err := requiredCSVValue(row, "amount")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_prices %s/%s: %w", productCode, pricingCode, err)
+		}
+		startedAt, err := requiredCSVValue(row, "started_at")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_prices %s/%s: %w", productCode, pricingCode, err)
+		}
+		pricingID, err := resolveID(state, seedTableInternalProductPricings, productCode+"::"+pricingCode, "internal product pricing")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_prices %s/%s: %w", productCode, pricingCode, err)
+		}
+		endedAt, err := optionalTimeValue(row, "ended_at")
+		if err != nil {
+			return fmt.Errorf("seed internal_product_prices %s/%s: %w", productCode, pricingCode, err)
+		}
+		startedAtTime, err := optionalTimeValue(row, "started_at")
+		if err != nil || startedAtTime == nil {
+			if err == nil {
+				err = fmt.Errorf("started_at is required")
+			}
+			return fmt.Errorf("seed internal_product_prices %s/%s: %w", productCode, pricingCode, err)
+		}
+
+		values := map[string]any{
+			"internal_product_pricing_id": pricingID,
+			"currency_code":               currencyCode,
+			"amount":                      amount,
+			"started_at":                  startedAtTime,
+			"ended_at":                    endedAt,
+			"metadata":                    defaultJSON(row["metadata"]),
+		}
+
+		id, backfilled, err := upsertRecord(tx, cfg, row["id"], values)
+		if err != nil {
+			return fmt.Errorf("seed internal_product_prices %s/%s: %w", productCode, pricingCode, err)
+		}
+		if backfilled {
+			row["id"] = id
+			file.modified = true
+		}
+		state.registerID(seedTableInternalProductPrices, productCode+"::"+pricingCode+"::"+currencyCode+"::"+startedAt, id)
+	}
+
+	return nil
+}
+
 func (s *Seed) seedJobPositions(tx *sqlx.Tx, state *csvSeedState) error {
 	file := state.files[seedTableJobPositions]
 	cfg := upsertConfig{
@@ -663,6 +892,15 @@ func resolveScopedNullableID(state *csvSeedState, tableName string, scope string
 		return nil, err
 	}
 	return &id, nil
+}
+
+func resolveID(state *csvSeedState, tableName string, value string, label string) (string, error) {
+	value = strings.TrimSpace(value)
+	id, ok := state.lookupID(tableName, value)
+	if !ok {
+		return "", fmt.Errorf("%s %q not found", label, value)
+	}
+	return id, nil
 }
 
 func scopedLookupScope(primary string, fallback string) string {

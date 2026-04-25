@@ -1,7 +1,7 @@
 package http
 
 import (
-	integrationPorts "codebase-app/internal/ports/secondary/integration"
+	integrationPorts "codebase-app/internal/ports/integration"
 	"context"
 
 	"github.com/gofiber/fiber/v2"

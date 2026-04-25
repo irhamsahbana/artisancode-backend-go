@@ -23,7 +23,8 @@ func (r *employeeRepo) ExistsByEmployeeNo(ctx context.Context, tenantID, employe
 	}
 
 	var id string
-	err := r.db.GetContext(ctx, &id, r.db.Rebind(query), args...)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &id, exec.Rebind(query), args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil

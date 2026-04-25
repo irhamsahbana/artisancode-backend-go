@@ -24,7 +24,8 @@ func (r *userRepo) GetTenantPreferredLanguage(ctx context.Context, tenantID stri
 	`
 
 	var configJSON []byte
-	err := r.db.GetContext(ctx, &configJSON, r.db.Rebind(query), tenantID)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &configJSON, exec.Rebind(query), tenantID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
 			"tenant_id": tenantID,

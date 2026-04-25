@@ -22,7 +22,8 @@ func (r *employeeRepo) CreateEmployee(ctx context.Context, data coreentity.Emplo
 		RETURNING id
 	`
 	var id string
-	err := r.db.GetContext(ctx, &id, r.db.Rebind(query),
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &id, exec.Rebind(query),
 		data.TenantID,
 		data.EmployeeNo,
 		data.FullName,

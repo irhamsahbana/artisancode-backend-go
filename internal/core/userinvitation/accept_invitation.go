@@ -17,62 +17,71 @@ func (c *userInvitationCore) AcceptInvitation(ctx context.Context, data coreenti
 	ctx, span := tracing.StartSpan(ctx, "internal:core:userinvitation:accept_invitation:AcceptInvitation")
 	defer span.End()
 
-	item, err := c.repo.GetInvitationByTokenHash(ctx, hashInvitationToken(data.Token))
-	if err != nil {
-		return nil, err
-	}
-
-	item, err = validateAcceptableInvitation(item)
-	if err != nil {
-		return nil, err
-	}
-
-	existingUser, err := c.userRepo.FindActiveUserByEmailAndTenantID(ctx, item.Email, item.TenantID)
-	if err != nil {
-		return nil, err
-	}
-	if existingUser != nil {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
-	}
-
-	role, err := c.userRepo.GetRoleByName(ctx, item.RoleCode, item.TenantID)
-	if err != nil {
-		return nil, err
-	}
-
-	userData, err := c.buildAcceptedUser(ctx, item, data, role.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	userID, err := c.userRepo.InsertUser(ctx, userData)
-	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]any{
-			"invitation_id": item.ID,
-			"email":         item.Email,
-			"role_code":     item.RoleCode,
-		}).Msg("Failed to insert invited user")
-		return nil, err
-	}
-
-	if err := c.userRepo.MarkUserEmailVerified(ctx, userID); err != nil {
-		return nil, err
-	}
-
-	if item.EmployeeID != nil {
-		if err := c.employeeRepo.AssignUser(ctx, item.TenantID, *item.EmployeeID, userID); err != nil {
-			return nil, err
+	var result *coreentity.User
+	err := c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		item, err := c.repo.GetInvitationByTokenHash(txCtx, hashInvitationToken(data.Token))
+		if err != nil {
+			return err
 		}
-	}
 
-	if err := c.repo.MarkInvitationAccepted(ctx, item.ID); err != nil {
+		item, err = validateAcceptableInvitation(item)
+		if err != nil {
+			return err
+		}
+
+		existingUser, err := c.userRepo.FindActiveUserByEmailAndTenantID(txCtx, item.Email, item.TenantID)
+		if err != nil {
+			return err
+		}
+		if existingUser != nil {
+			return errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
+		}
+
+		role, err := c.userRepo.GetRoleByName(txCtx, item.RoleCode, item.TenantID)
+		if err != nil {
+			return err
+		}
+
+		userData, err := c.buildAcceptedUser(txCtx, item, data, role.ID)
+		if err != nil {
+			return err
+		}
+
+		userID, err := c.userRepo.InsertUser(txCtx, userData)
+		if err != nil {
+			log.Ctx(txCtx).Error().Err(err).Any(common.LogKeyPayload, map[string]any{
+				"invitation_id": item.ID,
+				"email":         item.Email,
+				"role_code":     item.RoleCode,
+			}).Msg("Failed to insert invited user")
+			return err
+		}
+
+		if err := c.userRepo.MarkUserEmailVerified(txCtx, userID); err != nil {
+			return err
+		}
+
+		if item.EmployeeID != nil {
+			if err := c.employeeRepo.AssignUser(txCtx, item.TenantID, *item.EmployeeID, userID); err != nil {
+				return err
+			}
+		}
+
+		if err := c.repo.MarkInvitationAccepted(txCtx, item.ID); err != nil {
+			return err
+		}
+
+		result, err = c.userRepo.GetUser(txCtx, coreentity.User{
+			ID:       userID,
+			TenantID: item.TenantID,
+		})
+		return err
+	})
+	if err != nil {
 		return nil, err
 	}
 
-	return c.userRepo.GetUser(ctx, coreentity.User{
-		ID:       userID,
-		TenantID: item.TenantID,
-	})
+	return result, nil
 }
 
 func (c *userInvitationCore) buildAcceptedUser(ctx context.Context, item *coreentity.UserInvitation, data coreentity.UserInvitationAcceptPayload, roleID string) (coreentity.User, error) {

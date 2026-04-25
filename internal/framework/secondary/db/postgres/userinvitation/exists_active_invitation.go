@@ -39,7 +39,8 @@ func (r *userInvitationRepo) ExistsActiveInvitation(ctx context.Context, tenantI
 	`
 
 	var exists bool
-	if err := r.db.GetContext(ctx, &exists, r.db.Rebind(query), args...); err != nil {
+	exec := r.executor(ctx)
+	if err := exec.GetContext(ctx, &exists, exec.Rebind(query), args...); err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil
 		}

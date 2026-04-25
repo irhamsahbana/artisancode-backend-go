@@ -21,7 +21,8 @@ func (r *userRepo) DeleteUser(ctx context.Context, filter coreentity.UserDeleteF
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	result, err := r.db.ExecContext(ctx, r.db.Rebind(query), filter.ID, filter.TenantID)
+	exec := r.executor(ctx)
+	result, err := exec.ExecContext(ctx, exec.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to delete user")
 		return err

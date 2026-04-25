@@ -1,0 +1,3 @@
+id,helper__product_code,code,name,description,status,metadata
+019dbbc5-aed6-7a77-aec9-b9e25235930e,CORE_HR,MONTHLY,Monthly Plan,Monthly billing for Core HR,active,{}
+019dbbc5-b055-7d32-b878-13bf67fe9c22,ATTENDANCE_PRO,ANNUAL,Annual Plan,Annual billing for Attendance Pro,active,{}

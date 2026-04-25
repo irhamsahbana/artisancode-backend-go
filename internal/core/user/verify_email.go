@@ -11,15 +11,17 @@ func (c *userCore) VerifyEmail(ctx context.Context, token coreentity.UserActionT
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:verify_email:VerifyEmail")
 	defer span.End()
 
-	foundToken, err := c.repo.GetValidUserActionToken(ctx, hashUserActionToken(token.Token), coreentity.UserActionTokenPurposeEmailVerification)
-	if err != nil {
-		return err
-	}
+	return c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
+		foundToken, err := c.repo.GetValidUserActionToken(txCtx, hashUserActionToken(token.Token), coreentity.UserActionTokenPurposeEmailVerification)
+		if err != nil {
+			return err
+		}
 
-	err = c.repo.MarkUserEmailVerified(ctx, foundToken.UserID)
-	if err != nil {
-		return err
-	}
+		err = c.repo.MarkUserEmailVerified(txCtx, foundToken.UserID)
+		if err != nil {
+			return err
+		}
 
-	return c.repo.MarkUserActionTokenUsed(ctx, foundToken.ID)
+		return c.repo.MarkUserActionTokenUsed(txCtx, foundToken.ID)
+	})
 }

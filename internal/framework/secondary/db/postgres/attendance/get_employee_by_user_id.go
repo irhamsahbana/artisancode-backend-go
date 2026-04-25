@@ -32,7 +32,8 @@ func (r *attendanceRepo) GetEmployeeByUserID(ctx context.Context, tenantID, user
 		LIMIT 1
 	`
 
-	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), tenantID, userID)
+	exec := r.executor(ctx)
+	err := exec.GetContext(ctx, &data, exec.Rebind(query), tenantID, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Employee profile not found")

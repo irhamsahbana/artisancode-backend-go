@@ -14,3 +14,5 @@
 ## Naming Migration
 
 - Use file naming pattern `YYYYMMDDHHMMSS_<name>.sql`.
+- Keep one migration file for one schema change unit so rollout and rollback stay explicit.
+- If a change creates related tables, split them into sequential migration files based on dependency order.
