@@ -6,6 +6,8 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/entity/restentity"
+
+	"github.com/shopspring/decimal"
 )
 
 func InternalProductFromCoreToRest(item coreentity.InternalProduct) restentity.InternalProduct {
@@ -92,7 +94,7 @@ func InternalProductPriceFromCoreToRest(item coreentity.InternalProductPrice) re
 		ID:                       item.ID,
 		InternalProductPricingID: item.InternalProductPricingID,
 		CurrencyCode:             item.CurrencyCode,
-		Amount:                   item.Amount,
+		Amount:                   item.Amount.String(),
 		StartedAt:                item.StartedAt,
 		EndedAt:                  item.EndedAt,
 		Metadata:                 item.Metadata,
@@ -103,11 +105,12 @@ func InternalProductPriceFromCoreToRest(item coreentity.InternalProductPrice) re
 
 func InternalProductPriceFromRestCreateToCore(ctx context.Context, req restentity.CreateInternalProductPriceReq) coreentity.InternalProductPrice {
 	uc := common.GetUserContext(ctx)
+	amount, _ := decimal.NewFromString(req.Amount)
 	return coreentity.InternalProductPrice{
 		UserCtx:                  uc,
 		InternalProductPricingID: req.PricingID,
 		CurrencyCode:             req.CurrencyCode,
-		Amount:                   req.Amount,
+		Amount:                   amount,
 		StartedAt:                req.StartedAt,
 		EndedAt:                  req.EndedAt,
 		Metadata:                 req.Metadata,
@@ -116,12 +119,13 @@ func InternalProductPriceFromRestCreateToCore(ctx context.Context, req restentit
 
 func InternalProductPriceFromRestUpdateToCore(ctx context.Context, req restentity.UpdateInternalProductPriceReq) coreentity.InternalProductPrice {
 	uc := common.GetUserContext(ctx)
+	amount, _ := decimal.NewFromString(req.Amount)
 	return coreentity.InternalProductPrice{
 		UserCtx:                  uc,
 		ID:                       req.PriceID,
 		InternalProductPricingID: req.PricingID,
 		CurrencyCode:             req.CurrencyCode,
-		Amount:                   req.Amount,
+		Amount:                   amount,
 		StartedAt:                req.StartedAt,
 		EndedAt:                  req.EndedAt,
 		Metadata:                 req.Metadata,

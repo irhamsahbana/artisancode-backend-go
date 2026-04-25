@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"math/big"
 	"regexp"
 	"strings"
 	"time"
@@ -19,7 +18,6 @@ import (
 
 var (
 	internalCodePattern     = regexp.MustCompile(`^[A-Z0-9_-]+$`)
-	internalAmountPattern   = regexp.MustCompile(`^\d+(\.\d{1,6})?$`)
 	internalCurrencyPattern = regexp.MustCompile(`^[A-Z]{3}$`)
 )
 
@@ -328,7 +326,6 @@ func (c *internalProductCore) normalizeAndValidatePricing(ctx context.Context, d
 
 func (c *internalProductCore) normalizeAndValidatePrice(ctx context.Context, data *coreentity.InternalProductPrice) error {
 	data.CurrencyCode = strings.ToUpper(strings.TrimSpace(data.CurrencyCode))
-	data.Amount = strings.TrimSpace(data.Amount)
 	data.StartedAt = strings.TrimSpace(data.StartedAt)
 	if data.EndedAt != nil {
 		trimmed := strings.TrimSpace(*data.EndedAt)
@@ -344,16 +341,9 @@ func (c *internalProductCore) normalizeAndValidatePrice(ctx context.Context, dat
 	if !internalCurrencyPattern.MatchString(data.CurrencyCode) {
 		return errmsg.NewCustomErrors(400).SetMessage("Currency code format is invalid")
 	}
-	if !internalAmountPattern.MatchString(data.Amount) {
-		return errmsg.NewCustomErrors(400).SetMessage("Amount format is invalid")
-	}
 
-	amountRat, ok := new(big.Rat).SetString(data.Amount)
-	if !ok {
-		return errmsg.NewCustomErrors(400).SetMessage("Amount format is invalid")
-	}
-	if amountRat.Sign() < 0 {
-		return errmsg.NewCustomErrors(400).SetMessage("Amount must not be negative")
+	if !data.Amount.IsPositive() {
+		return errmsg.NewCustomErrors(400).SetMessage("Amount must be positive")
 	}
 
 	startTime, err := time.Parse(time.RFC3339, data.StartedAt)

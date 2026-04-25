@@ -13,6 +13,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
+	"github.com/shopspring/decimal"
 )
 
 type internalProductRepo struct {
@@ -408,7 +409,7 @@ func (r *internalProductRepo) GetInternalProductPrices(ctx context.Context, filt
 		ID                       string          `db:"id"`
 		InternalProductPricingID string          `db:"internal_product_pricing_id"`
 		CurrencyCode             string          `db:"currency_code"`
-		Amount                   string          `db:"amount"`
+		Amount                   decimal.Decimal `db:"amount"`
 		StartedAt                string          `db:"started_at"`
 		EndedAt                  *string         `db:"ended_at"`
 		Metadata                 json.RawMessage `db:"metadata"`
@@ -625,7 +626,7 @@ func mapInternalProductPricingDAO(id, internalProductID, code, name, description
 	return item, nil
 }
 
-func mapInternalProductPriceDAO(id, pricingID, currencyCode, amount, startedAt string, endedAt *string, metadataRaw json.RawMessage, createdAt string, updatedAt *string) (coreentity.InternalProductPrice, error) {
+func mapInternalProductPriceDAO(id, pricingID, currencyCode string, amount decimal.Decimal, startedAt string, endedAt *string, metadataRaw json.RawMessage, createdAt string, updatedAt *string) (coreentity.InternalProductPrice, error) {
 	metadata, err := parseMetadata(context.Background(), metadataRaw)
 	if err != nil {
 		return coreentity.InternalProductPrice{}, err

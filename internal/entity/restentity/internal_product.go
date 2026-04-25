@@ -1,6 +1,8 @@
 package restentity
 
-import "codebase-app/pkg/types"
+import (
+	"codebase-app/pkg/types"
+)
 
 type InternalProduct struct {
 	ID          string         `json:"id"`

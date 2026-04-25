@@ -1,6 +1,9 @@
 package coreentity
 
-import "codebase-app/internal/entity/common"
+import (
+	"codebase-app/internal/entity/common"
+	"github.com/shopspring/decimal"
+)
 
 const (
 	InternalProductStatusDraft    = "draft"
@@ -71,7 +74,7 @@ type InternalProductPrice struct {
 	ID                       string
 	InternalProductPricingID string
 	CurrencyCode             string
-	Amount                   string
+	Amount                   decimal.Decimal
 	StartedAt                string
 	EndedAt                  *string
 	Metadata                 map[string]any
