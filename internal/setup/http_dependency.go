@@ -169,7 +169,6 @@ func HttpDependencies() {
 	dokuClient := dokuIntegration.NewClientFromEnv()
 	attendanceCoreInst := attendanceCore.NewAttendanceCore(attendanceCore.AttendanceCoreConfig{
 		Repo:        attendanceRepository,
-		CompanyRepo: companyRepository,
 		StorageRepo: storageRepository,
 		Tx:          tx,
 		S3:          s3,

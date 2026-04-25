@@ -12,54 +12,43 @@ func (c *attendanceCore) GetAttendancePolicy(ctx context.Context, filter coreent
 	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:get_attendance_policy:GetAttendancePolicy")
 	defer span.End()
 
-	company, err := c.getPolicyCompany(ctx, filter)
+	employee, err := c.repo.GetEmployeeByUserID(ctx, filter.TenantID, filter.UserID)
 	if err != nil {
 		return nil, err
 	}
-
-	return &coreentity.AttendancePolicy{
-		UserCtx:                 filter.UserCtx,
-		Timezone:                company.Config.Timezone,
-		AttendanceRadiusMeters:  company.Config.AttendanceRadiusMeters,
-		AttendanceCheckInStart:  company.Config.AttendanceCheckInStart,
-		AttendanceCheckInEnd:    company.Config.AttendanceCheckInEnd,
-		AttendanceCheckOutStart: company.Config.AttendanceCheckOutStart,
-		AttendanceCheckOutEnd:   company.Config.AttendanceCheckOutEnd,
-	}, nil
-}
-
-func (c *attendanceCore) getPolicyCompany(ctx context.Context, filter coreentity.SelfFilter) (*coreentity.Company, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:get_attendance_policy:getPolicyCompany")
-	defer span.End()
-
-	if filter.UserCtx.CompanyID != nil {
-		return c.companyRepo.GetCompany(ctx, coreentity.Company{
-			TenantID: filter.TenantID,
-			ID:       *filter.UserCtx.CompanyID,
-		})
+	if employee.ShiftID == nil || *employee.ShiftID == "" {
+		return nil, errmsg.NewCustomErrors(400).SetMessage("Work shift is required")
 	}
 
-	if !filter.UserCtx.HasRole("owner") {
-		company, err := c.repo.GetCompanyByUserID(ctx, filter.TenantID, filter.UserID)
-		if err != nil {
-			return nil, err
-		}
-		if company != nil {
-			return company, nil
-		}
-	}
-
-	companies, _, err := c.companyRepo.GetCompanies(ctx, coreentity.CompanyListFilter{
+	shift, err := c.repo.GetWorkShift(ctx, coreentity.WorkShift{
 		TenantID: filter.TenantID,
-		Page:     1,
-		Paginate: 1,
+		ID:       *employee.ShiftID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	if len(companies) == 0 {
-		return nil, errmsg.NewCustomErrors(404).SetMessage("Company policy not found")
+
+	radiusMeters := 0
+	if employee.LocationID != nil && *employee.LocationID != "" {
+		location, err := c.repo.GetWorkLocation(ctx, coreentity.WorkLocation{
+			TenantID: filter.TenantID,
+			ID:       *employee.LocationID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		if location.RadiusMeters != nil {
+			radiusMeters = *location.RadiusMeters
+		}
 	}
 
-	return &companies[0], nil
+	return &coreentity.AttendancePolicy{
+		UserCtx:                 filter.UserCtx,
+		Timezone:                shift.Timezone,
+		AttendanceRadiusMeters:  radiusMeters,
+		AttendanceCheckInStart:  shift.StartTime,
+		AttendanceCheckInEnd:    shift.StartTime,
+		AttendanceCheckOutStart: shift.EndTime,
+		AttendanceCheckOutEnd:   shift.EndTime,
+	}, nil
 }

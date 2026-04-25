@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"regexp"
 	"slices"
 
 	"codebase-app/internal/entity/common"
@@ -12,8 +11,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 )
-
-var timeFormatRegex = regexp.MustCompile(`^\d{2}:\d{2}$`)
 
 func (c *companyCore) CreateCompany(ctx context.Context, data coreentity.Company) (*coreentity.Company, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:company:create_company:CreateCompany")
@@ -40,26 +37,11 @@ func (c *companyCore) CreateCompany(ctx context.Context, data coreentity.Company
 }
 
 func validateCompanyConfig(cfg coreentity.CompanyConfig) error {
-	if cfg.AttendanceRadiusMeters < 0 {
-		return errmsg.NewCustomErrors(400).SetMessage("Attendance radius must be >= 0")
-	}
 	if cfg.LeaveAllowanceAnnual < 0 {
 		return errmsg.NewCustomErrors(400).SetMessage("Leave allowance annual must be >= 0")
 	}
 	if cfg.OvertimeRateMultiplier < 0 {
 		return errmsg.NewCustomErrors(400).SetMessage("Overtime rate multiplier must be >= 0")
-	}
-
-	timeFields := map[string]string{
-		"attendance_check_in_start":  cfg.AttendanceCheckInStart,
-		"attendance_check_in_end":    cfg.AttendanceCheckInEnd,
-		"attendance_check_out_start": cfg.AttendanceCheckOutStart,
-		"attendance_check_out_end":   cfg.AttendanceCheckOutEnd,
-	}
-	for fieldName, value := range timeFields {
-		if !timeFormatRegex.MatchString(value) {
-			return errmsg.NewCustomErrors(400).SetMessage(fieldName + " format must be HH:mm")
-		}
 	}
 
 	if cfg.Timezone == "" {
