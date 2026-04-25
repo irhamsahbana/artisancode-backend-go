@@ -27,7 +27,7 @@ func (r *rbacRepo) GetRoles(ctx context.Context, filter coreentity.RoleListFilte
 			tenant_id,
 			name
 		FROM roles
-		WHERE deleted_at IS NULL AND tenant_id = ?
+		WHERE deleted_at IS NULL AND tenant_id = ? AND LOWER(name) <> 'owner'
 	`
 	args = append(args, filter.TenantID)
 

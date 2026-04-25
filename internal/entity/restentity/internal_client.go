@@ -25,3 +25,18 @@ type GetInternalClientsResp struct {
 	Items []InternalClientResource `json:"items"`
 	Meta  types.Meta               `json:"meta"`
 }
+
+type GetInternalClientOwnerPermissionsReq struct {
+	ID string `params:"id" validate:"required"`
+}
+
+type GetInternalClientOwnerPermissionsResp struct {
+	ClientID           string       `json:"client_id"`
+	Available          []Permission `json:"available_permissions"`
+	OwnerPermissionIDs []string     `json:"owner_permission_ids"`
+}
+
+type UpdateInternalClientOwnerPermissionsReq struct {
+	ID            string   `params:"id" validate:"required"`
+	PermissionIDs []string `json:"permission_ids"`
+}

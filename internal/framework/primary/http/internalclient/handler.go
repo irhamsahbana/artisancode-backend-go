@@ -20,4 +20,6 @@ func NewInternalClientHandler(cfg InternalClientHandlerConfig) *internalClientHa
 
 func (h *internalClientHandler) Register(router fiber.Router) {
 	router.Get("/", h.getInternalClients)
+	router.Get("/:id/owner-permissions", h.getInternalClientOwnerPermissions)
+	router.Put("/:id/owner-permissions", h.updateInternalClientOwnerPermissions)
 }

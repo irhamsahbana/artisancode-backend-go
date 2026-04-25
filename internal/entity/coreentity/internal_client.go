@@ -19,3 +19,14 @@ type InternalClientListFilter struct {
 	Page     int
 	Paginate int
 }
+
+type InternalClientOwnerPermissions struct {
+	ClientID           string
+	Available          []Permission
+	OwnerPermissionIDs []string
+}
+
+type InternalClientOwnerPermissionUpdate struct {
+	ClientID      string
+	PermissionIDs []string
+}
