@@ -16,7 +16,8 @@ type InternalProduct struct {
 }
 
 type GetInternalProductsReq struct {
-	Q string `query:"q" validate:"omitempty,min=2"`
+	Q      string `query:"q" validate:"omitempty"`
+	Status string `query:"status" validate:"omitempty,oneof=draft active inactive archived"`
 	types.MetaQuery
 }
 

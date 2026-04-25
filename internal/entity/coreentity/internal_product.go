@@ -27,6 +27,7 @@ type InternalProduct struct {
 
 type InternalProductListFilter struct {
 	Q        string
+	Status   string
 	Page     int
 	Paginate int
 }

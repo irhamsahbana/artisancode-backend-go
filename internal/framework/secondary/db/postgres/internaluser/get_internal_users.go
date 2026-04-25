@@ -43,6 +43,14 @@ func (r *internalUserRepo) GetInternalUsers(ctx context.Context, filter coreenti
 		query += ` AND (full_name ILIKE '%' || ? || '%' OR email ILIKE '%' || ? || '%')`
 		args = append(args, filter.Q, filter.Q)
 	}
+	if filter.RoleCode != "" {
+		query += ` AND role_code = ?`
+		args = append(args, filter.RoleCode)
+	}
+	if filter.Status != "" {
+		query += ` AND status = ?`
+		args = append(args, filter.Status)
+	}
 	query += ` ORDER BY full_name ASC LIMIT ? OFFSET ?`
 	args = append(args, filter.Paginate, (filter.Page-1)*filter.Paginate)
 

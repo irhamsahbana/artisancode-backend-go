@@ -10,39 +10,43 @@ import (
 )
 
 const (
-	seedTableTenants                 = "tenants"
-	seedTablePermissions             = "permissions"
-	seedTableRoles                   = "roles"
-	seedTableRolePerms               = "role_permissions"
-	seedTableOrgUnits                = "org_units"
-	seedTableUsers                   = "users"
-	seedTableUserRoles               = "user_roles"
-	seedTableJobPositions            = "job_positions"
-	seedTableWorkLocations           = "work_locations"
-	seedTableWorkShifts              = "work_shifts"
-	seedTableEmployees               = "employees"
-	seedTableInternalUsers           = "internal_users"
-	seedTableInternalProducts        = "internal_products"
-	seedTableInternalProductPricings = "internal_product_pricings"
-	seedTableInternalProductPrices   = "internal_product_prices"
+	seedTableTenants                   = "tenants"
+	seedTablePermissions               = "permissions"
+	seedTableRoles                     = "roles"
+	seedTableRolePerms                 = "role_permissions"
+	seedTableInternalTemplateRoles     = "internal_template_roles"
+	seedTableInternalTemplatePerms     = "internal_template_permissions"
+	seedTableInternalTemplateRolePerms = "internal_template_role_permissions"
+	seedTableOrgUnits                  = "org_units"
+	seedTableUsers                     = "users"
+	seedTableUserRoles                 = "user_roles"
+	seedTableJobPositions              = "job_positions"
+	seedTableWorkLocations             = "work_locations"
+	seedTableWorkShifts                = "work_shifts"
+	seedTableEmployees                 = "employees"
+	seedTableInternalUsers             = "internal_users"
+	seedTableInternalProducts          = "internal_products"
+	seedTableInternalProductPricings   = "internal_product_pricings"
+	seedTableInternalProductPrices     = "internal_product_prices"
 )
 
 var seedGroups = map[string][]string{
 	"tenant":            {seedTableTenants},
 	"company":           {seedTableTenants},
-	"rbac":              {seedTablePermissions, seedTableRoles, seedTableRolePerms},
+	"rbac":              {seedTableInternalTemplatePerms, seedTableInternalTemplateRoles, seedTableInternalTemplateRolePerms, seedTablePermissions, seedTableRoles, seedTableRolePerms},
 	"org_unit":          {seedTableOrgUnits},
 	"owner_user":        {seedTableTenants, seedTableRoles, seedTableUsers, seedTableUserRoles},
 	"job_position":      {seedTableTenants, seedTableJobPositions},
 	"work_location":     {seedTableOrgUnits, seedTableTenants, seedTableWorkLocations},
 	"work_shift":        {seedTableTenants, seedTableWorkShifts},
 	"employee":          {seedTableTenants, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableOrgUnits, seedTableUsers, seedTableUserRoles, seedTableJobPositions, seedTableWorkLocations, seedTableWorkShifts, seedTableEmployees},
-	"template":          {seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableOrgUnits},
-	"all":               {seedTableTenants, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableUsers, seedTableUserRoles, seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
-	"all_with_template": {seedTableTenants, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableOrgUnits, seedTableUsers, seedTableUserRoles, seedTableJobPositions, seedTableWorkLocations, seedTableWorkShifts, seedTableEmployees, seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
+	"template":          {seedTableInternalTemplatePerms, seedTableInternalTemplateRoles, seedTableInternalTemplateRolePerms, seedTableOrgUnits},
+	"all":               {seedTableTenants, seedTableInternalTemplatePerms, seedTableInternalTemplateRoles, seedTableInternalTemplateRolePerms, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableUsers, seedTableUserRoles, seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
+	"all_with_template": {seedTableTenants, seedTableInternalTemplatePerms, seedTableInternalTemplateRoles, seedTableInternalTemplateRolePerms, seedTablePermissions, seedTableRoles, seedTableRolePerms, seedTableOrgUnits, seedTableUsers, seedTableUserRoles, seedTableJobPositions, seedTableWorkLocations, seedTableWorkShifts, seedTableEmployees, seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
+	"internal_template": {seedTableInternalTemplatePerms, seedTableInternalTemplateRoles, seedTableInternalTemplateRolePerms},
 	"internal_users":    {seedTableInternalUsers},
 	"internal_catalog":  {seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
-	"all_internal":      {seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
+	"all_internal":      {seedTableInternalTemplatePerms, seedTableInternalTemplateRoles, seedTableInternalTemplateRolePerms, seedTableInternalUsers, seedTableInternalProducts, seedTableInternalProductPricings, seedTableInternalProductPrices},
 }
 
 type Seed struct {
@@ -110,6 +114,12 @@ func (s *Seed) seedTable(tx *sqlx.Tx, state *csvSeedState, tableName string) err
 		return s.seedRoles(tx, state)
 	case seedTableRolePerms:
 		return s.seedRolePermissions(tx, state)
+	case seedTableInternalTemplateRoles:
+		return s.seedInternalTemplateRoles(tx, state)
+	case seedTableInternalTemplatePerms:
+		return s.seedInternalTemplatePermissions(tx, state)
+	case seedTableInternalTemplateRolePerms:
+		return s.seedInternalTemplateRolePermissions(tx, state)
 	case seedTableOrgUnits:
 		return s.seedOrgUnits(tx, state)
 	case seedTableUsers:

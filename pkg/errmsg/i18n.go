@@ -50,14 +50,6 @@ var defaultCatalog = MessageCatalog{
 		ID: "Radius absensi harus >= 0",
 		EN: "Attendance radius must be >= 0",
 	},
-	"Leave allowance annual must be >= 0": {
-		ID: "Jatah cuti tahunan harus >= 0",
-		EN: "Leave allowance annual must be >= 0",
-	},
-	"Overtime rate multiplier must be >= 0": {
-		ID: "Pengali tarif lembur harus >= 0",
-		EN: "Overtime rate multiplier must be >= 0",
-	},
 	"Timezone is required": {
 		ID: "Timezone wajib diisi",
 		EN: "Timezone is required",

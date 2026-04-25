@@ -64,6 +64,10 @@ func (r *internalProductRepo) GetInternalProducts(ctx context.Context, filter co
 		query += ` AND (name ILIKE '%' || ? || '%' OR code ILIKE '%' || ? || '%')`
 		args = append(args, filter.Q, filter.Q)
 	}
+	if filter.Status != "" {
+		query += ` AND status = ?`
+		args = append(args, filter.Status)
+	}
 	query += ` ORDER BY name ASC LIMIT ? OFFSET ?`
 	args = append(args, filter.Paginate, (filter.Page-1)*filter.Paginate)
 

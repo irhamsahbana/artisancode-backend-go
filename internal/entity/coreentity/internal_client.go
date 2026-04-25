@@ -16,6 +16,7 @@ type InternalClient struct {
 
 type InternalClientListFilter struct {
 	Q        string
+	Owner    string
 	Page     int
 	Paginate int
 }

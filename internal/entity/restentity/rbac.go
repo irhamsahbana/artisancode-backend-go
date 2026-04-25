@@ -73,7 +73,6 @@ type CreateRoleResp struct {
 
 type UpdateRoleReq struct {
 	ID            string   `params:"id" validate:"required"`
-	Name          string   `json:"name" validate:"required,min=2"`
 	PermissionIDs []string `json:"permission_ids"`
 }
 

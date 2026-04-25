@@ -13,7 +13,8 @@ type InternalClientResource struct {
 }
 
 type GetInternalClientsReq struct {
-	Q string `query:"q" validate:"omitempty,min=2"`
+	Q     string `query:"q" validate:"omitempty"`
+	Owner string `query:"owner" validate:"omitempty,min=2"`
 	types.MetaQuery
 }
 

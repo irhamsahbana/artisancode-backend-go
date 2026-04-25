@@ -28,6 +28,8 @@ type InternalUser struct {
 
 type InternalUserListFilter struct {
 	Q        string
+	RoleCode string
+	Status   string
 	Page     int
 	Paginate int
 }

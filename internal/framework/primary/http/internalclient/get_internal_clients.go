@@ -39,6 +39,7 @@ func (h *internalClientHandler) getInternalClients(c *fiber.Ctx) error {
 
 	items, total, err := h.core.GetInternalClients(ctx, coreentity.InternalClientListFilter{
 		Q:        req.Q,
+		Owner:    req.Owner,
 		Page:     req.Page,
 		Paginate: req.Paginate,
 	})

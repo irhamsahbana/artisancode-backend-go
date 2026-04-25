@@ -34,6 +34,8 @@ func (h *internalUserHandler) getInternalUsers(c *fiber.Ctx) error {
 
 	items, total, err := h.core.GetInternalUsers(ctx, coreentity.InternalUserListFilter{
 		Q:        req.Q,
+		RoleCode: req.RoleCode,
+		Status:   req.Status,
 		Page:     req.Page,
 		Paginate: req.Paginate,
 	})

@@ -5,6 +5,7 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 	corePorts "codebase-app/internal/ports/core"
 	portsRepo "codebase-app/internal/ports/secondary/db"
+	"codebase-app/pkg/errmsg"
 	"context"
 )
 
@@ -40,5 +41,5 @@ func (c *companyCore) DeleteCompany(ctx context.Context, filter coreentity.Compa
 	ctx, span := tracing.StartSpan(ctx, "internal:core:company:core:DeleteCompany")
 	defer span.End()
 
-	return c.repo.DeleteCompany(ctx, filter)
+	return errmsg.NewCustomErrors(403).SetMessage("Company cannot be deleted")
 }

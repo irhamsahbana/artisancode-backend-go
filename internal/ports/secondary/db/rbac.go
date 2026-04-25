@@ -9,7 +9,7 @@ type RbacRepository interface {
 	GetRoles(ctx context.Context, filter coreentity.RoleListFilter) ([]coreentity.Role, int, error)
 	GetRoleByName(ctx context.Context, name, tenantID string) (*coreentity.Role, error)
 	CreateRole(ctx context.Context, data coreentity.Role) (*coreentity.Role, error)
-	UpdateRole(ctx context.Context, data coreentity.Role) error
+	UpdateRole(ctx context.Context, roleID, tenantID string, permissionIDs []string) error
 	DeleteRole(ctx context.Context, filter coreentity.RoleDeleteFilter) error
 	GetRoleWithPermissions(ctx context.Context, roleID, tenantID string) (*coreentity.Role, error)
 	SetRolePermissions(ctx context.Context, roleID, tenantID string, permissionIDs []string) error

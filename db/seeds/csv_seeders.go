@@ -180,6 +180,110 @@ func (s *Seed) seedRolePermissions(tx *sqlx.Tx, state *csvSeedState) error {
 	return nil
 }
 
+func (s *Seed) seedInternalTemplatePermissions(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalTemplatePerms]
+	cfg := upsertConfig{
+		table:              seedTableInternalTemplatePerms,
+		columns:            []string{"name", "description"},
+		matchColumns:       []string{"name"},
+		hasUpdatedAt:       true,
+		supportsSoftDelete: true,
+	}
+
+	for _, row := range file.rows {
+		name, err := requiredCSVValue(row, "name")
+		if err != nil {
+			return fmt.Errorf("seed internal_template_permissions: %w", err)
+		}
+
+		values := map[string]any{
+			"name":        name,
+			"description": nullableStringValue(row["description"]),
+		}
+
+		id, backfilled, err := upsertRecord(tx, cfg, row["id"], values)
+		if err != nil {
+			return fmt.Errorf("seed internal_template_permissions %s: %w", name, err)
+		}
+		if backfilled {
+			row["id"] = id
+			file.modified = true
+		}
+		state.registerID(seedTableInternalTemplatePerms, name, id)
+	}
+
+	return nil
+}
+
+func (s *Seed) seedInternalTemplateRoles(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalTemplateRoles]
+	cfg := upsertConfig{
+		table:              seedTableInternalTemplateRoles,
+		columns:            []string{"name"},
+		matchColumns:       []string{"name"},
+		hasUpdatedAt:       true,
+		supportsSoftDelete: true,
+	}
+
+	for _, row := range file.rows {
+		name, err := requiredCSVValue(row, "name")
+		if err != nil {
+			return fmt.Errorf("seed internal_template_roles: %w", err)
+		}
+
+		values := map[string]any{
+			"name": name,
+		}
+
+		id, backfilled, err := upsertRecord(tx, cfg, row["id"], values)
+		if err != nil {
+			return fmt.Errorf("seed internal_template_roles %s: %w", name, err)
+		}
+		if backfilled {
+			row["id"] = id
+			file.modified = true
+		}
+		state.registerID(seedTableInternalTemplateRoles, name, id)
+	}
+
+	return nil
+}
+
+func (s *Seed) seedInternalTemplateRolePermissions(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalTemplateRolePerms]
+
+	for _, row := range file.rows {
+		roleName, err := requiredCSVValue(row, "role_name")
+		if err != nil {
+			return fmt.Errorf("seed internal_template_role_permissions: %w", err)
+		}
+		permissionName, err := requiredCSVValue(row, "permission_name")
+		if err != nil {
+			return fmt.Errorf("seed internal_template_role_permissions %s/%s: %w", roleName, permissionName, err)
+		}
+
+		roleID, err := resolveTemplateID(state, seedTableInternalTemplateRoles, roleName, "internal template role")
+		if err != nil {
+			return fmt.Errorf("seed internal_template_role_permissions %s/%s: %w", roleName, permissionName, err)
+		}
+		permissionID, err := resolveTemplateID(state, seedTableInternalTemplatePerms, permissionName, "internal template permission")
+		if err != nil {
+			return fmt.Errorf("seed internal_template_role_permissions %s/%s: %w", roleName, permissionName, err)
+		}
+
+		query := `
+			INSERT INTO internal_template_role_permissions (role_id, permission_id)
+			VALUES (?, ?)
+			ON CONFLICT (role_id, permission_id) DO NOTHING
+		`
+		if _, err := tx.Exec(tx.Rebind(query), roleID, permissionID); err != nil {
+			return fmt.Errorf("seed internal_template_role_permissions %s/%s: %w", roleName, permissionName, err)
+		}
+	}
+
+	return nil
+}
+
 func (s *Seed) seedOrgUnits(tx *sqlx.Tx, state *csvSeedState) error {
 	file := state.files[seedTableOrgUnits]
 	cfg := upsertConfig{
@@ -869,13 +973,6 @@ func resolveUserID(state *csvSeedState, tenantCode string, email string) (*strin
 
 func resolveScopedID(state *csvSeedState, tableName string, scope string, value string, label string) (string, error) {
 	id, ok := state.lookupID(tableName, scopedLookupKey(scope, value))
-	if ok {
-		return id, nil
-	}
-	scope = strings.TrimSpace(scope)
-	if scope != "" {
-		id, ok = state.lookupID(tableName, scopedLookupKey("", value))
-	}
 	if !ok {
 		return "", fmt.Errorf("%s %q not found", label, value)
 	}
@@ -901,6 +998,10 @@ func resolveID(state *csvSeedState, tableName string, value string, label string
 		return "", fmt.Errorf("%s %q not found", label, value)
 	}
 	return id, nil
+}
+
+func resolveTemplateID(state *csvSeedState, tableName string, value string, label string) (string, error) {
+	return resolveID(state, tableName, value, label)
 }
 
 func scopedLookupScope(primary string, fallback string) string {

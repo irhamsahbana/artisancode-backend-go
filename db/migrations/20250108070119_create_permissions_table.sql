@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS permissions (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
-    tenant_id UUID,
+    tenant_id UUID NOT NULL,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS permissions (
     deleted_at TIMESTAMP WITH TIME ZONE,
 
     CONSTRAINT permissions_tenant_id_name_unique UNIQUE (tenant_id, name),
-    FOREIGN KEY (tenant_id) REFERENCES tenants (id)
+    FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_permissions_tenant_id_active

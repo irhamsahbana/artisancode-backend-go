@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestResolveScopedIDFallsBackToGlobal(t *testing.T) {
+func TestResolveScopedIDRequiresTenantScopedRecord(t *testing.T) {
 	state := &csvSeedState{
 		ids: map[string]map[string]string{
 			seedTableRoles: {
@@ -14,12 +14,9 @@ func TestResolveScopedIDFallsBackToGlobal(t *testing.T) {
 		},
 	}
 
-	id, err := resolveScopedID(state, seedTableRoles, "BERUA", "owner", "role")
-	if err != nil {
-		t.Fatalf("resolveScopedID returned error: %v", err)
-	}
-	if id != "global-owner-id" {
-		t.Fatalf("resolveScopedID returned %q, want %q", id, "global-owner-id")
+	_, err := resolveScopedID(state, seedTableRoles, "BERUA", "owner", "role")
+	if err == nil {
+		t.Fatal("resolveScopedID expected missing tenant-scoped role error, got nil")
 	}
 }
 
@@ -129,6 +126,37 @@ func TestTenantScopedRolePermissionsHaveScopedRolesAndPermissions(t *testing.T) 
 	}
 }
 
+func TestRegularRBACSeedsAreTenantScoped(t *testing.T) {
+	state, err := newCSVSeedState()
+	if err != nil {
+		t.Fatalf("newCSVSeedState returned error: %v", err)
+	}
+
+	for _, tableName := range []string{seedTableRoles, seedTablePermissions, seedTableRolePerms} {
+		for _, row := range state.files[tableName].rows {
+			if strings.TrimSpace(row["tenant_code"]) == "" {
+				t.Fatalf("%s contains non-tenant-scoped row: %#v", tableName, row)
+			}
+		}
+	}
+}
+
+func TestInternalTemplateRolePermissionsHaveTemplateRolesAndPermissions(t *testing.T) {
+	state, err := newCSVSeedState()
+	if err != nil {
+		t.Fatalf("newCSVSeedState returned error: %v", err)
+	}
+
+	for _, row := range state.files[seedTableInternalTemplateRolePerms].rows {
+		if _, ok := state.lookupID(seedTableInternalTemplateRoles, row["role_name"]); !ok {
+			t.Fatalf("template role permission role %q is missing", row["role_name"])
+		}
+		if _, ok := state.lookupID(seedTableInternalTemplatePerms, row["permission_name"]); !ok {
+			t.Fatalf("template role permission permission %q is missing", row["permission_name"])
+		}
+	}
+}
+
 func TestTenantScopedUserRolesHaveScopedRoles(t *testing.T) {
 	state, err := newCSVSeedState()
 	if err != nil {
@@ -138,7 +166,7 @@ func TestTenantScopedUserRolesHaveScopedRoles(t *testing.T) {
 	for _, row := range state.files[seedTableUserRoles].rows {
 		scope := strings.TrimSpace(row["tenant_code"])
 		if scope == "" {
-			continue
+			t.Fatalf("user role %q/%q is missing tenant_code", row["user_email"], row["role_name"])
 		}
 
 		roleKey := scopedLookupKey(scope, row["role_name"])

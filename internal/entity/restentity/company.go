@@ -12,14 +12,12 @@ type Company struct {
 }
 
 type CompanyConfig struct {
-	Logo                   *string  `json:"logo"`
-	LeaveAllowanceAnnual   int      `json:"leave_allowance_annual"`
-	OvertimeRateMultiplier float64  `json:"overtime_rate_multiplier"`
-	PreferredLanguage      string   `json:"preferred_language"`
-	SupportedLanguages     []string `json:"supported_languages"`
-	Timezone               string   `json:"timezone"`
-	DateFormat             string   `json:"date_format"`
-	TimeFormat             string   `json:"time_format"`
+	Logo               *string  `json:"logo"`
+	PreferredLanguage  string   `json:"preferred_language"`
+	SupportedLanguages []string `json:"supported_languages"`
+	Timezone           string   `json:"timezone"`
+	DateFormat         string   `json:"date_format"`
+	TimeFormat         string   `json:"time_format"`
 }
 
 type GetCompaniesReq struct {
@@ -55,10 +53,8 @@ type CreateCompanyResp struct {
 }
 
 type UpdateCompanyReq struct {
-	ID     string        `params:"id" validate:"required"`
-	Code   string        `json:"code" validate:"required,min=2,max=64"`
-	Name   string        `json:"name" validate:"required,min=2"`
-	Config CompanyConfig `json:"config" validate:"required"`
+	ID   string `params:"id" validate:"required"`
+	Name string `json:"name" validate:"required,min=2"`
 }
 
 type DeleteCompanyReq struct {

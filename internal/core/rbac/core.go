@@ -46,11 +46,11 @@ func (c *rbacCore) CreateRole(ctx context.Context, data coreentity.Role) (*coree
 	return c.repo.CreateRole(ctx, data)
 }
 
-func (c *rbacCore) UpdateRole(ctx context.Context, data coreentity.Role) error {
+func (c *rbacCore) UpdateRole(ctx context.Context, roleID, tenantID string, permissionIDs []string) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:rbac:core:UpdateRole")
 	defer span.End()
 
-	return c.repo.UpdateRole(ctx, data)
+	return c.repo.UpdateRole(ctx, roleID, tenantID, permissionIDs)
 }
 
 func (c *rbacCore) DeleteRole(ctx context.Context, filter coreentity.RoleDeleteFilter) error {

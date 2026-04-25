@@ -5,6 +5,7 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 	corePorts "codebase-app/internal/ports/core"
 	portsRepo "codebase-app/internal/ports/secondary/db"
+	"codebase-app/pkg/errmsg"
 	"context"
 )
 
@@ -41,12 +42,15 @@ func (c *orgUnitCore) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 	defer span.End()
 
 	// Check if org unit exists before updating
-	_, err := c.repo.GetOrgUnit(ctx, coreentity.OrgUnit{
+	existing, err := c.repo.GetOrgUnit(ctx, coreentity.OrgUnit{
 		TenantID: data.TenantID,
 		ID:       data.ID,
 	})
 	if err != nil {
 		return err
+	}
+	if existing.Category == "company" {
+		return errmsg.NewCustomErrors(400).SetMessage("Company can only be updated from company details")
 	}
 
 	return c.repo.UpdateOrgUnit(ctx, data)

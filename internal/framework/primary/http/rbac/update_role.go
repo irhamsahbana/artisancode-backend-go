@@ -3,7 +3,6 @@ package handler
 import (
 	"codebase-app/internal/adapter"
 	"codebase-app/internal/entity/common"
-	"codebase-app/internal/entity/mapper"
 	"codebase-app/internal/entity/restentity"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
@@ -40,16 +39,9 @@ func (h *rbacHandler) updateRole(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
-	data := mapper.RoleFromRestUpdateToCore(ctx, *req)
-	if err := h.core.UpdateRole(ctx, data); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to update role")
-		code, errors := errmsg.Errors[error](ctx, err)
-		return c.Status(code).JSON(response.Error(errors))
-	}
-
 	uc := common.GetUserContext(ctx)
-	if err := h.core.SetRolePermissions(ctx, req.ID, uc.TenantID, req.PermissionIDs); err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to set role permissions")
+	if err := h.core.UpdateRole(ctx, req.ID, uc.TenantID, req.PermissionIDs); err != nil {
+		log.Ctx(ctx).Error().Err(err).Msg("Failed to update role")
 		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}

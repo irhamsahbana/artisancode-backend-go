@@ -10,13 +10,11 @@ func (r *rbacRepo) SetRolePermissions(ctx context.Context, roleID, tenantID stri
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:rbac:repo:SetRolePermissions")
 	defer span.End()
 
-	// Delete existing permissions
-	deleteQuery := `DELETE FROM role_permissions WHERE role_id = ?`
-	if _, err := r.db.ExecContext(ctx, r.db.Rebind(deleteQuery), roleID); err != nil {
+	deleteQuery := `DELETE FROM role_permissions WHERE role_id = ? AND tenant_id = ?`
+	if _, err := r.db.ExecContext(ctx, r.db.Rebind(deleteQuery), roleID, tenantID); err != nil {
 		return err
 	}
 
-	// Insert new permissions
 	if len(permissionIDs) > 0 {
 		insertQuery := `INSERT INTO role_permissions (role_id, permission_id, tenant_id) VALUES (?, ?, ?)`
 		for _, permID := range permissionIDs {

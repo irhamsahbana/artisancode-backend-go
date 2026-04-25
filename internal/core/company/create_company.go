@@ -37,13 +37,6 @@ func (c *companyCore) CreateCompany(ctx context.Context, data coreentity.Company
 }
 
 func validateCompanyConfig(cfg coreentity.CompanyConfig) error {
-	if cfg.LeaveAllowanceAnnual < 0 {
-		return errmsg.NewCustomErrors(400).SetMessage("Leave allowance annual must be >= 0")
-	}
-	if cfg.OvertimeRateMultiplier < 0 {
-		return errmsg.NewCustomErrors(400).SetMessage("Overtime rate multiplier must be >= 0")
-	}
-
 	if cfg.Timezone == "" {
 		return errmsg.NewCustomErrors(400).SetMessage("Timezone is required")
 	}

@@ -1,23 +1,21 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE IF NOT EXISTS internal_template_roles (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
-    tenant_id UUID NOT NULL,
     name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE,
     deleted_at TIMESTAMP WITH TIME ZONE,
 
-    CONSTRAINT roles_tenant_id_name_unique UNIQUE (tenant_id, name),
-    FOREIGN KEY (tenant_id) REFERENCES tenants (id) ON DELETE CASCADE
+    CONSTRAINT internal_template_roles_name_unique UNIQUE (name)
 );
 
-CREATE INDEX IF NOT EXISTS idx_roles_tenant_id_active
-    ON roles (tenant_id)
+CREATE INDEX IF NOT EXISTS idx_internal_template_roles_active
+    ON internal_template_roles (name)
     WHERE deleted_at IS NULL;
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS internal_template_roles;
 -- +goose StatementEnd

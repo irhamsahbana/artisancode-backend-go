@@ -71,6 +71,10 @@ func (r *internalClientRepo) GetInternalClients(ctx context.Context, filter core
 		query += ` AND (name ILIKE '%' || ? || '%' OR code ILIKE '%' || ? || '%' OR owner_name ILIKE '%' || ? || '%' OR owner_email ILIKE '%' || ? || '%')`
 		args = append(args, filter.Q, filter.Q, filter.Q, filter.Q)
 	}
+	if filter.Owner != "" {
+		query += ` AND (owner_name ILIKE '%' || ? || '%' OR owner_email ILIKE '%' || ? || '%')`
+		args = append(args, filter.Owner, filter.Owner)
+	}
 
 	query += `
 		GROUP BY id, name, code, created_at, updated_at

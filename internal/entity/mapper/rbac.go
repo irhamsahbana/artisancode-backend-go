@@ -28,18 +28,6 @@ func RoleFromRestCreateToCore(ctx context.Context, req restentity.CreateRoleReq)
 	}
 }
 
-// RoleFromRestUpdateToCore maps update request to coreentity.Role
-func RoleFromRestUpdateToCore(ctx context.Context, req restentity.UpdateRoleReq) coreentity.Role {
-	uc := common.GetUserContext(ctx)
-	tenantID := tenantIDPtr(uc)
-	return coreentity.Role{
-		UserCtx:  uc,
-		TenantID: tenantID,
-		ID:       req.ID,
-		Name:     req.Name,
-	}
-}
-
 // tenantIDPtr returns a pointer to the TenantID string, or nil if empty
 func tenantIDPtr(uc common.UserContext) *string {
 	if uc.TenantID != "" {

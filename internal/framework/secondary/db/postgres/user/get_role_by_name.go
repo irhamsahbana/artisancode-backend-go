@@ -25,15 +25,11 @@ func (r *userRepo) GetRoleByName(ctx context.Context, roleName, tenantID string)
 	query := `
 		SELECT id, tenant_id, name
 		FROM roles
-		WHERE
-			name = ?
-			AND (tenant_id = ? OR tenant_id IS NULL)
-			AND deleted_at IS NULL
-		ORDER BY CASE WHEN tenant_id = ? THEN 0 ELSE 1 END
+		WHERE name = ? AND tenant_id = ? AND deleted_at IS NULL
 		LIMIT 1
 	`
 	exec := r.executor(ctx)
-	err := exec.GetContext(ctx, &row, exec.Rebind(query), roleName, tenantID, tenantID)
+	err := exec.GetContext(ctx, &row, exec.Rebind(query), roleName, tenantID)
 	if err != nil {
 		payload := map[string]string{"roleName": roleName, "tenantID": tenantID}
 		if err == sql.ErrNoRows {

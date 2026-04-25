@@ -28,7 +28,9 @@ type InternalUserResource struct {
 }
 
 type GetInternalUsersReq struct {
-	Q string `query:"q" validate:"omitempty,min=2"`
+	Q        string `query:"q" validate:"omitempty"`
+	RoleCode string `query:"role_code" validate:"omitempty,oneof=super_admin operator"`
+	Status   string `query:"status" validate:"omitempty,oneof=invited active inactive"`
 	types.MetaQuery
 }
 

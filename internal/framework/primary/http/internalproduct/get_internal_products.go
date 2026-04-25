@@ -39,6 +39,7 @@ func (h *internalProductHandler) getInternalProducts(c *fiber.Ctx) error {
 
 	items, total, err := h.core.GetInternalProducts(ctx, coreentity.InternalProductListFilter{
 		Q:        req.Q,
+		Status:   req.Status,
 		Page:     req.Page,
 		Paginate: req.Paginate,
 	})

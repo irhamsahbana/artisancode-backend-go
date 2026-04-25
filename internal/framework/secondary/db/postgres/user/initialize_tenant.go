@@ -22,22 +22,54 @@ func (r *userRepo) InitializeTenant(ctx context.Context, tenantID string, compan
 		return "", err
 	}
 
-	err = r.copyRoles(ctx, tx, tenantID)
+	err = r.insertDefaultHeadquarterBranch(ctx, tx, tenantID, companyID)
 	if err != nil {
 		return "", err
 	}
 
-	err = r.copyPermissions(ctx, tx, tenantID)
+	err = r.copyTemplateRoles(ctx, tx, tenantID)
 	if err != nil {
 		return "", err
 	}
 
-	err = r.copyRolePermissions(ctx, tx, tenantID)
+	err = r.copyTemplatePermissions(ctx, tx, tenantID)
+	if err != nil {
+		return "", err
+	}
+
+	err = r.copyTemplateRolePermissions(ctx, tx, tenantID)
 	if err != nil {
 		return "", err
 	}
 
 	return companyID, nil
+}
+
+func (r *userRepo) insertDefaultHeadquarterBranch(ctx context.Context, tx interface {
+	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	Rebind(string) string
+}, tenantID string, companyID string) error {
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:insertDefaultHeadquarterBranch")
+	defer span.End()
+
+	query := `
+		INSERT INTO org_units (tenant_id, parent_id, name, code, category, config)
+		VALUES (?, ?, 'Headquarter', 'HEADQUARTER', 'branch', '{}')
+		ON CONFLICT (tenant_id, code) DO UPDATE SET
+			parent_id = EXCLUDED.parent_id,
+			name = EXCLUDED.name,
+			category = EXCLUDED.category,
+			updated_at = CURRENT_TIMESTAMP,
+			deleted_at = NULL
+	`
+	if _, err := tx.ExecContext(ctx, tx.Rebind(query), tenantID, companyID); err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "companyID": companyID}).Msg("Failed to insert default headquarter branch")
+		return err
+	}
+
+	return nil
 }
 
 func (r *userRepo) insertDefaultCompany(ctx context.Context, tx interface {
@@ -73,13 +105,13 @@ func (r *userRepo) insertDefaultCompany(ctx context.Context, tx interface {
 	return companyID, nil
 }
 
-func (r *userRepo) copyRoles(ctx context.Context, tx interface {
+func (r *userRepo) copyTemplateRoles(ctx context.Context, tx interface {
 	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Rebind(string) string
 }, tenantID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyRoles")
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplateRoles")
 	defer span.End()
 
 	payload := map[string]string{"tenantID": tenantID}
@@ -90,7 +122,7 @@ func (r *userRepo) copyRoles(ctx context.Context, tx interface {
 	}
 
 	roles := []templateRole{}
-	err := tx.SelectContext(ctx, &roles, `SELECT id, name FROM roles WHERE tenant_id IS NULL AND deleted_at IS NULL`)
+	err := tx.SelectContext(ctx, &roles, `SELECT id, name FROM internal_template_roles WHERE deleted_at IS NULL`)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to select template roles")
 		return err
@@ -103,7 +135,10 @@ func (r *userRepo) copyRoles(ctx context.Context, tx interface {
 		err = tx.GetContext(ctx, &newRoleID, tx.Rebind(`
 			INSERT INTO roles (tenant_id, name)
 			VALUES (?, ?)
-			ON CONFLICT (tenant_id, name) DO UPDATE SET name = EXCLUDED.name
+			ON CONFLICT (tenant_id, name) DO UPDATE SET
+				name = EXCLUDED.name,
+				updated_at = CURRENT_TIMESTAMP,
+				deleted_at = NULL
 			RETURNING id
 		`), tenantID, role.Name)
 		if err != nil {
@@ -117,13 +152,13 @@ func (r *userRepo) copyRoles(ctx context.Context, tx interface {
 	return nil
 }
 
-func (r *userRepo) copyPermissions(ctx context.Context, tx interface {
+func (r *userRepo) copyTemplatePermissions(ctx context.Context, tx interface {
 	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Rebind(string) string
 }, tenantID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyPermissions")
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplatePermissions")
 	defer span.End()
 
 	type templatePermission struct {
@@ -133,7 +168,7 @@ func (r *userRepo) copyPermissions(ctx context.Context, tx interface {
 	}
 
 	permissions := []templatePermission{}
-	err := tx.SelectContext(ctx, &permissions, `SELECT id, name, description FROM permissions WHERE tenant_id IS NULL AND deleted_at IS NULL`)
+	err := tx.SelectContext(ctx, &permissions, `SELECT id, name, COALESCE(description, '') AS description FROM internal_template_permissions WHERE deleted_at IS NULL`)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).Msg("Failed to select template permissions")
 		return err
@@ -146,7 +181,11 @@ func (r *userRepo) copyPermissions(ctx context.Context, tx interface {
 		err = tx.GetContext(ctx, &newPermID, tx.Rebind(`
 			INSERT INTO permissions (tenant_id, name, description)
 			VALUES (?, ?, ?)
-			ON CONFLICT (tenant_id, name) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description
+			ON CONFLICT (tenant_id, name) DO UPDATE SET
+				name = EXCLUDED.name,
+				description = EXCLUDED.description,
+				updated_at = CURRENT_TIMESTAMP,
+				deleted_at = NULL
 			RETURNING id
 		`), tenantID, perm.Name, perm.Description)
 		if err != nil {
@@ -159,13 +198,13 @@ func (r *userRepo) copyPermissions(ctx context.Context, tx interface {
 	return nil
 }
 
-func (r *userRepo) copyRolePermissions(ctx context.Context, tx interface {
+func (r *userRepo) copyTemplateRolePermissions(ctx context.Context, tx interface {
 	GetContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Rebind(string) string
 }, tenantID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyRolePermissions")
+	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplateRolePermissions")
 	defer span.End()
 
 	type templateRole struct {
@@ -184,14 +223,14 @@ func (r *userRepo) copyRolePermissions(ctx context.Context, tx interface {
 	}
 
 	roles := []templateRole{}
-	err := tx.SelectContext(ctx, &roles, `SELECT id, name FROM roles WHERE tenant_id IS NULL AND deleted_at IS NULL`)
+	err := tx.SelectContext(ctx, &roles, `SELECT id, name FROM internal_template_roles WHERE deleted_at IS NULL`)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).Msg("Failed to select template roles for role permissions")
 		return err
 	}
 
 	permissions := []templatePermission{}
-	err = tx.SelectContext(ctx, &permissions, `SELECT id, name FROM permissions WHERE tenant_id IS NULL AND deleted_at IS NULL`)
+	err = tx.SelectContext(ctx, &permissions, `SELECT id, name FROM internal_template_permissions WHERE deleted_at IS NULL`)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).Msg("Failed to select template permissions for role permissions")
 		return err
@@ -220,7 +259,7 @@ func (r *userRepo) copyRolePermissions(ctx context.Context, tx interface {
 	}
 
 	rolePermissions := []rolePermission{}
-	err = tx.SelectContext(ctx, &rolePermissions, tx.Rebind(`SELECT role_id, permission_id FROM role_permissions WHERE tenant_id IS NULL`))
+	err = tx.SelectContext(ctx, &rolePermissions, `SELECT role_id, permission_id FROM internal_template_role_permissions`)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).Msg("Failed to select template role permissions")
 		return err
