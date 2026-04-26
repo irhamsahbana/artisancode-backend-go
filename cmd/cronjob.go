@@ -52,7 +52,7 @@ func RunCronjob(cmd *flag.FlagSet, args []string) {
 }
 
 func runCleanupExpiredStorageFiles(limit int) {
-	repo := storageRepo.NewStorageRepository(storageRepo.StorageRepositoryConfig{
+	repo := storageRepo.NewStorageRepository(storageRepo.Config{
 		DB: adapter.Adapters.Postgres,
 	})
 	s3 := storageIntegration.NewStorageIntegration(adapter.Adapters.Storage)
@@ -73,17 +73,17 @@ func runCleanupExpiredStorageFiles(limit int) {
 }
 
 func runProcessExportJobs(limit int) {
-	exportJobRepository := exportJobRepo.NewExportJobRepository(exportJobRepo.ExportJobRepositoryConfig{
+	exportJobRepository := exportJobRepo.NewExportJobRepository(exportJobRepo.Config{
 		DB: adapter.Adapters.Postgres,
 	})
-	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.AttendanceRepositoryConfig{
+	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.Config{
 		DB: adapter.Adapters.Postgres,
 	})
-	storageRepository := storageRepo.NewStorageRepository(storageRepo.StorageRepositoryConfig{
+	storageRepository := storageRepo.NewStorageRepository(storageRepo.Config{
 		DB: adapter.Adapters.Postgres,
 	})
 	s3 := storageIntegration.NewStorageIntegration(adapter.Adapters.Storage)
-	core := exportJobCore.NewExportJobCore(exportJobCore.ExportJobCoreConfig{
+	core := exportJobCore.NewExportJobCore(exportJobCore.Config{
 		Repo:           exportJobRepository,
 		AttendanceRepo: attendanceRepository,
 		StorageRepo:    storageRepository,

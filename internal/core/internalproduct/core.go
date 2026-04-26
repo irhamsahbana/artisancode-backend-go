@@ -25,13 +25,13 @@ type internalProductCore struct {
 	repo portsRepo.InternalProductRepository
 }
 
-type InternalProductCoreConfig struct {
+type Config struct {
 	Repo portsRepo.InternalProductRepository
 }
 
 var _ corePorts.InternalProductCore = &internalProductCore{}
 
-func NewInternalProductCore(cfg InternalProductCoreConfig) *internalProductCore {
+func NewInternalProductCore(cfg Config) *internalProductCore {
 	return &internalProductCore{repo: cfg.Repo}
 }
 

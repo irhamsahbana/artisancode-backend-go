@@ -20,13 +20,13 @@ type internalProductRepo struct {
 	db *sqlx.DB
 }
 
-type InternalProductRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
 var _ portsRepo.InternalProductRepository = &internalProductRepo{}
 
-func NewInternalProductRepository(cfg InternalProductRepositoryConfig) portsRepo.InternalProductRepository {
+func NewInternalProductRepository(cfg Config) portsRepo.InternalProductRepository {
 	return &internalProductRepo{db: cfg.DB}
 }
 

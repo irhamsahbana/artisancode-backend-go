@@ -12,10 +12,10 @@ type jobPositionRepo struct {
 
 var _ portsRepo.JobPositionRepository = &jobPositionRepo{}
 
-type JobPositionRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewJobPositionRepository(cfg JobPositionRepositoryConfig) portsRepo.JobPositionRepository {
+func NewJobPositionRepository(cfg Config) portsRepo.JobPositionRepository {
 	return &jobPositionRepo{db: cfg.DB}
 }

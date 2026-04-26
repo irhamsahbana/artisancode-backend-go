@@ -12,10 +12,10 @@ type orgUnitRepo struct {
 
 var _ portsRepo.OrgUnitRepository = &orgUnitRepo{}
 
-type OrgUnitRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewOrgUnitRepository(cfg OrgUnitRepositoryConfig) portsRepo.OrgUnitRepository {
+func NewOrgUnitRepository(cfg Config) portsRepo.OrgUnitRepository {
 	return &orgUnitRepo{db: cfg.DB}
 }

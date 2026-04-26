@@ -16,14 +16,14 @@ type userCore struct {
 	bus        integrationPorts.MessagePublisher
 }
 
-type UserCoreConfig struct {
+type Config struct {
 	Repo       repository.UserRepository
 	Tx         repository.Transactor
 	TokenCache tokencache.TokenCacheContract
 	Bus        integrationPorts.MessagePublisher
 }
 
-func NewUserCore(cfg UserCoreConfig) *userCore {
+func NewUserCore(cfg Config) *userCore {
 	return &userCore{
 		repo:       cfg.Repo,
 		tx:         cfg.Tx,

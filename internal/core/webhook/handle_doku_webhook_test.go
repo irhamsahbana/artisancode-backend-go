@@ -21,7 +21,7 @@ func init() {
 }
 
 func TestHandleDOKUWebhook(t *testing.T) {
-	core := NewWebhookCore(WebhookCoreConfig{
+	core := NewWebhookCore(Config{
 		DOKUVerifier: fakeDOKUVerifier{valid: true},
 	})
 
@@ -50,7 +50,7 @@ func TestHandleDOKUWebhook(t *testing.T) {
 }
 
 func TestHandleDOKUWebhookInvalidSignature(t *testing.T) {
-	core := NewWebhookCore(WebhookCoreConfig{
+	core := NewWebhookCore(Config{
 		DOKUVerifier: fakeDOKUVerifier{valid: false},
 	})
 

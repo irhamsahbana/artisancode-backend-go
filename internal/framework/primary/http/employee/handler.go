@@ -10,11 +10,11 @@ type employeeHandler struct {
 	core portsCore.EmployeeCore
 }
 
-type EmployeeHandlerConfig struct {
+type Config struct {
 	Core portsCore.EmployeeCore
 }
 
-func NewEmployeeHandler(cfg EmployeeHandlerConfig) *employeeHandler {
+func NewEmployeeHandler(cfg Config) *employeeHandler {
 	return &employeeHandler{core: cfg.Core}
 }
 

@@ -11,11 +11,11 @@ type internalUserHandler struct {
 	core corePorts.InternalUserCore
 }
 
-type InternalUserHandlerConfig struct {
+type Config struct {
 	Core corePorts.InternalUserCore
 }
 
-func NewInternalUserHandler(cfg InternalUserHandlerConfig) *internalUserHandler {
+func NewInternalUserHandler(cfg Config) *internalUserHandler {
 	return &internalUserHandler{core: cfg.Core}
 }
 

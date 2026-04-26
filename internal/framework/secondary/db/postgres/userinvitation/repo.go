@@ -18,10 +18,10 @@ func (r *userInvitationRepo) executor(ctx context.Context) postgresTx.SQLExecuto
 
 var _ portsRepo.UserInvitationRepository = &userInvitationRepo{}
 
-type UserInvitationRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewUserInvitationRepository(cfg UserInvitationRepositoryConfig) portsRepo.UserInvitationRepository {
+func NewUserInvitationRepository(cfg Config) portsRepo.UserInvitationRepository {
 	return &userInvitationRepo{db: cfg.DB}
 }

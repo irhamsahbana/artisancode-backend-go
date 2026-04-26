@@ -24,14 +24,14 @@ type internalUserCore struct {
 	tokenCache tokencache.TokenCacheContract
 }
 
-type InternalUserCoreConfig struct {
+type Config struct {
 	Repo       portsRepo.InternalUserRepository
 	TokenCache tokencache.TokenCacheContract
 }
 
 var _ corePorts.InternalUserCore = &internalUserCore{}
 
-func NewInternalUserCore(cfg InternalUserCoreConfig) *internalUserCore {
+func NewInternalUserCore(cfg Config) *internalUserCore {
 	return &internalUserCore{
 		repo:       cfg.Repo,
 		tokenCache: cfg.TokenCache,

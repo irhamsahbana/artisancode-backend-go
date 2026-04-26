@@ -13,12 +13,12 @@ type userHandler struct {
 	rateLimiter ratelimit.AttemptLimiter
 }
 
-type UserHandlerConfig struct {
+type Config struct {
 	Core        corePorts.UserCore
 	RateLimiter ratelimit.AttemptLimiter
 }
 
-func NewUserHandler(cfg UserHandlerConfig) *userHandler {
+func NewUserHandler(cfg Config) *userHandler {
 	return &userHandler{
 		core:        cfg.Core,
 		rateLimiter: cfg.RateLimiter,

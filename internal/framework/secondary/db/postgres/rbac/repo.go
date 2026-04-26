@@ -12,11 +12,11 @@ type rbacRepo struct {
 
 var _ portsRepo.RbacRepository = &rbacRepo{}
 
-type RbacRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewRbacRepository(cfg RbacRepositoryConfig) portsRepo.RbacRepository {
+func NewRbacRepository(cfg Config) portsRepo.RbacRepository {
 	return &rbacRepo{
 		db: cfg.DB,
 	}

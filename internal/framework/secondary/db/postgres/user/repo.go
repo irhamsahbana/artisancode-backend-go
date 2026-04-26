@@ -2,7 +2,7 @@ package repository
 
 import (
 	postgresTx "codebase-app/internal/framework/secondary/db/postgres/transaction"
-	"codebase-app/internal/ports/secondary/db"
+	repository "codebase-app/internal/ports/secondary/db"
 	"context"
 
 	"github.com/jmoiron/sqlx"
@@ -18,11 +18,11 @@ func (r *userRepo) executor(ctx context.Context) postgresTx.SQLExecutor {
 	return postgresTx.ExecutorFromContext(ctx, r.db)
 }
 
-type UserRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewUserRepository(cfg UserRepositoryConfig) repository.UserRepository {
+func NewUserRepository(cfg Config) repository.UserRepository {
 	return &userRepo{
 		db: cfg.DB,
 	}

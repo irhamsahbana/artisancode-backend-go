@@ -10,12 +10,12 @@ type internalUserRepo struct {
 	db *sqlx.DB
 }
 
-type InternalUserRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
 var _ portsRepo.InternalUserRepository = &internalUserRepo{}
 
-func NewInternalUserRepository(cfg InternalUserRepositoryConfig) portsRepo.InternalUserRepository {
+func NewInternalUserRepository(cfg Config) portsRepo.InternalUserRepository {
 	return &internalUserRepo{db: cfg.DB}
 }

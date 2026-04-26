@@ -17,7 +17,7 @@ type exportJobCore struct {
 
 var _ corePorts.ExportJobCore = &exportJobCore{}
 
-type ExportJobCoreConfig struct {
+type Config struct {
 	Repo           portsRepo.ExportJobRepository
 	AttendanceRepo portsRepo.AttendanceRepository
 	StorageRepo    portsRepo.StorageRepository
@@ -26,7 +26,7 @@ type ExportJobCoreConfig struct {
 	Bus            integrationPorts.MessagePublisher
 }
 
-func NewExportJobCore(cfg ExportJobCoreConfig) *exportJobCore {
+func NewExportJobCore(cfg Config) *exportJobCore {
 	return &exportJobCore{
 		repo:           cfg.Repo,
 		attendanceRepo: cfg.AttendanceRepo,

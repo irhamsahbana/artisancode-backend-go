@@ -10,11 +10,11 @@ type orgUnitHandler struct {
 	core orgUnitPorts.OrgUnitCore
 }
 
-type OrgUnitHandlerConfig struct {
+type Config struct {
 	Core orgUnitPorts.OrgUnitCore
 }
 
-func NewOrgUnitHandler(cfg OrgUnitHandlerConfig) *orgUnitHandler {
+func NewOrgUnitHandler(cfg Config) *orgUnitHandler {
 	return &orgUnitHandler{core: cfg.Core}
 }
 

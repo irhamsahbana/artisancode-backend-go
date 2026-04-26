@@ -59,6 +59,9 @@ Known exceptions that intentionally stay public or mixed:
 - `/users/*`
   - auth/public endpoints are registered in the user handler
   - some CRUD routes are protected per-route in the handler
+- `/internal-commerce/*`
+  - protected by `middleware.InternalAuth`
+  - internal-only commerce, quotation, order, invoice, and payment operations
 - `/webhooks/doku`
   - public webhook endpoint for DOKU payment callbacks
 - `/storage`

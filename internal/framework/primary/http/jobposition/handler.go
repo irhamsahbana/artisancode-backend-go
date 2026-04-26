@@ -10,11 +10,11 @@ type jobPositionHandler struct {
 	core portsCore.JobPositionCore
 }
 
-type JobPositionHandlerConfig struct {
+type Config struct {
 	Core portsCore.JobPositionCore
 }
 
-func NewJobPositionHandler(cfg JobPositionHandlerConfig) *jobPositionHandler {
+func NewJobPositionHandler(cfg Config) *jobPositionHandler {
 	return &jobPositionHandler{core: cfg.Core}
 }
 

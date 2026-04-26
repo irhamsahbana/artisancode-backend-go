@@ -12,13 +12,13 @@ type jobPositionCore struct {
 	repo portsRepo.JobPositionRepository
 }
 
-type JobPositionCoreConfig struct {
+type Config struct {
 	Repo portsRepo.JobPositionRepository
 }
 
 var _ corePorts.JobPositionCore = &jobPositionCore{}
 
-func NewJobPositionCore(cfg JobPositionCoreConfig) *jobPositionCore {
+func NewJobPositionCore(cfg Config) *jobPositionCore {
 	return &jobPositionCore{repo: cfg.Repo}
 }
 

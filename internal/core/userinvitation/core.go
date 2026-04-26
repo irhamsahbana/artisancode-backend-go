@@ -16,7 +16,7 @@ type userInvitationCore struct {
 	bus          integrationPorts.MessagePublisher
 }
 
-type UserInvitationCoreConfig struct {
+type Config struct {
 	Repo         portsRepo.UserInvitationRepository
 	UserRepo     portsRepo.UserRepository
 	EmployeeRepo portsRepo.EmployeeRepository
@@ -24,7 +24,7 @@ type UserInvitationCoreConfig struct {
 	Bus          integrationPorts.MessagePublisher
 }
 
-func NewUserInvitationCore(cfg UserInvitationCoreConfig) *userInvitationCore {
+func NewUserInvitationCore(cfg Config) *userInvitationCore {
 	return &userInvitationCore{
 		repo:         cfg.Repo,
 		userRepo:     cfg.UserRepo,

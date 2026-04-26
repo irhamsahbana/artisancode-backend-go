@@ -10,11 +10,11 @@ type workShiftHandler struct {
 	core portsCore.WorkShiftCore
 }
 
-type WorkShiftHandlerConfig struct {
+type Config struct {
 	Core portsCore.WorkShiftCore
 }
 
-func NewWorkShiftHandler(cfg WorkShiftHandlerConfig) *workShiftHandler {
+func NewWorkShiftHandler(cfg Config) *workShiftHandler {
 	return &workShiftHandler{core: cfg.Core}
 }
 

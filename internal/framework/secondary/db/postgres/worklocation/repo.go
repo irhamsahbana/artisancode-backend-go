@@ -12,10 +12,10 @@ type workLocationRepo struct {
 
 var _ portsRepo.WorkLocationRepository = &workLocationRepo{}
 
-type WorkLocationRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewWorkLocationRepository(cfg WorkLocationRepositoryConfig) portsRepo.WorkLocationRepository {
+func NewWorkLocationRepository(cfg Config) portsRepo.WorkLocationRepository {
 	return &workLocationRepo{db: cfg.DB}
 }

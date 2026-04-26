@@ -10,14 +10,14 @@ type workLocationCore struct {
 	orgUnitRepo portsRepo.OrgUnitRepository
 }
 
-type WorkLocationCoreConfig struct {
+type Config struct {
 	Repo        portsRepo.WorkLocationRepository
 	OrgUnitRepo portsRepo.OrgUnitRepository
 }
 
 var _ corePorts.WorkLocationCore = &workLocationCore{}
 
-func NewWorkLocationCore(cfg WorkLocationCoreConfig) *workLocationCore {
+func NewWorkLocationCore(cfg Config) *workLocationCore {
 	return &workLocationCore{
 		repo:        cfg.Repo,
 		orgUnitRepo: cfg.OrgUnitRepo,

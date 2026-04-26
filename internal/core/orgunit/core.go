@@ -13,13 +13,13 @@ type orgUnitCore struct {
 	repo portsRepo.OrgUnitRepository
 }
 
-type OrgUnitCoreConfig struct {
+type Config struct {
 	Repo portsRepo.OrgUnitRepository
 }
 
 var _ corePorts.OrgUnitCore = &orgUnitCore{}
 
-func NewOrgUnitCore(cfg OrgUnitCoreConfig) *orgUnitCore {
+func NewOrgUnitCore(cfg Config) *orgUnitCore {
 	return &orgUnitCore{repo: cfg.Repo}
 }
 

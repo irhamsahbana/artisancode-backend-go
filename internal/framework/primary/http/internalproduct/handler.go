@@ -10,11 +10,11 @@ type internalProductHandler struct {
 	core portsCore.InternalProductCore
 }
 
-type InternalProductHandlerConfig struct {
+type Config struct {
 	Core portsCore.InternalProductCore
 }
 
-func NewInternalProductHandler(cfg InternalProductHandlerConfig) *internalProductHandler {
+func NewInternalProductHandler(cfg Config) *internalProductHandler {
 	return &internalProductHandler{core: cfg.Core}
 }
 

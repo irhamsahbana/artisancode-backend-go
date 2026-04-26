@@ -11,11 +11,11 @@ type rbacHandler struct {
 }
 
 // RbacHandlerConfig is the config struct for the RBAC handler
-type RbacHandlerConfig struct {
+type Config struct {
 	Core portsCore.RbacCore
 }
 
-func NewRbacHandler(cfg RbacHandlerConfig) *rbacHandler {
+func NewRbacHandler(cfg Config) *rbacHandler {
 	return &rbacHandler{core: cfg.Core}
 }
 

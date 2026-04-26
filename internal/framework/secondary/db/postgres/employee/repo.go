@@ -18,10 +18,10 @@ func (r *employeeRepo) executor(ctx context.Context) postgresTx.SQLExecutor {
 
 var _ portsRepo.EmployeeRepository = &employeeRepo{}
 
-type EmployeeRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewEmployeeRepository(cfg EmployeeRepositoryConfig) portsRepo.EmployeeRepository {
+func NewEmployeeRepository(cfg Config) portsRepo.EmployeeRepository {
 	return &employeeRepo{db: cfg.DB}
 }

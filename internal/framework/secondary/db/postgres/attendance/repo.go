@@ -18,10 +18,10 @@ func (r *attendanceRepo) executor(ctx context.Context) postgresTx.SQLExecutor {
 
 var _ portsRepo.AttendanceRepository = &attendanceRepo{}
 
-type AttendanceRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewAttendanceRepository(cfg AttendanceRepositoryConfig) portsRepo.AttendanceRepository {
+func NewAttendanceRepository(cfg Config) portsRepo.AttendanceRepository {
 	return &attendanceRepo{db: cfg.DB}
 }

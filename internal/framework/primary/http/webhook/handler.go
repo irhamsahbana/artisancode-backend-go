@@ -10,11 +10,11 @@ type webhookHandler struct {
 	core corePorts.WebhookCore
 }
 
-type WebhookHandlerConfig struct {
+type Config struct {
 	Core corePorts.WebhookCore
 }
 
-func NewWebhookHandler(cfg WebhookHandlerConfig) *webhookHandler {
+func NewWebhookHandler(cfg Config) *webhookHandler {
 	return &webhookHandler{core: cfg.Core}
 }
 

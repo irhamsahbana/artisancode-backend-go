@@ -15,14 +15,14 @@ type attendanceCore struct {
 	s3          integrationPorts.StorageContract
 }
 
-type AttendanceCoreConfig struct {
+type Config struct {
 	Repo        portsRepo.AttendanceRepository
 	StorageRepo portsRepo.StorageRepository
 	Tx          portsRepo.Transactor
 	S3          integrationPorts.StorageContract
 }
 
-func NewAttendanceCore(cfg AttendanceCoreConfig) *attendanceCore {
+func NewAttendanceCore(cfg Config) *attendanceCore {
 	return &attendanceCore{
 		repo:        cfg.Repo,
 		storageRepo: cfg.StorageRepo,

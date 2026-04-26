@@ -63,16 +63,16 @@ func NewConsumerDependencies(
 		return ConsumerDependencies{}, err
 	}
 
-	exportJobRepository := exportJobRepo.NewExportJobRepository(exportJobRepo.ExportJobRepositoryConfig{
+	exportJobRepository := exportJobRepo.NewExportJobRepository(exportJobRepo.Config{
 		DB: db,
 	})
-	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.AttendanceRepositoryConfig{
+	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.Config{
 		DB: db,
 	})
-	storageRepository := storageRepo.NewStorageRepository(storageRepo.StorageRepositoryConfig{
+	storageRepository := storageRepo.NewStorageRepository(storageRepo.Config{
 		DB: db,
 	})
-	exportCore := exportJobCore.NewExportJobCore(exportJobCore.ExportJobCoreConfig{
+	exportCore := exportJobCore.NewExportJobCore(exportJobCore.Config{
 		Repo:           exportJobRepository,
 		AttendanceRepo: attendanceRepository,
 		StorageRepo:    storageRepository,

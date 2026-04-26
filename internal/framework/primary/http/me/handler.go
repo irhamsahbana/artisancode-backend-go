@@ -10,11 +10,11 @@ type meHandler struct {
 	core portsCore.MeCore
 }
 
-type MeHandlerConfig struct {
+type Config struct {
 	Core portsCore.MeCore
 }
 
-func NewMeHandler(cfg MeHandlerConfig) *meHandler {
+func NewMeHandler(cfg Config) *meHandler {
 	return &meHandler{
 		core: cfg.Core,
 	}

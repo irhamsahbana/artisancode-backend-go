@@ -10,11 +10,11 @@ type attendanceHandler struct {
 	core portsCore.AttendanceCore
 }
 
-type AttendanceHandlerConfig struct {
+type Config struct {
 	Core portsCore.AttendanceCore
 }
 
-func NewAttendanceHandler(cfg AttendanceHandlerConfig) *attendanceHandler {
+func NewAttendanceHandler(cfg Config) *attendanceHandler {
 	return &attendanceHandler{core: cfg.Core}
 }
 

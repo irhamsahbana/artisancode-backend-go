@@ -10,12 +10,12 @@ type internalClientRepo struct {
 	db *sqlx.DB
 }
 
-type InternalClientRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
 var _ portsRepo.InternalClientRepository = &internalClientRepo{}
 
-func NewInternalClientRepository(cfg InternalClientRepositoryConfig) portsRepo.InternalClientRepository {
+func NewInternalClientRepository(cfg Config) portsRepo.InternalClientRepository {
 	return &internalClientRepo{db: cfg.DB}
 }

@@ -13,13 +13,13 @@ type companyCore struct {
 	repo portsRepo.CompanyRepository
 }
 
-type CompanyCoreConfig struct {
+type Config struct {
 	Repo portsRepo.CompanyRepository
 }
 
 var _ corePorts.CompanyCore = &companyCore{}
 
-func NewCompanyCore(cfg CompanyCoreConfig) *companyCore {
+func NewCompanyCore(cfg Config) *companyCore {
 	return &companyCore{repo: cfg.Repo}
 }
 

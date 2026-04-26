@@ -6,7 +6,7 @@ import (
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 	corePorts "codebase-app/internal/ports/core"
-	"codebase-app/internal/ports/secondary/db"
+	repository "codebase-app/internal/ports/secondary/db"
 )
 
 type rbacCore struct {
@@ -15,11 +15,11 @@ type rbacCore struct {
 
 var _ corePorts.RbacCore = &rbacCore{}
 
-type RbacCoreConfig struct {
+type Config struct {
 	Repo repository.RbacRepository
 }
 
-func NewRbacCore(cfg RbacCoreConfig) *rbacCore {
+func NewRbacCore(cfg Config) *rbacCore {
 	return &rbacCore{
 		repo: cfg.Repo,
 	}

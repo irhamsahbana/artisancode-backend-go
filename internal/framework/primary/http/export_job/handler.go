@@ -10,11 +10,11 @@ type exportJobHandler struct {
 	core portsCore.ExportJobCore
 }
 
-type ExportJobHandlerConfig struct {
+type Config struct {
 	Core portsCore.ExportJobCore
 }
 
-func NewExportJobHandler(cfg ExportJobHandlerConfig) *exportJobHandler {
+func NewExportJobHandler(cfg Config) *exportJobHandler {
 	return &exportJobHandler{core: cfg.Core}
 }
 

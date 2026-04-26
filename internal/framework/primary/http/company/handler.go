@@ -10,11 +10,11 @@ type companyHandler struct {
 	core portsCore.CompanyCore
 }
 
-type CompanyHandlerConfig struct {
+type Config struct {
 	Core portsCore.CompanyCore
 }
 
-func NewCompanyHandler(cfg CompanyHandlerConfig) *companyHandler {
+func NewCompanyHandler(cfg Config) *companyHandler {
 	return &companyHandler{core: cfg.Core}
 }
 

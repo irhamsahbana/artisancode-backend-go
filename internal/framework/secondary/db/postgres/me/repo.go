@@ -12,10 +12,10 @@ type meRepo struct {
 
 var _ portsRepo.MeRepository = &meRepo{}
 
-type MeRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewMeRepository(cfg MeRepositoryConfig) portsRepo.MeRepository {
+func NewMeRepository(cfg Config) portsRepo.MeRepository {
 	return &meRepo{db: cfg.DB}
 }

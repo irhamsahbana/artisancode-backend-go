@@ -14,12 +14,12 @@ type employeeCore struct {
 	userRepo portsRepo.UserRepository
 }
 
-type EmployeeCoreConfig struct {
+type Config struct {
 	Repo     portsRepo.EmployeeRepository
 	UserRepo portsRepo.UserRepository
 }
 
-func NewEmployeeCore(cfg EmployeeCoreConfig) *employeeCore {
+func NewEmployeeCore(cfg Config) *employeeCore {
 	return &employeeCore{
 		repo:     cfg.Repo,
 		userRepo: cfg.UserRepo,

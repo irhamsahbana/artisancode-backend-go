@@ -10,11 +10,11 @@ type internalClientHandler struct {
 	core corePorts.InternalClientCore
 }
 
-type InternalClientHandlerConfig struct {
+type Config struct {
 	Core corePorts.InternalClientCore
 }
 
-func NewInternalClientHandler(cfg InternalClientHandlerConfig) *internalClientHandler {
+func NewInternalClientHandler(cfg Config) *internalClientHandler {
 	return &internalClientHandler{core: cfg.Core}
 }
 

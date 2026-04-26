@@ -11,11 +11,11 @@ type meCore struct {
 	repo portsRepo.MeRepository
 }
 
-type MeCoreConfig struct {
+type Config struct {
 	Repo portsRepo.MeRepository
 }
 
-func NewMeCore(cfg MeCoreConfig) *meCore {
+func NewMeCore(cfg Config) *meCore {
 	return &meCore{
 		repo: cfg.Repo,
 	}

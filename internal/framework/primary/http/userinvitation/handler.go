@@ -11,11 +11,11 @@ type userInvitationHandler struct {
 	core corePorts.UserInvitationCore
 }
 
-type UserInvitationHandlerConfig struct {
+type Config struct {
 	Core corePorts.UserInvitationCore
 }
 
-func NewUserInvitationHandler(cfg UserInvitationHandlerConfig) *userInvitationHandler {
+func NewUserInvitationHandler(cfg Config) *userInvitationHandler {
 	return &userInvitationHandler{core: cfg.Core}
 }
 

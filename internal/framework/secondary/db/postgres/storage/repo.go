@@ -18,10 +18,10 @@ func (r *storageRepo) executor(ctx context.Context) postgresTx.SQLExecutor {
 
 var _ portsRepo.StorageRepository = &storageRepo{}
 
-type StorageRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewStorageRepository(cfg StorageRepositoryConfig) portsRepo.StorageRepository {
+func NewStorageRepository(cfg Config) portsRepo.StorageRepository {
 	return &storageRepo{db: cfg.DB}
 }

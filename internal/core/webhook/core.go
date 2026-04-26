@@ -11,11 +11,11 @@ type webhookCore struct {
 	dokuVerifier integrationPorts.DOKUWebhookVerifier
 }
 
-type WebhookCoreConfig struct {
+type Config struct {
 	DOKUVerifier integrationPorts.DOKUWebhookVerifier
 }
 
-func NewWebhookCore(cfg WebhookCoreConfig) *webhookCore {
+func NewWebhookCore(cfg Config) *webhookCore {
 	return &webhookCore{
 		dokuVerifier: cfg.DOKUVerifier,
 	}

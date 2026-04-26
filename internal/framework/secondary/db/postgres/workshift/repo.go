@@ -12,10 +12,10 @@ type workShiftRepo struct {
 
 var _ portsRepo.WorkShiftRepository = &workShiftRepo{}
 
-type WorkShiftRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewWorkShiftRepository(cfg WorkShiftRepositoryConfig) portsRepo.WorkShiftRepository {
+func NewWorkShiftRepository(cfg Config) portsRepo.WorkShiftRepository {
 	return &workShiftRepo{db: cfg.DB}
 }

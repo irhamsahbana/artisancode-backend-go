@@ -10,11 +10,11 @@ type workLocationHandler struct {
 	core portsCore.WorkLocationCore
 }
 
-type WorkLocationHandlerConfig struct {
+type Config struct {
 	Core portsCore.WorkLocationCore
 }
 
-func NewWorkLocationHandler(cfg WorkLocationHandlerConfig) *workLocationHandler {
+func NewWorkLocationHandler(cfg Config) *workLocationHandler {
 	return &workLocationHandler{core: cfg.Core}
 }
 

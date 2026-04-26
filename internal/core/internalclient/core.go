@@ -16,13 +16,13 @@ type internalClientCore struct {
 	repo portsRepo.InternalClientRepository
 }
 
-type InternalClientCoreConfig struct {
+type Config struct {
 	Repo portsRepo.InternalClientRepository
 }
 
 var _ corePorts.InternalClientCore = &internalClientCore{}
 
-func NewInternalClientCore(cfg InternalClientCoreConfig) *internalClientCore {
+func NewInternalClientCore(cfg Config) *internalClientCore {
 	return &internalClientCore{repo: cfg.Repo}
 }
 

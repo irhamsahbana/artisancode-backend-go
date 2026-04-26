@@ -18,10 +18,10 @@ func (r *exportJobRepo) executor(ctx context.Context) postgresTx.SQLExecutor {
 
 var _ portsRepo.ExportJobRepository = &exportJobRepo{}
 
-type ExportJobRepositoryConfig struct {
+type Config struct {
 	DB *sqlx.DB
 }
 
-func NewExportJobRepository(cfg ExportJobRepositoryConfig) portsRepo.ExportJobRepository {
+func NewExportJobRepository(cfg Config) portsRepo.ExportJobRepository {
 	return &exportJobRepo{db: cfg.DB}
 }
