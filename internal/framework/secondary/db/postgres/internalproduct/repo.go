@@ -148,6 +148,7 @@ func (r *internalProductRepo) GetInternalProduct(
 	`
 	if err := r.db.GetContext(ctx, &row, r.db.Rebind(query), filter.ID); err != nil {
 		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Internal product not found")
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Internal product not found")
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get internal product")
@@ -256,6 +257,7 @@ func (r *internalProductRepo) UpdateInternalProduct(ctx context.Context, data co
 	}
 
 	if affected, _ := result.RowsAffected(); affected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Internal product not found when updating")
 		return errmsg.NewCustomErrors(404).SetMessage("Internal product not found")
 	}
 	return nil
@@ -283,6 +285,7 @@ func (r *internalProductRepo) DeleteInternalProduct(
 	}
 
 	if affected, _ := result.RowsAffected(); affected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Internal product not found when deleting")
 		return errmsg.NewCustomErrors(404).SetMessage("Internal product not found")
 	}
 	return nil
@@ -438,6 +441,7 @@ func (r *internalProductRepo) GetInternalProductPricing(
 	`
 	if err := r.db.GetContext(ctx, &row, r.db.Rebind(query), filter.ID); err != nil {
 		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Internal product pricing not found")
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Internal product pricing not found")
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get internal product pricing")
@@ -555,6 +559,7 @@ func (r *internalProductRepo) UpdateInternalProductPricing(
 	}
 
 	if affected, _ := result.RowsAffected(); affected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Internal product pricing not found when updating")
 		return errmsg.NewCustomErrors(404).SetMessage("Internal product pricing not found")
 	}
 	return nil
@@ -582,6 +587,7 @@ func (r *internalProductRepo) DeleteInternalProductPricing(
 	}
 
 	if affected, _ := result.RowsAffected(); affected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Internal product pricing not found when deleting")
 		return errmsg.NewCustomErrors(404).SetMessage("Internal product pricing not found")
 	}
 	return nil
@@ -796,6 +802,7 @@ func (r *internalProductRepo) UpdateInternalProductPrice(
 	}
 
 	if affected, _ := result.RowsAffected(); affected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Internal product price not found when updating")
 		return errmsg.NewCustomErrors(404).SetMessage("Internal product price not found")
 	}
 	return nil
@@ -823,6 +830,7 @@ func (r *internalProductRepo) DeleteInternalProductPrice(
 	}
 
 	if affected, _ := result.RowsAffected(); affected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Internal product price not found when deleting")
 		return errmsg.NewCustomErrors(404).SetMessage("Internal product price not found")
 	}
 	return nil

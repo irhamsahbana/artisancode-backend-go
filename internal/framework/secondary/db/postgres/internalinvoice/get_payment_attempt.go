@@ -3,9 +3,12 @@ package repository
 import (
 	"context"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (r *internalInvoiceRepo) GetPaymentAttempt(
@@ -23,6 +26,10 @@ func (r *internalInvoiceRepo) GetPaymentAttempt(
 		return nil, err
 	}
 	if len(items) == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
+			"tenant_id": tenantID,
+			"id":        id,
+		}).Msg("Payment attempt not found")
 		return nil, errmsg.NewCustomErrors(404).SetMessage("Payment attempt not found")
 	}
 	return &items[0], nil

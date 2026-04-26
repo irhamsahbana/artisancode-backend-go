@@ -90,6 +90,7 @@ func (r *attendanceRepo) GetAttendanceLog(
 	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Attendance log not found")
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Attendance log not found")
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get attendance log")

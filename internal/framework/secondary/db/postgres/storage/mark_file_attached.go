@@ -28,6 +28,10 @@ func (r *storageRepo) MarkFileAttached(ctx context.Context, tenantID, id string)
 
 	now := time.Now().UTC()
 	exec := r.executor(ctx)
+	payload := map[string]string{
+		"tenant_id": tenantID,
+		"id":        id,
+	}
 	result, err := exec.ExecContext(
 		ctx,
 		exec.Rebind(query),
@@ -38,22 +42,17 @@ func (r *storageRepo) MarkFileAttached(ctx context.Context, tenantID, id string)
 		common.FileStatusPending,
 	)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
-			"tenant_id": tenantID,
-			"id":        id,
-		}).Msg("Failed to mark storage file attached")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to mark storage file attached")
 		return err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
-			"tenant_id": tenantID,
-			"id":        id,
-		}).Msg("Failed to read storage file attach result")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to read storage file attach result")
 		return err
 	}
 	if rowsAffected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("File not found when marking attached")
 		return errmsg.NewCustomErrors(404).SetMessage("File not found")
 	}
 

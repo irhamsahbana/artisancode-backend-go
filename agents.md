@@ -122,9 +122,16 @@ internal/framework/primary/http/attendance/
 ### Logging
 
 - Use `log.Ctx(ctx)` whenever context is available.
+- Include useful payload context with `Any(common.LogKeyPayload, payload)` or a typed filter/input struct when logging warning/error paths.
 - Parse and validation errors in handlers should use `Warn`.
 - Expected business rejections in core should generally use `Warn`.
 - Unexpected errors or DB/integration failures should use `Error`.
+- In Postgres repositories, log expected miss/update conflicts with `Warn` before returning `errmsg.NewCustomErrors(...)`:
+  - `sql.ErrNoRows` that becomes a 404/400 response
+  - `RowsAffected() == 0` that becomes a 404 response
+  - repository-level validation failures such as missing required filters or invalid permission IDs
+- In Postgres repositories, log DB failures with `Error` before returning the original error. This includes failed queries, failed `ExecContext`, failed `RowsAffected()`, failed marshal/unmarshal caused by persisted data, and transaction begin/commit failures.
+- Do not warn-log benign existence checks or optional lookups that intentionally return `false, nil` or `nil, nil`.
 
 ### Readability Formatting
 

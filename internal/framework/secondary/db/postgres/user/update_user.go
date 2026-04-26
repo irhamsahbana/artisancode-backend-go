@@ -55,9 +55,11 @@ func (r *userRepo) UpdateUser(ctx context.Context, data coreentity.User) error {
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to get update user rows affected")
 		return err
 	}
 	if rowsAffected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("User not found when updating")
 		return errmsg.NewCustomErrors(404).SetMessage("User not found")
 	}
 

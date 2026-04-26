@@ -3,9 +3,12 @@ package repository
 import (
 	"context"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (r *rbacRepo) DeleteRole(ctx context.Context, filter coreentity.RoleDeleteFilter) error {
@@ -20,13 +23,16 @@ func (r *rbacRepo) DeleteRole(ctx context.Context, filter coreentity.RoleDeleteF
 
 	result, err := r.db.ExecContext(ctx, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to delete role")
 		return err
 	}
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get delete role rows affected")
 		return err
 	}
 	if rowsAffected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Role not found when deleting")
 		return errmsg.NewCustomErrors(404).SetMessage("Role not found")
 	}
 	return nil

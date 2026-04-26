@@ -4,10 +4,12 @@ import (
 	"context"
 	"strings"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
 
+	"github.com/rs/zerolog/log"
 	"github.com/shopspring/decimal"
 )
 
@@ -23,12 +25,14 @@ func (c *internalQuotationCore) CreateQuotation(
 		tenantID = strings.TrimSpace(input.TenantID)
 	}
 	if tenantID == "" {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, input).Msg("Tenant is required to create quotation")
 		return nil, errmsg.NewCustomErrors(400).SetMessage("Tenant is required")
 	}
 	input.CurrencyCode = strings.ToUpper(strings.TrimSpace(input.CurrencyCode))
 	if input.TotalAmount.LessThan(decimal.Zero) || input.SubtotalAmount.LessThan(decimal.Zero) ||
 		input.DiscountAmount.LessThan(decimal.Zero) ||
 		input.TaxAmount.LessThan(decimal.Zero) {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, input).Msg("Quotation amounts must not be negative")
 		return nil, errmsg.NewCustomErrors(400).SetMessage("Amounts must not be negative")
 	}
 	pricingSnapshot, _, err := c.orderRepo.GetPricingSnapshot(

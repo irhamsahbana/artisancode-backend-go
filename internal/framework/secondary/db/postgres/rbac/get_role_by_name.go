@@ -4,9 +4,12 @@ import (
 	"context"
 	"database/sql"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (r *rbacRepo) GetRoleByName(ctx context.Context, name, tenantID string) (*coreentity.Role, error) {
@@ -22,9 +25,12 @@ func (r *rbacRepo) GetRoleByName(ctx context.Context, name, tenantID string) (*c
 
 	var item coreentity.Role
 	if err := r.db.GetContext(ctx, &item, r.db.Rebind(query), name, tenantID); err != nil {
+		payload := map[string]string{"name": name, "tenant_id": tenantID}
 		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Role not found by name")
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Role not found")
 		}
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get role by name")
 		return nil, err
 	}
 	return &item, nil

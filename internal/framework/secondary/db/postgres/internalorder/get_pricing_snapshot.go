@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
 
+	"github.com/rs/zerolog/log"
 	"github.com/shopspring/decimal"
 )
 
@@ -65,9 +67,16 @@ func (r *internalOrderRepo) GetPricingSnapshot(
 		LIMIT 1
 	`
 	if err := r.exec(ctx).GetContext(ctx, &item, r.exec(ctx).Rebind(query), productID, pricingID, currencyCode); err != nil {
+		payload := map[string]string{
+			"product_id":    productID,
+			"pricing_id":    pricingID,
+			"currency_code": currencyCode,
+		}
 		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Active product pricing not found")
 			return nil, "", errmsg.NewCustomErrors(404).SetMessage("Active product pricing not found")
 		}
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get pricing snapshot")
 		return nil, "", err
 	}
 	return map[string]any{

@@ -5,8 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/pkg/errmsg"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (r *internalInvoiceRepo) getInvoiceByWhere(
@@ -41,9 +44,12 @@ func (r *internalInvoiceRepo) getInvoiceByWhere(
 			AND i.deleted_at IS NULL
 	`, where)
 	if err := r.exec(ctx).GetContext(ctx, &item, r.exec(ctx).Rebind(query), value, tenantID); err != nil {
+		payload := map[string]string{"tenant_id": tenantID, "where": where, "value": value}
 		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Invoice not found")
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Invoice not found")
 		}
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get invoice")
 		return nil, err
 	}
 	return mapInvoice(item), nil

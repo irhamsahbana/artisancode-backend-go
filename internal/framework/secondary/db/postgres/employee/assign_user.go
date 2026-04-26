@@ -21,21 +21,24 @@ func (r *employeeRepo) AssignUser(ctx context.Context, tenantID, employeeID, use
 	`
 
 	exec := r.executor(ctx)
+	payload := map[string]string{
+		"tenant_id":   tenantID,
+		"employee_id": employeeID,
+		"user_id":     userID,
+	}
 	result, err := exec.ExecContext(ctx, exec.Rebind(query), userID, employeeID, tenantID)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
-			"tenant_id":   tenantID,
-			"employee_id": employeeID,
-			"user_id":     userID,
-		}).Msg("Failed to assign user to employee")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to assign user to employee")
 		return err
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get assign user rows affected")
 		return err
 	}
 	if rowsAffected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Employee not found when assigning user")
 		return errmsg.NewCustomErrors(404).SetMessage("Employee not found")
 	}
 

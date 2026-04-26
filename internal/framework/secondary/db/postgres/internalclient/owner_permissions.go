@@ -112,6 +112,7 @@ func (r *internalClientRepo) UpdateInternalClientOwnerPermissions(
 			return err
 		}
 		if validCount != len(data.PermissionIDs) {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Invalid internal client owner permissions")
 			return errmsg.NewCustomErrors(400).SetMessage("One or more permissions are invalid for this client")
 		}
 	}
@@ -172,6 +173,10 @@ func (r *internalClientRepo) getOwnerRoleID(ctx context.Context, clientID string
 	`
 	if err := r.db.GetContext(ctx, &ownerRoleID, r.db.Rebind(query), clientID); err != nil {
 		if err == sql.ErrNoRows {
+			log.Ctx(ctx).
+				Warn().
+				Any(common.LogKeyPayload, map[string]string{"client_id": clientID}).
+				Msg("Client owner role not found")
 			return "", errmsg.NewCustomErrors(404).SetMessage("Client owner role not found")
 		}
 		log.Ctx(ctx).

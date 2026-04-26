@@ -4,9 +4,12 @@ import (
 	"context"
 	"database/sql"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (r *internalQuotationRepo) GetQuotation(
@@ -19,6 +22,11 @@ func (r *internalQuotationRepo) GetQuotation(
 		"internal:framework:secondary:db:postgres:internalquotation:get_quotation:GetQuotation",
 	)
 	defer span.End()
+
+	payload := map[string]any{
+		"tenant_id": tenantID,
+		"id":        id,
+	}
 
 	var item quotationRow
 	query := `
@@ -50,8 +58,10 @@ func (r *internalQuotationRepo) GetQuotation(
 	`
 	if err := r.exec(ctx).GetContext(ctx, &item, r.exec(ctx).Rebind(query), id, tenantID); err != nil {
 		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Quotation not found when retrieving")
 			return nil, errmsg.NewCustomErrors(404).SetMessage("Quotation not found")
 		}
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to retrieve quotation")
 		return nil, err
 	}
 	return mapQuotation(item), nil

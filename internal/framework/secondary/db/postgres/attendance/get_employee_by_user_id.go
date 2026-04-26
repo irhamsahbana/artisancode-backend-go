@@ -42,13 +42,15 @@ func (r *attendanceRepo) GetEmployeeByUserID(
 	exec := r.executor(ctx)
 	err := exec.GetContext(ctx, &data, exec.Rebind(query), tenantID, userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Employee profile not found")
-		}
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
+		payload := map[string]string{
 			"tenant_id": tenantID,
 			"user_id":   userID,
-		}).Msg("Failed to get employee by user id")
+		}
+		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Employee profile not found")
+			return nil, errmsg.NewCustomErrors(404).SetMessage("Employee profile not found")
+		}
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get employee by user id")
 		return nil, err
 	}
 

@@ -55,13 +55,15 @@ func (r *meRepo) GetEmployeeByUserID(ctx context.Context, tenantID, userID strin
 
 	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), tenantID, userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Employee profile not found")
-		}
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{
+		payload := map[string]string{
 			"tenant_id": tenantID,
 			"user_id":   userID,
-		}).Msg("Failed to get employee profile by user id")
+		}
+		if err == sql.ErrNoRows {
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Employee profile not found")
+			return nil, errmsg.NewCustomErrors(404).SetMessage("Employee profile not found")
+		}
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get employee profile by user id")
 		return nil, err
 	}
 

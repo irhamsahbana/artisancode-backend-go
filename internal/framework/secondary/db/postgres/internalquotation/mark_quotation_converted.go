@@ -3,9 +3,12 @@ package repository
 import (
 	"context"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (r *internalQuotationRepo) MarkQuotationConverted(
@@ -20,6 +23,12 @@ func (r *internalQuotationRepo) MarkQuotationConverted(
 	)
 	defer span.End()
 
+	payload := map[string]any{
+		"tenant_id":    tenantID,
+		"quotation_id": quotationID,
+		"order_id":     orderID,
+	}
+
 	query := `
 		UPDATE internal_quotations
 		SET
@@ -32,9 +41,11 @@ func (r *internalQuotationRepo) MarkQuotationConverted(
 	`
 	result, err := r.exec(ctx).ExecContext(ctx, r.exec(ctx).Rebind(query), orderID, quotationID, tenantID)
 	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to mark quotation converted")
 		return nil, err
 	}
 	if affected, _ := result.RowsAffected(); affected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Quotation not found when marking converted")
 		return nil, errmsg.NewCustomErrors(404).SetMessage("Quotation not found")
 	}
 	return r.GetQuotation(ctx, tenantID, quotationID)

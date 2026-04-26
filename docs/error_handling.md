@@ -57,12 +57,16 @@ Automatically handled by `errmsg.Errors[error](ctx, err)` when `err` is `*pgconn
 ### Repository Layer
 
 - Return `errmsg.NewCustomErrors(404)` for `sql.ErrNoRows`
-- Let other DB errors propagate naturally (errmsg handles `*pgconn.PgError`)
+- Log `Warn` before returning expected custom errors from repository code, including `sql.ErrNoRows`, `RowsAffected() == 0`, and repository-level validation failures.
+- Log `Error` before returning unexpected DB/integration errors, including failed queries, failed `ExecContext`, failed `RowsAffected()`, failed marshal/unmarshal caused by persisted data, and transaction begin/commit failures.
+- Let other DB errors propagate naturally after logging (errmsg handles `*pgconn.PgError`)
+- Do not warn-log benign existence checks or optional lookups that intentionally return `false, nil` or `nil, nil`.
 
 ```go
 err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
 if err != nil {
     if err == sql.ErrNoRows {
+        log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Employee not found")
         return nil, errmsg.NewCustomErrors(404).SetMessage("Employee not found")
     }
     log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get employee")
@@ -70,9 +74,30 @@ if err != nil {
 }
 ```
 
+For update/delete operations, treat zero affected rows as an expected miss and log it as `Warn`:
+
+```go
+result, err := r.db.ExecContext(ctx, r.db.Rebind(query), filter.ID, filter.TenantID)
+if err != nil {
+    log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to delete employee")
+    return err
+}
+
+rowsAffected, err := result.RowsAffected()
+if err != nil {
+    log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get delete employee rows affected")
+    return err
+}
+if rowsAffected == 0 {
+    log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Employee not found when deleting")
+    return errmsg.NewCustomErrors(404).SetMessage("Employee not found")
+}
+```
+
 ### Core Layer
 
 - Return `errmsg.NewCustomErrors` for business rule violations
+- Log expected business rejections with `Warn` before returning custom errors
 - Propagate repository errors without wrapping
 
 ```go

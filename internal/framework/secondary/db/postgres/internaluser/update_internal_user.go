@@ -33,6 +33,7 @@ func (r *internalUserRepo) UpdateInternalUser(ctx context.Context, data coreenti
 		return err
 	}
 	if affected, _ := result.RowsAffected(); affected == 0 {
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Internal user not found when updating")
 		return errmsg.NewCustomErrors(404).SetMessage("Internal user not found")
 	}
 	return nil

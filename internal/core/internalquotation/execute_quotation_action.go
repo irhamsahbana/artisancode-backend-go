@@ -4,9 +4,12 @@ import (
 	"context"
 	"strings"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (c *internalQuotationCore) ExecuteQuotationAction(
@@ -26,6 +29,7 @@ func (c *internalQuotationCore) ExecuteQuotationAction(
 	case coreentity.ActionConvertQuotation:
 		return c.executeConvertQuotationAction(ctx, input)
 	default:
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, input).Msg("Unsupported quotation action")
 		return nil, errmsg.NewCustomErrors(400).SetMessage("Unsupported quotation action")
 	}
 }
