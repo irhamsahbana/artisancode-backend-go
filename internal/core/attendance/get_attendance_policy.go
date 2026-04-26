@@ -8,7 +8,10 @@ import (
 	"codebase-app/pkg/errmsg"
 )
 
-func (c *attendanceCore) GetAttendancePolicy(ctx context.Context, filter coreentity.SelfFilter) (*coreentity.AttendancePolicy, error) {
+func (c *attendanceCore) GetAttendancePolicy(
+	ctx context.Context,
+	filter coreentity.SelfFilter,
+) (*coreentity.AttendancePolicy, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:get_attendance_policy:GetAttendancePolicy")
 	defer span.End()
 

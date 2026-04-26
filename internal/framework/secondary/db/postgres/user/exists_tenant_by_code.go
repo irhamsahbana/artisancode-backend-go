@@ -10,7 +10,10 @@ import (
 )
 
 func (r *userRepo) ExistsTenantByCode(ctx context.Context, code string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:ExistsTenantByCode")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:initialize_tenant:ExistsTenantByCode",
+	)
 	defer span.End()
 
 	var existing string
@@ -21,7 +24,11 @@ func (r *userRepo) ExistsTenantByCode(ctx context.Context, code string) (bool, e
 		if err == sql.ErrNoRows {
 			return false, nil
 		}
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"code": code}).Msg("Failed to check tenant existence")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"code": code}).
+			Msg("Failed to check tenant existence")
 		return false, err
 	}
 	return existing != "", nil

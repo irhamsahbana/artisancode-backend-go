@@ -7,7 +7,10 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 )
 
-func (r *rbacRepo) GetPermissions(ctx context.Context, filter coreentity.PermissionListFilter) ([]coreentity.Permission, int, error) {
+func (r *rbacRepo) GetPermissions(
+	ctx context.Context,
+	filter coreentity.PermissionListFilter,
+) ([]coreentity.Permission, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:rbac:repo:GetPermissions")
 	defer span.End()
 

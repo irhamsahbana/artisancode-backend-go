@@ -13,7 +13,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (c *userInvitationCore) CreateInvitation(ctx context.Context, data coreentity.UserInvitation) (*coreentity.UserInvitation, error) {
+func (c *userInvitationCore) CreateInvitation(
+	ctx context.Context,
+	data coreentity.UserInvitation,
+) (*coreentity.UserInvitation, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:userinvitation:create_invitation:CreateInvitation")
 	defer span.End()
 

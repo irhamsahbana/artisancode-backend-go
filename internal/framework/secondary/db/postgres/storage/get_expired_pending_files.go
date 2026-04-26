@@ -12,8 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *storageRepo) GetExpiredPendingFiles(ctx context.Context, filter coreentity.ExpiredPendingFileFilter) ([]coreentity.File, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:storage:get_expired_pending_files:GetExpiredPendingFiles")
+func (r *storageRepo) GetExpiredPendingFiles(
+	ctx context.Context,
+	filter coreentity.ExpiredPendingFileFilter,
+) ([]coreentity.File, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:storage:get_expired_pending_files:GetExpiredPendingFiles",
+	)
 	defer span.End()
 
 	before, err := time.Parse(time.RFC3339, filter.Before)

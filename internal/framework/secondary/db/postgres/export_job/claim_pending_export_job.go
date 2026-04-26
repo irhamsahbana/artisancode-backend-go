@@ -13,7 +13,10 @@ import (
 )
 
 func (r *exportJobRepo) ClaimPendingExportJob(ctx context.Context) (*coreentity.ExportJob, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:export_job:claim_pending_export_job:ClaimPendingExportJob")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:export_job:claim_pending_export_job:ClaimPendingExportJob",
+	)
 	defer span.End()
 
 	tx, err := r.db.BeginTxx(ctx, nil)

@@ -11,8 +11,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *storageRepo) CreateFileLink(ctx context.Context, req coreentity.CreateStorageFileLinkReq) (*coreentity.StorageFileLink, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:storage:create_file_link:CreateFileLink")
+func (r *storageRepo) CreateFileLink(
+	ctx context.Context,
+	req coreentity.CreateStorageFileLinkReq,
+) (*coreentity.StorageFileLink, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:storage:create_file_link:CreateFileLink",
+	)
 	defer span.End()
 
 	query := `

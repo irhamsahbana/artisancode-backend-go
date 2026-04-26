@@ -30,8 +30,14 @@ func NewInternalProductRepository(cfg Config) portsRepo.InternalProductRepositor
 	return &internalProductRepo{db: cfg.DB}
 }
 
-func (r *internalProductRepo) GetInternalProducts(ctx context.Context, filter coreentity.InternalProductListFilter) ([]coreentity.InternalProduct, int, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProducts")
+func (r *internalProductRepo) GetInternalProducts(
+	ctx context.Context,
+	filter coreentity.InternalProductListFilter,
+) ([]coreentity.InternalProduct, int, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProducts",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -56,7 +62,14 @@ func (r *internalProductRepo) GetInternalProducts(ctx context.Context, filter co
 	query := `
 		SELECT
 			COUNT(*) OVER() AS total_data,
-			id, code, name, description, status, metadata, created_at, updated_at
+			id,
+			code,
+			name,
+			description,
+			status,
+			metadata,
+			created_at,
+			updated_at
 		FROM internal_products
 		WHERE deleted_at IS NULL
 	`
@@ -78,7 +91,16 @@ func (r *internalProductRepo) GetInternalProducts(ctx context.Context, filter co
 
 	for _, row := range rows {
 		total = row.TotalData
-		item, err := mapInternalProductDAO(row.ID, row.Code, row.Name, row.Description, row.Status, row.Metadata, row.CreatedAt, row.UpdatedAt)
+		item, err := mapInternalProductDAO(
+			row.ID,
+			row.Code,
+			row.Name,
+			row.Description,
+			row.Status,
+			row.Metadata,
+			row.CreatedAt,
+			row.UpdatedAt,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -88,8 +110,14 @@ func (r *internalProductRepo) GetInternalProducts(ctx context.Context, filter co
 	return items, total, nil
 }
 
-func (r *internalProductRepo) GetInternalProduct(ctx context.Context, filter coreentity.InternalProductFilter) (*coreentity.InternalProduct, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProduct")
+func (r *internalProductRepo) GetInternalProduct(
+	ctx context.Context,
+	filter coreentity.InternalProductFilter,
+) (*coreentity.InternalProduct, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProduct",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -105,9 +133,18 @@ func (r *internalProductRepo) GetInternalProduct(ctx context.Context, filter cor
 
 	var row dao
 	query := `
-		SELECT id, code, name, description, status, metadata, created_at, updated_at
+		SELECT
+			id,
+			code,
+			name,
+			description,
+			status,
+			metadata,
+			created_at,
+			updated_at
 		FROM internal_products
-		WHERE id = ? AND deleted_at IS NULL
+		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 	if err := r.db.GetContext(ctx, &row, r.db.Rebind(query), filter.ID); err != nil {
 		if err == sql.ErrNoRows {
@@ -117,7 +154,16 @@ func (r *internalProductRepo) GetInternalProduct(ctx context.Context, filter cor
 		return nil, err
 	}
 
-	item, err := mapInternalProductDAO(row.ID, row.Code, row.Name, row.Description, row.Status, row.Metadata, row.CreatedAt, row.UpdatedAt)
+	item, err := mapInternalProductDAO(
+		row.ID,
+		row.Code,
+		row.Name,
+		row.Description,
+		row.Status,
+		row.Metadata,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +171,14 @@ func (r *internalProductRepo) GetInternalProduct(ctx context.Context, filter cor
 	return &item, nil
 }
 
-func (r *internalProductRepo) CreateInternalProduct(ctx context.Context, data coreentity.InternalProduct) (*coreentity.InternalProduct, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:CreateInternalProduct")
+func (r *internalProductRepo) CreateInternalProduct(
+	ctx context.Context,
+	data coreentity.InternalProduct,
+) (*coreentity.InternalProduct, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:CreateInternalProduct",
+	)
 	defer span.End()
 
 	metadata, err := marshalMetadata(data.Metadata)
@@ -135,11 +187,30 @@ func (r *internalProductRepo) CreateInternalProduct(ctx context.Context, data co
 	}
 
 	query := `
-		INSERT INTO internal_products (code, name, description, status, metadata)
-		VALUES (?, ?, ?, ?, ?)
-		RETURNING id
+		INSERT INTO internal_products (
+			code,
+			name,
+			description,
+			status,
+			metadata
+		)
+		VALUES (
+			?,
+			?,
+			?,
+			?,
+			?
+		)
+		RETURNING
+			id
 	`
-	if err := r.db.GetContext(ctx, &data.ID, r.db.Rebind(query), data.Code, data.Name, data.Description, data.Status, metadata); err != nil {
+	if err := r.db.GetContext(ctx, &data.ID, r.db.Rebind(query),
+		data.Code,
+		data.Name,
+		data.Description,
+		data.Status,
+		metadata,
+	); err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create internal product")
 		return nil, err
 	}
@@ -148,7 +219,10 @@ func (r *internalProductRepo) CreateInternalProduct(ctx context.Context, data co
 }
 
 func (r *internalProductRepo) UpdateInternalProduct(ctx context.Context, data coreentity.InternalProduct) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:UpdateInternalProduct")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:UpdateInternalProduct",
+	)
 	defer span.End()
 
 	metadata, err := marshalMetadata(data.Metadata)
@@ -158,10 +232,24 @@ func (r *internalProductRepo) UpdateInternalProduct(ctx context.Context, data co
 
 	query := `
 		UPDATE internal_products
-		SET code = ?, name = ?, description = ?, status = ?, metadata = ?, updated_at = NOW()
-		WHERE id = ? AND deleted_at IS NULL
+		SET
+			code = ?,
+			name = ?,
+			description = ?,
+			status = ?,
+			metadata = ?,
+			updated_at = NOW()
+		WHERE id = ?
+			AND deleted_at IS NULL
 	`
-	result, err := r.db.ExecContext(ctx, r.db.Rebind(query), data.Code, data.Name, data.Description, data.Status, metadata, data.ID)
+	result, err := r.db.ExecContext(ctx, r.db.Rebind(query),
+		data.Code,
+		data.Name,
+		data.Description,
+		data.Status,
+		metadata,
+		data.ID,
+	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to update internal product")
 		return err
@@ -173,8 +261,14 @@ func (r *internalProductRepo) UpdateInternalProduct(ctx context.Context, data co
 	return nil
 }
 
-func (r *internalProductRepo) DeleteInternalProduct(ctx context.Context, filter coreentity.InternalProductDeleteFilter) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:DeleteInternalProduct")
+func (r *internalProductRepo) DeleteInternalProduct(
+	ctx context.Context,
+	filter coreentity.InternalProductDeleteFilter,
+) error {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:DeleteInternalProduct",
+	)
 	defer span.End()
 
 	query := `
@@ -195,7 +289,10 @@ func (r *internalProductRepo) DeleteInternalProduct(ctx context.Context, filter 
 }
 
 func (r *internalProductRepo) ExistsInternalProductByCode(ctx context.Context, code, excludeID string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:ExistsInternalProductByCode")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:ExistsInternalProductByCode",
+	)
 	defer span.End()
 
 	query := `
@@ -211,15 +308,24 @@ func (r *internalProductRepo) ExistsInternalProductByCode(ctx context.Context, c
 
 	var count int
 	if err := r.db.GetContext(ctx, &count, r.db.Rebind(query), args...); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]any{"code": code, "exclude_id": excludeID}).Msg("Failed to check internal product code")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]any{
+			"code":       code,
+			"exclude_id": excludeID,
+		}).Msg("Failed to check internal product code")
 		return false, err
 	}
 
 	return count > 0, nil
 }
 
-func (r *internalProductRepo) GetInternalProductPricings(ctx context.Context, filter coreentity.InternalProductPricingListFilter) ([]coreentity.InternalProductPricing, int, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProductPricings")
+func (r *internalProductRepo) GetInternalProductPricings(
+	ctx context.Context,
+	filter coreentity.InternalProductPricingListFilter,
+) ([]coreentity.InternalProductPricing, int, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProductPricings",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -245,9 +351,18 @@ func (r *internalProductRepo) GetInternalProductPricings(ctx context.Context, fi
 	query := `
 		SELECT
 			COUNT(*) OVER() AS total_data,
-			id, internal_product_id, code, name, description, status, metadata, created_at, updated_at
+			id,
+			internal_product_id,
+			code,
+			name,
+			description,
+			status,
+			metadata,
+			created_at,
+			updated_at
 		FROM internal_product_pricings
-		WHERE internal_product_id = ? AND deleted_at IS NULL
+		WHERE internal_product_id = ?
+			AND deleted_at IS NULL
 	`
 	if filter.Q != "" {
 		query += ` AND (name ILIKE '%' || ? || '%' OR code ILIKE '%' || ? || '%')`
@@ -263,7 +378,17 @@ func (r *internalProductRepo) GetInternalProductPricings(ctx context.Context, fi
 
 	for _, row := range rows {
 		total = row.TotalData
-		item, err := mapInternalProductPricingDAO(row.ID, row.InternalProductID, row.Code, row.Name, row.Description, row.Status, row.Metadata, row.CreatedAt, row.UpdatedAt)
+		item, err := mapInternalProductPricingDAO(
+			row.ID,
+			row.InternalProductID,
+			row.Code,
+			row.Name,
+			row.Description,
+			row.Status,
+			row.Metadata,
+			row.CreatedAt,
+			row.UpdatedAt,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -273,8 +398,14 @@ func (r *internalProductRepo) GetInternalProductPricings(ctx context.Context, fi
 	return items, total, nil
 }
 
-func (r *internalProductRepo) GetInternalProductPricing(ctx context.Context, filter coreentity.InternalProductPricingFilter) (*coreentity.InternalProductPricing, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProductPricing")
+func (r *internalProductRepo) GetInternalProductPricing(
+	ctx context.Context,
+	filter coreentity.InternalProductPricingFilter,
+) (*coreentity.InternalProductPricing, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProductPricing",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -291,9 +422,19 @@ func (r *internalProductRepo) GetInternalProductPricing(ctx context.Context, fil
 
 	var row dao
 	query := `
-		SELECT id, internal_product_id, code, name, description, status, metadata, created_at, updated_at
+		SELECT
+			id,
+			internal_product_id,
+			code,
+			name,
+			description,
+			status,
+			metadata,
+			created_at,
+			updated_at
 		FROM internal_product_pricings
-		WHERE id = ? AND deleted_at IS NULL
+		WHERE id = ?
+			AND deleted_at IS NULL
 	`
 	if err := r.db.GetContext(ctx, &row, r.db.Rebind(query), filter.ID); err != nil {
 		if err == sql.ErrNoRows {
@@ -303,7 +444,17 @@ func (r *internalProductRepo) GetInternalProductPricing(ctx context.Context, fil
 		return nil, err
 	}
 
-	item, err := mapInternalProductPricingDAO(row.ID, row.InternalProductID, row.Code, row.Name, row.Description, row.Status, row.Metadata, row.CreatedAt, row.UpdatedAt)
+	item, err := mapInternalProductPricingDAO(
+		row.ID,
+		row.InternalProductID,
+		row.Code,
+		row.Name,
+		row.Description,
+		row.Status,
+		row.Metadata,
+		row.CreatedAt,
+		row.UpdatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -311,8 +462,14 @@ func (r *internalProductRepo) GetInternalProductPricing(ctx context.Context, fil
 	return &item, nil
 }
 
-func (r *internalProductRepo) CreateInternalProductPricing(ctx context.Context, data coreentity.InternalProductPricing) (*coreentity.InternalProductPricing, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:CreateInternalProductPricing")
+func (r *internalProductRepo) CreateInternalProductPricing(
+	ctx context.Context,
+	data coreentity.InternalProductPricing,
+) (*coreentity.InternalProductPricing, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:CreateInternalProductPricing",
+	)
 	defer span.End()
 
 	metadata, err := marshalMetadata(data.Metadata)
@@ -321,11 +478,33 @@ func (r *internalProductRepo) CreateInternalProductPricing(ctx context.Context, 
 	}
 
 	query := `
-		INSERT INTO internal_product_pricings (internal_product_id, code, name, description, status, metadata)
-		VALUES (?, ?, ?, ?, ?, ?)
-		RETURNING id
+		INSERT INTO internal_product_pricings (
+			internal_product_id,
+			code,
+			name,
+			description,
+			status,
+			metadata
+		)
+		VALUES (
+			?,
+			?,
+			?,
+			?,
+			?,
+			?
+		)
+		RETURNING
+			id
 	`
-	if err := r.db.GetContext(ctx, &data.ID, r.db.Rebind(query), data.InternalProductID, data.Code, data.Name, data.Description, data.Status, metadata); err != nil {
+	if err := r.db.GetContext(ctx, &data.ID, r.db.Rebind(query),
+		data.InternalProductID,
+		data.Code,
+		data.Name,
+		data.Description,
+		data.Status,
+		metadata,
+	); err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create internal product pricing")
 		return nil, err
 	}
@@ -333,8 +512,14 @@ func (r *internalProductRepo) CreateInternalProductPricing(ctx context.Context, 
 	return &data, nil
 }
 
-func (r *internalProductRepo) UpdateInternalProductPricing(ctx context.Context, data coreentity.InternalProductPricing) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:UpdateInternalProductPricing")
+func (r *internalProductRepo) UpdateInternalProductPricing(
+	ctx context.Context,
+	data coreentity.InternalProductPricing,
+) error {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:UpdateInternalProductPricing",
+	)
 	defer span.End()
 
 	metadata, err := marshalMetadata(data.Metadata)
@@ -344,10 +529,26 @@ func (r *internalProductRepo) UpdateInternalProductPricing(ctx context.Context, 
 
 	query := `
 		UPDATE internal_product_pricings
-		SET internal_product_id = ?, code = ?, name = ?, description = ?, status = ?, metadata = ?, updated_at = NOW()
-		WHERE id = ? AND deleted_at IS NULL
+		SET
+			internal_product_id = ?,
+			code = ?,
+			name = ?,
+			description = ?,
+			status = ?,
+			metadata = ?,
+			updated_at = NOW()
+		WHERE id = ?
+			AND deleted_at IS NULL
 	`
-	result, err := r.db.ExecContext(ctx, r.db.Rebind(query), data.InternalProductID, data.Code, data.Name, data.Description, data.Status, metadata, data.ID)
+	result, err := r.db.ExecContext(ctx, r.db.Rebind(query),
+		data.InternalProductID,
+		data.Code,
+		data.Name,
+		data.Description,
+		data.Status,
+		metadata,
+		data.ID,
+	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to update internal product pricing")
 		return err
@@ -359,8 +560,14 @@ func (r *internalProductRepo) UpdateInternalProductPricing(ctx context.Context, 
 	return nil
 }
 
-func (r *internalProductRepo) DeleteInternalProductPricing(ctx context.Context, filter coreentity.InternalProductPricingDeleteFilter) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:DeleteInternalProductPricing")
+func (r *internalProductRepo) DeleteInternalProductPricing(
+	ctx context.Context,
+	filter coreentity.InternalProductPricingDeleteFilter,
+) error {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:DeleteInternalProductPricing",
+	)
 	defer span.End()
 
 	query := `
@@ -380,8 +587,16 @@ func (r *internalProductRepo) DeleteInternalProductPricing(ctx context.Context, 
 	return nil
 }
 
-func (r *internalProductRepo) ExistsInternalProductPricingByCode(ctx context.Context, internalProductID, code, excludeID string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:ExistsInternalProductPricingByCode")
+func (r *internalProductRepo) ExistsInternalProductPricingByCode(
+	ctx context.Context,
+	internalProductID string,
+	code string,
+	excludeID string,
+) (bool, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:ExistsInternalProductPricingByCode",
+	)
 	defer span.End()
 
 	query := `
@@ -397,15 +612,25 @@ func (r *internalProductRepo) ExistsInternalProductPricingByCode(ctx context.Con
 
 	var count int
 	if err := r.db.GetContext(ctx, &count, r.db.Rebind(query), args...); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]any{"internal_product_id": internalProductID, "code": code, "exclude_id": excludeID}).Msg("Failed to check internal product pricing code")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]any{
+			"internal_product_id": internalProductID,
+			"code":                code,
+			"exclude_id":          excludeID,
+		}).Msg("Failed to check internal product pricing code")
 		return false, err
 	}
 
 	return count > 0, nil
 }
 
-func (r *internalProductRepo) GetInternalProductPrices(ctx context.Context, filter coreentity.InternalProductPriceListFilter) ([]coreentity.InternalProductPrice, int, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProductPrices")
+func (r *internalProductRepo) GetInternalProductPrices(
+	ctx context.Context,
+	filter coreentity.InternalProductPriceListFilter,
+) ([]coreentity.InternalProductPrice, int, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:GetInternalProductPrices",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -431,11 +656,18 @@ func (r *internalProductRepo) GetInternalProductPrices(ctx context.Context, filt
 	query := `
 		SELECT
 			COUNT(*) OVER() AS total_data,
-			id, internal_product_pricing_id, currency_code, amount::text AS amount,
-			started_at::text AS started_at, ended_at::text AS ended_at, metadata, created_at::text AS created_at,
+			id,
+			internal_product_pricing_id,
+			currency_code,
+			amount::text AS amount,
+			started_at::text AS started_at,
+			ended_at::text AS ended_at,
+			metadata,
+			created_at::text AS created_at,
 			updated_at::text AS updated_at
 		FROM internal_product_prices
-		WHERE internal_product_pricing_id = ? AND deleted_at IS NULL
+		WHERE internal_product_pricing_id = ?
+			AND deleted_at IS NULL
 	`
 	if filter.CurrencyCode != "" {
 		query += ` AND currency_code = ?`
@@ -451,7 +683,17 @@ func (r *internalProductRepo) GetInternalProductPrices(ctx context.Context, filt
 
 	for _, row := range rows {
 		total = row.TotalData
-		item, err := mapInternalProductPriceDAO(row.ID, row.InternalProductPricingID, row.CurrencyCode, row.Amount, row.StartedAt, row.EndedAt, row.Metadata, row.CreatedAt, row.UpdatedAt)
+		item, err := mapInternalProductPriceDAO(
+			row.ID,
+			row.InternalProductPricingID,
+			row.CurrencyCode,
+			row.Amount,
+			row.StartedAt,
+			row.EndedAt,
+			row.Metadata,
+			row.CreatedAt,
+			row.UpdatedAt,
+		)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -461,8 +703,14 @@ func (r *internalProductRepo) GetInternalProductPrices(ctx context.Context, filt
 	return items, total, nil
 }
 
-func (r *internalProductRepo) CreateInternalProductPrice(ctx context.Context, data coreentity.InternalProductPrice) (*coreentity.InternalProductPrice, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:CreateInternalProductPrice")
+func (r *internalProductRepo) CreateInternalProductPrice(
+	ctx context.Context,
+	data coreentity.InternalProductPrice,
+) (*coreentity.InternalProductPrice, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:CreateInternalProductPrice",
+	)
 	defer span.End()
 
 	metadata, err := marshalMetadata(data.Metadata)
@@ -472,12 +720,32 @@ func (r *internalProductRepo) CreateInternalProductPrice(ctx context.Context, da
 
 	query := `
 		INSERT INTO internal_product_prices (
-			internal_product_pricing_id, currency_code, amount, started_at, ended_at, metadata
+			internal_product_pricing_id,
+			currency_code,
+			amount,
+			started_at,
+			ended_at,
+			metadata
 		)
-		VALUES (?, ?, ?, ?, ?, ?)
-		RETURNING id
+		VALUES (
+			?,
+			?,
+			?,
+			?,
+			?,
+			?
+		)
+		RETURNING
+			id
 	`
-	if err := r.db.GetContext(ctx, &data.ID, r.db.Rebind(query), data.InternalProductPricingID, data.CurrencyCode, data.Amount, data.StartedAt, data.EndedAt, metadata); err != nil {
+	if err := r.db.GetContext(ctx, &data.ID, r.db.Rebind(query),
+		data.InternalProductPricingID,
+		data.CurrencyCode,
+		data.Amount,
+		data.StartedAt,
+		data.EndedAt,
+		metadata,
+	); err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create internal product price")
 		return nil, err
 	}
@@ -485,8 +753,14 @@ func (r *internalProductRepo) CreateInternalProductPrice(ctx context.Context, da
 	return &data, nil
 }
 
-func (r *internalProductRepo) UpdateInternalProductPrice(ctx context.Context, data coreentity.InternalProductPrice) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:UpdateInternalProductPrice")
+func (r *internalProductRepo) UpdateInternalProductPrice(
+	ctx context.Context,
+	data coreentity.InternalProductPrice,
+) error {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:UpdateInternalProductPrice",
+	)
 	defer span.End()
 
 	metadata, err := marshalMetadata(data.Metadata)
@@ -496,10 +770,26 @@ func (r *internalProductRepo) UpdateInternalProductPrice(ctx context.Context, da
 
 	query := `
 		UPDATE internal_product_prices
-		SET internal_product_pricing_id = ?, currency_code = ?, amount = ?, started_at = ?, ended_at = ?, metadata = ?, updated_at = NOW()
-		WHERE id = ? AND deleted_at IS NULL
+		SET
+			internal_product_pricing_id = ?,
+			currency_code = ?,
+			amount = ?,
+			started_at = ?,
+			ended_at = ?,
+			metadata = ?,
+			updated_at = NOW()
+		WHERE id = ?
+			AND deleted_at IS NULL
 	`
-	result, err := r.db.ExecContext(ctx, r.db.Rebind(query), data.InternalProductPricingID, data.CurrencyCode, data.Amount, data.StartedAt, data.EndedAt, metadata, data.ID)
+	result, err := r.db.ExecContext(ctx, r.db.Rebind(query),
+		data.InternalProductPricingID,
+		data.CurrencyCode,
+		data.Amount,
+		data.StartedAt,
+		data.EndedAt,
+		metadata,
+		data.ID,
+	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to update internal product price")
 		return err
@@ -511,8 +801,14 @@ func (r *internalProductRepo) UpdateInternalProductPrice(ctx context.Context, da
 	return nil
 }
 
-func (r *internalProductRepo) DeleteInternalProductPrice(ctx context.Context, filter coreentity.InternalProductPriceDeleteFilter) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:DeleteInternalProductPrice")
+func (r *internalProductRepo) DeleteInternalProductPrice(
+	ctx context.Context,
+	filter coreentity.InternalProductPriceDeleteFilter,
+) error {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:DeleteInternalProductPrice",
+	)
 	defer span.End()
 
 	query := `
@@ -532,8 +828,14 @@ func (r *internalProductRepo) DeleteInternalProductPrice(ctx context.Context, fi
 	return nil
 }
 
-func (r *internalProductRepo) ExistsOverlappingInternalProductPrice(ctx context.Context, filter coreentity.InternalProductPriceOverlapFilter) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalproduct:repo:ExistsOverlappingInternalProductPrice")
+func (r *internalProductRepo) ExistsOverlappingInternalProductPrice(
+	ctx context.Context,
+	filter coreentity.InternalProductPriceOverlapFilter,
+) (bool, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalproduct:repo:ExistsOverlappingInternalProductPrice",
+	)
 	defer span.End()
 
 	query := `
@@ -553,7 +855,11 @@ func (r *internalProductRepo) ExistsOverlappingInternalProductPrice(ctx context.
 
 	var count int
 	if err := r.db.GetContext(ctx, &count, r.db.Rebind(query), args...); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to check overlapping internal product price")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, filter).
+			Msg("Failed to check overlapping internal product price")
 		return false, err
 	}
 
@@ -585,7 +891,16 @@ func parseMetadata(ctx context.Context, raw json.RawMessage) (map[string]any, er
 	return metadata, nil
 }
 
-func mapInternalProductDAO(id, code, name, description, status string, metadataRaw json.RawMessage, createdAt string, updatedAt *string) (coreentity.InternalProduct, error) {
+func mapInternalProductDAO(
+	id string,
+	code string,
+	name string,
+	description string,
+	status string,
+	metadataRaw json.RawMessage,
+	createdAt string,
+	updatedAt *string,
+) (coreentity.InternalProduct, error) {
 	metadata, err := parseMetadata(context.Background(), metadataRaw)
 	if err != nil {
 		return coreentity.InternalProduct{}, err
@@ -607,7 +922,17 @@ func mapInternalProductDAO(id, code, name, description, status string, metadataR
 	return item, nil
 }
 
-func mapInternalProductPricingDAO(id, internalProductID, code, name, description, status string, metadataRaw json.RawMessage, createdAt string, updatedAt *string) (coreentity.InternalProductPricing, error) {
+func mapInternalProductPricingDAO(
+	id string,
+	internalProductID string,
+	code string,
+	name string,
+	description string,
+	status string,
+	metadataRaw json.RawMessage,
+	createdAt string,
+	updatedAt *string,
+) (coreentity.InternalProductPricing, error) {
 	metadata, err := parseMetadata(context.Background(), metadataRaw)
 	if err != nil {
 		return coreentity.InternalProductPricing{}, err
@@ -630,7 +955,17 @@ func mapInternalProductPricingDAO(id, internalProductID, code, name, description
 	return item, nil
 }
 
-func mapInternalProductPriceDAO(id, pricingID, currencyCode string, amount decimal.Decimal, startedAt string, endedAt *string, metadataRaw json.RawMessage, createdAt string, updatedAt *string) (coreentity.InternalProductPrice, error) {
+func mapInternalProductPriceDAO(
+	id string,
+	pricingID string,
+	currencyCode string,
+	amount decimal.Decimal,
+	startedAt string,
+	endedAt *string,
+	metadataRaw json.RawMessage,
+	createdAt string,
+	updatedAt *string,
+) (coreentity.InternalProductPrice, error) {
 	metadata, err := parseMetadata(context.Background(), metadataRaw)
 	if err != nil {
 		return coreentity.InternalProductPrice{}, err

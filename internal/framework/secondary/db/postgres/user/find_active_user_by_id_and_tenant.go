@@ -14,7 +14,10 @@ import (
 )
 
 func (r *userRepo) FindActiveUserByIDAndTenant(ctx context.Context, userID, tenantID string) (*coreentity.User, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:find_active_user_by_id_and_tenant:FindActiveUserByIDAndTenant")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:find_active_user_by_id_and_tenant:FindActiveUserByIDAndTenant",
+	)
 	defer span.End()
 
 	query := `

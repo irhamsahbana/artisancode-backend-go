@@ -34,7 +34,10 @@ type exportFilters struct {
 	DateTo         *string `json:"date_to"`
 }
 
-func (c *exportJobCore) ProcessPendingExportJobs(ctx context.Context, limit int) (*coreentity.ExportJobProcessResult, error) {
+func (c *exportJobCore) ProcessPendingExportJobs(
+	ctx context.Context,
+	limit int,
+) (*coreentity.ExportJobProcessResult, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:export_job:process_pending_export_jobs:ProcessPendingExportJobs")
 	defer span.End()
 
@@ -78,7 +81,11 @@ func (c *exportJobCore) processClaimedExport(ctx context.Context, item coreentit
 	return c.processJob(ctx, item)
 }
 
-func generateAttendanceReportFile(format coreentity.ExportJobFormat, logs []coreentity.AttendanceLog, filters exportFilters) ([]byte, string, string, error) {
+func generateAttendanceReportFile(
+	format coreentity.ExportJobFormat,
+	logs []coreentity.AttendanceLog,
+	filters exportFilters,
+) ([]byte, string, string, error) {
 	filenameBase := fmt.Sprintf("attendance-report-%s", time.Now().UTC().Format("20060102-150405"))
 
 	switch format {
@@ -158,7 +165,10 @@ func buildAttendanceXLSX(logs []coreentity.AttendanceLog, language string) ([]by
 		}
 	}
 
-	file.SetPanes(summarySheetName, &excelize.Panes{Freeze: true, Split: false, XSplit: 0, YSplit: 1, TopLeftCell: "A2"})
+	file.SetPanes(
+		summarySheetName,
+		&excelize.Panes{Freeze: true, Split: false, XSplit: 0, YSplit: 1, TopLeftCell: "A2"},
+	)
 	logSheetIndex, err := file.GetSheetIndex(logSheetName)
 	if err == nil {
 		file.SetActiveSheet(logSheetIndex)
@@ -177,7 +187,17 @@ func buildAttendancePDF(logs []coreentity.AttendanceLog, filters exportFilters) 
 	pdf.SetAutoPageBreak(true, 8)
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 14)
-	pdf.CellFormat(0, 8, localizeExportText(filters.Language, "Attendance Report", "Laporan Kehadiran"), "", 1, "L", false, 0, "")
+	pdf.CellFormat(
+		0,
+		8,
+		localizeExportText(filters.Language, "Attendance Report", "Laporan Kehadiran"),
+		"",
+		1,
+		"L",
+		false,
+		0,
+		"",
+	)
 	pdf.SetFont("Arial", "", 9)
 	pdf.MultiCell(0, 5, buildAttendanceFilterSummary(filters), "", "L", false)
 	pdf.Ln(2)
@@ -413,7 +433,8 @@ func buildAttendanceEmployeeSummaries(logs []coreentity.AttendanceLog) []attenda
 func updateAttendanceEmployeeDaySummary(daySummary *attendanceEmployeeDaySummary, item coreentity.AttendanceLog) {
 	if item.Type == common.AttendanceTypeCheckIn {
 		daySummary.HasCheckIn = true
-		if daySummary.EarliestCheckIn == nil || compareAttendanceLoggedAt(item.LoggedAt, daySummary.EarliestCheckIn.LoggedAt) < 0 {
+		if daySummary.EarliestCheckIn == nil ||
+			compareAttendanceLoggedAt(item.LoggedAt, daySummary.EarliestCheckIn.LoggedAt) < 0 {
 			checkIn := item
 			daySummary.EarliestCheckIn = &checkIn
 			daySummary.HasLateCheckIn = isLateCheckIn(item)
@@ -566,7 +587,12 @@ func buildGoogleMapsURL(latitude, longitude *float64) string {
 	return fmt.Sprintf("https://www.google.com/maps?q=%.7f,%.7f", *latitude, *longitude)
 }
 
-func (c *exportJobCore) storeGeneratedFile(ctx context.Context, item coreentity.ExportJob, originalFilename, contentType string, content []byte) (string, string, error) {
+func (c *exportJobCore) storeGeneratedFile(
+	ctx context.Context,
+	item coreentity.ExportJob,
+	originalFilename, contentType string,
+	content []byte,
+) (string, string, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:export_job:process_pending_export_jobs:storeGeneratedFile")
 	defer span.End()
 

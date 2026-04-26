@@ -7,8 +7,14 @@ import (
 	"codebase-app/internal/entity/coreentity"
 )
 
-func (r *attendanceRepo) GetAttendanceLogsAll(ctx context.Context, filter coreentity.AttendanceLogListFilter) ([]coreentity.AttendanceLog, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:get_attendance_logs_all:GetAttendanceLogsAll")
+func (r *attendanceRepo) GetAttendanceLogsAll(
+	ctx context.Context,
+	filter coreentity.AttendanceLogListFilter,
+) ([]coreentity.AttendanceLog, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:get_attendance_logs_all:GetAttendanceLogsAll",
+	)
 	defer span.End()
 
 	filter.Page = 1

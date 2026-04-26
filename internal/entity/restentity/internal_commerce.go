@@ -12,6 +12,7 @@ type InternalCommerceAction struct {
 }
 
 type CreateInternalQuotationReq struct {
+	TenantID                 string         `json:"tenant_id" validate:"required"`
 	InternalProductID        string         `json:"internal_product_id" validate:"required"`
 	InternalProductPricingID string         `json:"internal_product_pricing_id" validate:"required"`
 	CurrencyCode             string         `json:"currency_code" validate:"required,len=3"`
@@ -175,6 +176,7 @@ type ExecuteQuotationActionReq struct {
 }
 
 type CreateInternalOrderReq struct {
+	TenantID                 string         `json:"tenant_id" validate:"required"`
 	InternalProductID        string         `json:"internal_product_id" validate:"required"`
 	InternalProductPricingID string         `json:"internal_product_pricing_id" validate:"required"`
 	CurrencyCode             string         `json:"currency_code" validate:"required,len=3"`

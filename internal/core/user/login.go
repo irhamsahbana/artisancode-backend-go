@@ -34,7 +34,10 @@ func (c *userCore) Login(ctx context.Context, user coreentity.User) (*coreentity
 	}
 
 	if foundUser.EmailVerifiedAt == nil {
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{"email": user.Email}).Msg("Email is not verified")
+		log.Ctx(ctx).
+			Warn().
+			Any(common.LogKeyPayload, map[string]string{"email": user.Email}).
+			Msg("Email is not verified")
 		return nil, errmsg.NewCustomErrors(403).SetMessage("Email is not verified")
 	}
 
@@ -53,7 +56,11 @@ func (c *userCore) Login(ctx context.Context, user coreentity.User) (*coreentity
 	token, err := jwthandler.GenerateTokenString(payload)
 	if err != nil {
 		tracing.RecordError(span, err)
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"email": user.Email}).Msg("Failed to generate login token")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"email": user.Email}).
+			Msg("Failed to generate login token")
 		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to generate token")
 	}
 

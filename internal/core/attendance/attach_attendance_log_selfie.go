@@ -8,7 +8,10 @@ import (
 )
 
 func (c *attendanceCore) attachAttendanceLogSelfie(ctx context.Context, item *coreentity.AttendanceLog) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:attach_attendance_log_selfie:attachAttendanceLogSelfie")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:core:attendance:attach_attendance_log_selfie:attachAttendanceLogSelfie",
+	)
 	defer span.End()
 
 	if item == nil {

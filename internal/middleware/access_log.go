@@ -32,7 +32,8 @@ func WithAccessLog(logger zerolog.Logger) fiber.Handler {
 			Str("ip", c.IP()).
 			Str("user_agent", c.Get("User-Agent")).
 			Dur("duration", time.Since(start)). // duration in ms
-			Str("request_id", requestId)
+			Str("request_id", requestId).
+			Any("body", string(c.Body()))
 
 		if spanCtx.HasTraceID() {
 			event = event.

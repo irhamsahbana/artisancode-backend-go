@@ -10,7 +10,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (c *workLocationCore) CreateWorkLocation(ctx context.Context, data coreentity.WorkLocation) (*coreentity.WorkLocation, error) {
+func (c *workLocationCore) CreateWorkLocation(
+	ctx context.Context,
+	data coreentity.WorkLocation,
+) (*coreentity.WorkLocation, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:worklocation:create_work_location:CreateWorkLocation")
 	defer span.End()
 

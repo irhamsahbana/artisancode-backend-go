@@ -118,7 +118,10 @@ type queuedEmailPayload struct {
 	PreferredLanguage string `json:"preferred_language"`
 }
 
-func (c *userCore) enqueueVerificationEmail(ctx context.Context, userName, email, tenantName, verificationLink, preferredLanguage string) error {
+func (c *userCore) enqueueVerificationEmail(
+	ctx context.Context,
+	userName, email, tenantName, verificationLink, preferredLanguage string,
+) error {
 	if c.bus == nil {
 		return errmsg.NewCustomErrors(500).SetMessage("Email message bus is not configured")
 	}
@@ -132,7 +135,10 @@ func (c *userCore) enqueueVerificationEmail(ctx context.Context, userName, email
 	})
 }
 
-func (c *userCore) enqueuePasswordResetEmail(ctx context.Context, userName, email, tenantName, resetLink, preferredLanguage string) error {
+func (c *userCore) enqueuePasswordResetEmail(
+	ctx context.Context,
+	userName, email, tenantName, resetLink, preferredLanguage string,
+) error {
 	if c.bus == nil {
 		return errmsg.NewCustomErrors(500).SetMessage("Email message bus is not configured")
 	}

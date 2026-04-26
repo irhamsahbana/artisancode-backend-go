@@ -10,7 +10,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *companyRepo) GetCompanies(ctx context.Context, filter coreentity.CompanyListFilter) ([]coreentity.Company, int, error) {
+func (r *companyRepo) GetCompanies(
+	ctx context.Context,
+	filter coreentity.CompanyListFilter,
+) ([]coreentity.Company, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:company:repo:GetCompanies")
 	defer span.End()
 

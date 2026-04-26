@@ -9,7 +9,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *orgUnitRepo) GetAllOrgUnitsByCompany(ctx context.Context, tenantID string, companyID string) ([]coreentity.OrgUnit, error) {
+func (r *orgUnitRepo) GetAllOrgUnitsByCompany(
+	ctx context.Context,
+	tenantID string,
+	companyID string,
+) ([]coreentity.OrgUnit, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:orgunit:repo:GetAllOrgUnitsByCompany")
 	defer span.End()
 
@@ -53,7 +57,11 @@ func (r *orgUnitRepo) GetAllOrgUnitsByCompany(ctx context.Context, tenantID stri
 
 	err := r.db.SelectContext(ctx, &data, r.db.Rebind(query), companyID, tenantID)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to query all org units for company")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, payload).
+			Msg("Failed to query all org units for company")
 		return nil, err
 	}
 

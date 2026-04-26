@@ -12,7 +12,10 @@ import (
 )
 
 func (r *meRepo) GetWorkShiftByUserID(ctx context.Context, tenantID, userID string) (*coreentity.WorkShift, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:me:get_work_shift_by_user_id:GetWorkShiftByUserID")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:me:get_work_shift_by_user_id:GetWorkShiftByUserID",
+	)
 	defer span.End()
 
 	var data struct {

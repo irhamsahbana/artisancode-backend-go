@@ -30,7 +30,10 @@ func (c *userInvitationCore) RevokeInvitation(ctx context.Context, data coreenti
 	return c.repo.RevokeInvitation(ctx, data.UserCtx.TenantID, data.ID)
 }
 
-func (c *userInvitationCore) authorizeInvitationMutation(item *coreentity.UserInvitation, userCtx common.UserContext) error {
+func (c *userInvitationCore) authorizeInvitationMutation(
+	item *coreentity.UserInvitation,
+	userCtx common.UserContext,
+) error {
 	if !userCtx.HasRole("owner") && !userCtx.HasRole("admin") {
 		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to manage invitations")
 	}

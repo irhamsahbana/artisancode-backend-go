@@ -10,8 +10,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) GetOwnerAttendanceDashboardSummary(ctx context.Context, filter coreentity.OwnerAttendanceDashboardFilter) (*coreentity.OwnerAttendanceDashboardSummary, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:get_owner_attendance_dashboard_summary:GetOwnerAttendanceDashboardSummary")
+func (r *attendanceRepo) GetOwnerAttendanceDashboardSummary(
+	ctx context.Context,
+	filter coreentity.OwnerAttendanceDashboardFilter,
+) (*coreentity.OwnerAttendanceDashboardSummary, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:get_owner_attendance_dashboard_summary:GetOwnerAttendanceDashboardSummary",
+	)
 	defer span.End()
 
 	var data struct {
@@ -85,7 +91,11 @@ func (r *attendanceRepo) GetOwnerAttendanceDashboardSummary(ctx context.Context,
 		filter.TenantID,
 	)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to query owner attendance dashboard summary")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, filter).
+			Msg("Failed to query owner attendance dashboard summary")
 		return nil, err
 	}
 

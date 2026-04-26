@@ -13,8 +13,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) GetAttendanceLog(ctx context.Context, filter coreentity.AttendanceLogDetailFilter) (*coreentity.AttendanceLog, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:get_attendance_log:GetAttendanceLog")
+func (r *attendanceRepo) GetAttendanceLog(
+	ctx context.Context,
+	filter coreentity.AttendanceLogDetailFilter,
+) (*coreentity.AttendanceLog, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:get_attendance_log:GetAttendanceLog",
+	)
 	defer span.End()
 
 	var data struct {

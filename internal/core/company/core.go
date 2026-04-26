@@ -23,7 +23,10 @@ func NewCompanyCore(cfg Config) *companyCore {
 	return &companyCore{repo: cfg.Repo}
 }
 
-func (c *companyCore) GetCompanies(ctx context.Context, filter coreentity.CompanyListFilter) ([]coreentity.Company, int, error) {
+func (c *companyCore) GetCompanies(
+	ctx context.Context,
+	filter coreentity.CompanyListFilter,
+) ([]coreentity.Company, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:company:core:GetCompanies")
 	defer span.End()
 

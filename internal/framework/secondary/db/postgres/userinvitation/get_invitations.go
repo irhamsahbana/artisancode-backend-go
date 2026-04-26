@@ -12,8 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userInvitationRepo) GetInvitations(ctx context.Context, filter coreentity.UserInvitationListFilter) ([]coreentity.UserInvitation, int, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:userinvitation:get_invitations:GetInvitations")
+func (r *userInvitationRepo) GetInvitations(
+	ctx context.Context,
+	filter coreentity.UserInvitationListFilter,
+) ([]coreentity.UserInvitation, int, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:userinvitation:get_invitations:GetInvitations",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -81,7 +87,11 @@ func (r *userInvitationRepo) GetInvitations(ctx context.Context, filter coreenti
 	if len(filter.EmployeeIDs) > 1 {
 		inQuery, inArgs, err := sqlx.In(` AND ui.employee_id IN (?)`, filter.EmployeeIDs)
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter.EmployeeIDs).Msg("Failed to build employee invitation filter")
+			log.Ctx(ctx).
+				Error().
+				Err(err).
+				Any(common.LogKeyPayload, filter.EmployeeIDs).
+				Msg("Failed to build employee invitation filter")
 			return nil, 0, err
 		}
 		query += inQuery
@@ -96,7 +106,13 @@ func (r *userInvitationRepo) GetInvitations(ctx context.Context, filter coreenti
 		}
 	}
 	if filter.Q != "" {
-		query += ` AND (ui.email ILIKE '%' || ? || '%' OR COALESCE(e.full_name, '') ILIKE '%' || ? || '%' OR COALESCE(e.employee_no, '') ILIKE '%' || ? || '%')`
+		query += `
+			AND (
+				ui.email ILIKE '%' || ? || '%'
+				OR COALESCE(e.full_name, '') ILIKE '%' || ? || '%'
+				OR COALESCE(e.employee_no, '') ILIKE '%' || ? || '%'
+			)
+		`
 		args = append(args, filter.Q, filter.Q, filter.Q)
 	}
 

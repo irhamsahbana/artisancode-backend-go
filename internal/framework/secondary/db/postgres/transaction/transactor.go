@@ -51,7 +51,10 @@ func ExecutorFromContext(ctx context.Context, fallback *sqlx.DB) SQLExecutor {
 }
 
 func (t *transactor) WithinTransaction(ctx context.Context, fn func(context.Context) error) (err error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:transaction:transactor:WithinTransaction")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:transaction:transactor:WithinTransaction",
+	)
 	defer span.End()
 
 	if existing := ExecutorFromContext(ctx, nil); existing != nil {

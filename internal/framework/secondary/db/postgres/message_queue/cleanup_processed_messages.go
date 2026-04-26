@@ -11,13 +11,23 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *messageQueueRepo) CleanupProcessedMessages(ctx context.Context, req coreentity.CleanupProcessedMessageQueueReq) (*coreentity.CleanupProcessedMessageQueueResp, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:message_queue:cleanup_processed_messages:CleanupProcessedMessages")
+func (r *messageQueueRepo) CleanupProcessedMessages(
+	ctx context.Context,
+	req coreentity.CleanupProcessedMessageQueueReq,
+) (*coreentity.CleanupProcessedMessageQueueResp, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:message_queue:cleanup_processed_messages:CleanupProcessedMessages",
+	)
 	defer span.End()
 
 	before, err := time.Parse(time.RFC3339, req.Before)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Failed to parse processed message cleanup time")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, req).
+			Msg("Failed to parse processed message cleanup time")
 		return nil, err
 	}
 

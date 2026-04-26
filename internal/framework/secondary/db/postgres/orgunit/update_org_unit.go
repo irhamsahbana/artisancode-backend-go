@@ -19,7 +19,16 @@ func (r *orgUnitRepo) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 		WHERE id = ? AND tenant_id = ? AND deleted_at IS NULL
 	`
 
-	_, err := r.db.ExecContext(ctx, r.db.Rebind(query), data.Code, data.Name, data.ParentID, data.Category, data.ID, data.TenantID)
+	_, err := r.db.ExecContext(
+		ctx,
+		r.db.Rebind(query),
+		data.Code,
+		data.Name,
+		data.ParentID,
+		data.Category,
+		data.ID,
+		data.TenantID,
+	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to update org unit")
 		return err

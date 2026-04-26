@@ -20,7 +20,11 @@ func (c *userCore) ResetPassword(ctx context.Context, token coreentity.UserActio
 
 	var resetUserID string
 	err = c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
-		foundToken, err := c.repo.GetValidUserActionToken(txCtx, hashUserActionToken(token.Token), coreentity.UserActionTokenPurposePasswordReset)
+		foundToken, err := c.repo.GetValidUserActionToken(
+			txCtx,
+			hashUserActionToken(token.Token),
+			coreentity.UserActionTokenPurposePasswordReset,
+		)
 		if err != nil {
 			return err
 		}

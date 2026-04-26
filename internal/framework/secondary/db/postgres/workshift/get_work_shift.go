@@ -13,7 +13,10 @@ import (
 )
 
 func (r *workShiftRepo) GetWorkShift(ctx context.Context, filter coreentity.WorkShift) (*coreentity.WorkShift, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:workshift:get_work_shift:GetWorkShift")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:workshift:get_work_shift:GetWorkShift",
+	)
 	defer span.End()
 
 	var data struct {

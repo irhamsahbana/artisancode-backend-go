@@ -10,8 +10,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userInvitationRepo) CreateInvitation(ctx context.Context, data coreentity.UserInvitation) (*coreentity.UserInvitation, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:userinvitation:create_invitation:CreateInvitation")
+func (r *userInvitationRepo) CreateInvitation(
+	ctx context.Context,
+	data coreentity.UserInvitation,
+) (*coreentity.UserInvitation, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:userinvitation:create_invitation:CreateInvitation",
+	)
 	defer span.End()
 
 	query := `

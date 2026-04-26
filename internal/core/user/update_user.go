@@ -25,7 +25,12 @@ func (c *userCore) UpdateUser(ctx context.Context, data coreentity.User) error {
 	}
 
 	return c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
-		emailExists, err := c.repo.ExistsActiveUserByEmailAndTenantExcludeUser(txCtx, data.Email, data.TenantID, data.ID)
+		emailExists, err := c.repo.ExistsActiveUserByEmailAndTenantExcludeUser(
+			txCtx,
+			data.Email,
+			data.TenantID,
+			data.ID,
+		)
 		if err != nil {
 			return err
 		}

@@ -11,7 +11,10 @@ import (
 )
 
 func (r *employeeRepo) UpdateEmployee(ctx context.Context, data coreentity.Employee) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:employee:update_employee:UpdateEmployee")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:employee:update_employee:UpdateEmployee",
+	)
 	defer span.End()
 
 	query := `

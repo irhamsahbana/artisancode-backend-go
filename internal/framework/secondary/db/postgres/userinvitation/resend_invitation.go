@@ -12,7 +12,10 @@ import (
 )
 
 func (r *userInvitationRepo) ResendInvitation(ctx context.Context, data coreentity.UserInvitation) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:userinvitation:resend_invitation:ResendInvitation")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:userinvitation:resend_invitation:ResendInvitation",
+	)
 	defer span.End()
 
 	query := `
@@ -22,7 +25,15 @@ func (r *userInvitationRepo) ResendInvitation(ctx context.Context, data coreenti
 	`
 
 	exec := r.executor(ctx)
-	result, err := exec.ExecContext(ctx, exec.Rebind(query), data.TokenHash, data.ExpiresAt, data.LastSentAt, data.ID, data.TenantID)
+	result, err := exec.ExecContext(
+		ctx,
+		exec.Rebind(query),
+		data.TokenHash,
+		data.ExpiresAt,
+		data.LastSentAt,
+		data.ID,
+		data.TenantID,
+	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to resend invitation")
 		return err

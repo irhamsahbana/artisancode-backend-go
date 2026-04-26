@@ -12,8 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userInvitationRepo) GetInvitationByID(ctx context.Context, tenantID, invitationID string) (*coreentity.UserInvitation, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:userinvitation:get_invitation:GetInvitationByID")
+func (r *userInvitationRepo) GetInvitationByID(
+	ctx context.Context,
+	tenantID, invitationID string,
+) (*coreentity.UserInvitation, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:userinvitation:get_invitation:GetInvitationByID",
+	)
 	defer span.End()
 
 	query := baseInvitationSelectQuery() + `
@@ -35,8 +41,14 @@ func (r *userInvitationRepo) GetInvitationByID(ctx context.Context, tenantID, in
 	return item, nil
 }
 
-func (r *userInvitationRepo) GetInvitationByTokenHash(ctx context.Context, tokenHash string) (*coreentity.UserInvitation, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:userinvitation:get_invitation:GetInvitationByTokenHash")
+func (r *userInvitationRepo) GetInvitationByTokenHash(
+	ctx context.Context,
+	tokenHash string,
+) (*coreentity.UserInvitation, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:userinvitation:get_invitation:GetInvitationByTokenHash",
+	)
 	defer span.End()
 
 	query := baseInvitationSelectQuery() + `
@@ -85,7 +97,11 @@ func baseInvitationSelectQuery() string {
 	`
 }
 
-func (r *userInvitationRepo) getInvitation(ctx context.Context, query string, args ...any) (*coreentity.UserInvitation, error) {
+func (r *userInvitationRepo) getInvitation(
+	ctx context.Context,
+	query string,
+	args ...any,
+) (*coreentity.UserInvitation, error) {
 	type dao struct {
 		ID           string         `db:"id"`
 		TenantID     string         `db:"tenant_id"`

@@ -7,7 +7,10 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 )
 
-func (c *attendanceCore) GetAttendanceLog(ctx context.Context, filter coreentity.AttendanceLogDetailFilter) (*coreentity.AttendanceLog, error) {
+func (c *attendanceCore) GetAttendanceLog(
+	ctx context.Context,
+	filter coreentity.AttendanceLogDetailFilter,
+) (*coreentity.AttendanceLog, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:get_attendance_log:GetAttendanceLog")
 	defer span.End()
 

@@ -10,7 +10,10 @@ import (
 )
 
 func (r *userRepo) UpdateUserEmail(ctx context.Context, userID, tenantID, email string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:update_user_email:UpdateUserEmail")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:update_user_email:UpdateUserEmail",
+	)
 	defer span.End()
 
 	query := `

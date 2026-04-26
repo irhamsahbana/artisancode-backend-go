@@ -8,7 +8,10 @@ import (
 )
 
 func (r *employeeRepo) ExistsByEmployeeNo(ctx context.Context, tenantID, employeeNo, excludeID string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:employee:exists_by_employee_no:ExistsByEmployeeNo")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:employee:exists_by_employee_no:ExistsByEmployeeNo",
+	)
 	defer span.End()
 
 	query := `

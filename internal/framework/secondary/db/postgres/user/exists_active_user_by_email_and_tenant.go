@@ -10,7 +10,10 @@ import (
 )
 
 func (r *userRepo) ExistsActiveUserByEmailAndTenant(ctx context.Context, email, tenantID string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:register_owner:ExistsActiveUserByEmailAndTenant")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:register_owner:ExistsActiveUserByEmailAndTenant",
+	)
 	defer span.End()
 
 	var existing string

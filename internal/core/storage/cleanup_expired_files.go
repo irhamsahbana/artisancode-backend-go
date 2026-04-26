@@ -10,7 +10,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (c *storageCore) CleanupExpiredFiles(ctx context.Context, req coreentity.CleanupExpiredFilesReq) (*coreentity.CleanupExpiredFilesResp, error) {
+func (c *storageCore) CleanupExpiredFiles(
+	ctx context.Context,
+	req coreentity.CleanupExpiredFilesReq,
+) (*coreentity.CleanupExpiredFilesResp, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:storage:cleanup_expired_files:CleanupExpiredFiles")
 	defer span.End()
 
@@ -40,13 +43,23 @@ func (c *storageCore) CleanupExpiredFiles(ctx context.Context, req coreentity.Cl
 			Filename: file.Filename,
 		})
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Any("file_id", file.ID).Any("object_key", file.Filename).Msg("Failed to delete expired storage file from object storage")
+			log.Ctx(ctx).
+				Error().
+				Err(err).
+				Any("file_id", file.ID).
+				Any("object_key", file.Filename).
+				Msg("Failed to delete expired storage file from object storage")
 			continue
 		}
 
 		err = c.repo.MarkFileDeleted(ctx, file.TenantID, file.ID)
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Any("file_id", file.ID).Any("object_key", file.Filename).Msg("Failed to mark expired storage file deleted")
+			log.Ctx(ctx).
+				Error().
+				Err(err).
+				Any("file_id", file.ID).
+				Any("object_key", file.Filename).
+				Msg("Failed to mark expired storage file deleted")
 			continue
 		}
 

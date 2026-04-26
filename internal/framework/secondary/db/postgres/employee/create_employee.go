@@ -11,7 +11,10 @@ import (
 )
 
 func (r *employeeRepo) CreateEmployee(ctx context.Context, data coreentity.Employee) (*coreentity.Employee, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:employee:create_employee:CreateEmployee")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:employee:create_employee:CreateEmployee",
+	)
 	defer span.End()
 
 	query := `

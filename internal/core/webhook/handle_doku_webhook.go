@@ -9,7 +9,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (c *webhookCore) HandleDOKUWebhook(ctx context.Context, notification coreentity.DOKUWebhookNotification) (*coreentity.DOKUWebhookResult, error) {
+func (c *webhookCore) HandleDOKUWebhook(
+	ctx context.Context,
+	notification coreentity.DOKUWebhookNotification,
+) (*coreentity.DOKUWebhookResult, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:webhook:handle_doku_webhook:HandleDOKUWebhook")
 	defer span.End()
 
@@ -19,7 +22,11 @@ func (c *webhookCore) HandleDOKUWebhook(ctx context.Context, notification coreen
 		return nil, err
 	}
 
-	if !c.dokuVerifier.VerifyWebhookSignatureHeaders(notification.Headers, notification.RawBody, notification.TargetPath) {
+	if !c.dokuVerifier.VerifyWebhookSignatureHeaders(
+		notification.Headers,
+		notification.RawBody,
+		notification.TargetPath,
+	) {
 		err := errors.New("invalid doku webhook signature")
 		log.Ctx(ctx).Warn().
 			Str("invoice_number", notification.Event.Order.InvoiceNumber).

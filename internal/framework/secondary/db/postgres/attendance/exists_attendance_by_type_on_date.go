@@ -9,8 +9,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) ExistsAttendanceByTypeOnDate(ctx context.Context, tenantID, employeeID, attendanceDate, attendanceType string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:exists_attendance_by_type_on_date:ExistsAttendanceByTypeOnDate")
+func (r *attendanceRepo) ExistsAttendanceByTypeOnDate(
+	ctx context.Context,
+	tenantID, employeeID, attendanceDate, attendanceType string,
+) (bool, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:exists_attendance_by_type_on_date:ExistsAttendanceByTypeOnDate",
+	)
 	defer span.End()
 
 	query := `

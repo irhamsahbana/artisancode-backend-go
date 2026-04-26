@@ -13,8 +13,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userRepo) GetValidUserActionToken(ctx context.Context, tokenHash, purpose string) (*coreentity.UserActionToken, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:get_valid_user_action_token:GetValidUserActionToken")
+func (r *userRepo) GetValidUserActionToken(
+	ctx context.Context,
+	tokenHash, purpose string,
+) (*coreentity.UserActionToken, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:get_valid_user_action_token:GetValidUserActionToken",
+	)
 	defer span.End()
 
 	query := `

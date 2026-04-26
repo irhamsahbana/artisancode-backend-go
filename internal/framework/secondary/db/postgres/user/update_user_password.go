@@ -10,7 +10,10 @@ import (
 )
 
 func (r *userRepo) UpdateUserPassword(ctx context.Context, userID, tenantID, hashedPassword string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:update_user_password:UpdateUserPassword")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:update_user_password:UpdateUserPassword",
+	)
 	defer span.End()
 
 	query := `

@@ -11,7 +11,10 @@ import (
 )
 
 func (r *userRepo) CreateUserActionToken(ctx context.Context, token coreentity.UserActionToken) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:create_user_action_token:CreateUserActionToken")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:create_user_action_token:CreateUserActionToken",
+	)
 	defer span.End()
 
 	query := `

@@ -10,7 +10,10 @@ import (
 )
 
 func (r *userRepo) DeleteUserActionTokensByPurpose(ctx context.Context, userID, purpose string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:delete_user_action_tokens_by_purpose:DeleteUserActionTokensByPurpose")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:delete_user_action_tokens_by_purpose:DeleteUserActionTokensByPurpose",
+	)
 	defer span.End()
 
 	query := `

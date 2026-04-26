@@ -29,7 +29,10 @@ func buildInvitationActionURL(rawToken string) string {
 	)
 }
 
-func (c *userInvitationCore) trySendInvitationEmail(ctx context.Context, item *coreentity.UserInvitation) (bool, error) {
+func (c *userInvitationCore) trySendInvitationEmail(
+	ctx context.Context,
+	item *coreentity.UserInvitation,
+) (bool, error) {
 	if item == nil {
 		return false, nil
 	}
@@ -41,7 +44,11 @@ func (c *userInvitationCore) trySendInvitationEmail(ctx context.Context, item *c
 
 	preferredLanguage, err := c.userRepo.GetTenantPreferredLanguage(ctx, item.TenantID)
 	if err != nil {
-		log.Ctx(ctx).Warn().Err(err).Str("tenant_id", item.TenantID).Msg("Failed to get tenant preferred language for invitation email")
+		log.Ctx(ctx).
+			Warn().
+			Err(err).
+			Str("tenant_id", item.TenantID).
+			Msg("Failed to get tenant preferred language for invitation email")
 		preferredLanguage = ""
 	}
 

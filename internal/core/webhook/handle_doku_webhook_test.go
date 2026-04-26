@@ -11,7 +11,11 @@ type fakeDOKUVerifier struct {
 	valid bool
 }
 
-func (f fakeDOKUVerifier) VerifyWebhookSignatureHeaders(headers coreentity.DOKUWebhookSignatureHeaders, body []byte, targetPath string) bool {
+func (f fakeDOKUVerifier) VerifyWebhookSignatureHeaders(
+	headers coreentity.DOKUWebhookSignatureHeaders,
+	body []byte,
+	targetPath string,
+) bool {
 	return f.valid
 }
 

@@ -12,8 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) GetWorkLocation(ctx context.Context, filter coreentity.WorkLocation) (*coreentity.WorkLocation, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:get_work_location:GetWorkLocation")
+func (r *attendanceRepo) GetWorkLocation(
+	ctx context.Context,
+	filter coreentity.WorkLocation,
+) (*coreentity.WorkLocation, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:get_work_location:GetWorkLocation",
+	)
 	defer span.End()
 
 	var data struct {

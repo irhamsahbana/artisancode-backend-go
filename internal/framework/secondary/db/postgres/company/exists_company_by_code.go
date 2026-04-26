@@ -8,7 +8,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *companyRepo) ExistsCompanyByCode(ctx context.Context, tenantID string, code string, excludeID string) (bool, error) {
+func (r *companyRepo) ExistsCompanyByCode(
+	ctx context.Context,
+	tenantID string,
+	code string,
+	excludeID string,
+) (bool, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:company:repo:ExistsCompanyByCode")
 	defer span.End()
 
@@ -26,7 +31,11 @@ func (r *companyRepo) ExistsCompanyByCode(ctx context.Context, tenantID string, 
 	var count int
 	err := r.db.GetContext(ctx, &count, r.db.Rebind(query), args...)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenant_id": tenantID, "code": code}).Msg("Failed to check company code existence")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenant_id": tenantID, "code": code}).
+			Msg("Failed to check company code existence")
 		return false, err
 	}
 

@@ -10,8 +10,16 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userRepo) replaceUserRoles(ctx context.Context, exec postgresTx.SQLExecutor, userID string, roleIDs []string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:replace_user_roles_tx:replaceUserRolesTx")
+func (r *userRepo) replaceUserRoles(
+	ctx context.Context,
+	exec postgresTx.SQLExecutor,
+	userID string,
+	roleIDs []string,
+) error {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:replace_user_roles_tx:replaceUserRolesTx",
+	)
 	defer span.End()
 
 	deleteQuery := `DELETE FROM user_roles WHERE user_id = ?`

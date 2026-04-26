@@ -9,7 +9,10 @@ import (
 )
 
 func (c *exportJobCore) attachAttendanceLogAssets(ctx context.Context, item *coreentity.AttendanceLog) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:core:export_job:attach_attendance_log_assets:attachAttendanceLogAssets")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:core:export_job:attach_attendance_log_assets:attachAttendanceLogAssets",
+	)
 	defer span.End()
 
 	if item == nil {

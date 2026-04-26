@@ -23,7 +23,10 @@ func NewOrgUnitCore(cfg Config) *orgUnitCore {
 	return &orgUnitCore{repo: cfg.Repo}
 }
 
-func (c *orgUnitCore) GetOrgUnits(ctx context.Context, filter coreentity.OrgUnitListFilter) ([]coreentity.OrgUnit, int, error) {
+func (c *orgUnitCore) GetOrgUnits(
+	ctx context.Context,
+	filter coreentity.OrgUnitListFilter,
+) ([]coreentity.OrgUnit, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:orgunit:core:GetOrgUnits")
 	defer span.End()
 
@@ -56,7 +59,11 @@ func (c *orgUnitCore) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 	return c.repo.UpdateOrgUnit(ctx, data)
 }
 
-func (c *orgUnitCore) GetAllOrgUnitsByCompany(ctx context.Context, tenantID string, companyID string) ([]coreentity.OrgUnit, error) {
+func (c *orgUnitCore) GetAllOrgUnitsByCompany(
+	ctx context.Context,
+	tenantID string,
+	companyID string,
+) ([]coreentity.OrgUnit, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:orgunit:core:GetAllOrgUnitsByCompany")
 	defer span.End()
 

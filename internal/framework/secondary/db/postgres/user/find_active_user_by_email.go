@@ -12,8 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userRepo) FindActiveUserByEmailAndTenantID(ctx context.Context, email, tenantID string) (*coreentity.User, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:find_active_user_by_email:FindActiveUserByEmailAndTenantID")
+func (r *userRepo) FindActiveUserByEmailAndTenantID(
+	ctx context.Context,
+	email, tenantID string,
+) (*coreentity.User, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:find_active_user_by_email:FindActiveUserByEmailAndTenantID",
+	)
 	defer span.End()
 
 	query := `

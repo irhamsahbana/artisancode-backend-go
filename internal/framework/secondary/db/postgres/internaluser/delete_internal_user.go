@@ -14,7 +14,11 @@ func (r *internalUserRepo) DeleteInternalUser(ctx context.Context, filter coreen
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internaluser:repo:DeleteInternalUser")
 	defer span.End()
 
-	result, err := r.db.ExecContext(ctx, r.db.Rebind(`UPDATE internal_users SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL`), filter.ID)
+	result, err := r.db.ExecContext(
+		ctx,
+		r.db.Rebind(`UPDATE internal_users SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL`),
+		filter.ID,
+	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to delete internal user")
 		return err

@@ -8,7 +8,10 @@ import (
 	"codebase-app/pkg/errmsg"
 )
 
-func (c *userInvitationCore) GetInvitations(ctx context.Context, filter coreentity.UserInvitationListFilter) ([]coreentity.UserInvitation, int, error) {
+func (c *userInvitationCore) GetInvitations(
+	ctx context.Context,
+	filter coreentity.UserInvitationListFilter,
+) ([]coreentity.UserInvitation, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:userinvitation:get_invitations:GetInvitations")
 	defer span.End()
 

@@ -12,14 +12,21 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (c *attendanceCore) CheckIn(ctx context.Context, data coreentity.AttendanceLogAction) (*coreentity.AttendanceLog, error) {
+func (c *attendanceCore) CheckIn(
+	ctx context.Context,
+	data coreentity.AttendanceLogAction,
+) (*coreentity.AttendanceLog, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:check_in:CheckIn")
 	defer span.End()
 
 	return c.createAttendanceLog(ctx, data, common.AttendanceTypeCheckIn)
 }
 
-func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentity.AttendanceLogAction, attendanceType common.AttendanceType) (*coreentity.AttendanceLog, error) {
+func (c *attendanceCore) createAttendanceLog(
+	ctx context.Context,
+	data coreentity.AttendanceLogAction,
+	attendanceType common.AttendanceType,
+) (*coreentity.AttendanceLog, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:check_in:createAttendanceLog")
 	defer span.End()
 
@@ -52,7 +59,13 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 			return err
 		}
 
-		exists, err := c.repo.ExistsAttendanceByTypeOnDate(txCtx, data.TenantID, employee.ID, attendanceDate, string(attendanceType))
+		exists, err := c.repo.ExistsAttendanceByTypeOnDate(
+			txCtx,
+			data.TenantID,
+			employee.ID,
+			attendanceDate,
+			string(attendanceType),
+		)
 		if err != nil {
 			return err
 		}
@@ -66,12 +79,21 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 		}
 
 		if attendanceType == common.AttendanceTypeCheckOut {
-			hasCheckIn, err := c.repo.ExistsAttendanceByTypeOnDate(txCtx, data.TenantID, employee.ID, attendanceDate, string(common.AttendanceTypeCheckIn))
+			hasCheckIn, err := c.repo.ExistsAttendanceByTypeOnDate(
+				txCtx,
+				data.TenantID,
+				employee.ID,
+				attendanceDate,
+				string(common.AttendanceTypeCheckIn),
+			)
 			if err != nil {
 				return err
 			}
 			if !hasCheckIn {
-				log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, data).Msg("Check out attempted without a corresponding check in")
+				log.Ctx(txCtx).
+					Warn().
+					Any(common.LogKeyPayload, data).
+					Msg("Check out attempted without a corresponding check in")
 				return errmsg.NewCustomErrors(400).SetMessage("Check in must be recorded before check out")
 			}
 		}
@@ -81,7 +103,11 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 			ID:       data.SelfieFileID,
 		})
 		if err != nil {
-			log.Ctx(txCtx).Warn().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to get selfie file for attendance log")
+			log.Ctx(txCtx).
+				Warn().
+				Err(err).
+				Any(common.LogKeyPayload, data).
+				Msg("Failed to get selfie file for attendance log")
 			return errmsg.NewCustomErrors(400).SetMessage("Selfie file not found")
 		}
 		if file.Folder != common.S3FolderAttendanceFace {
@@ -130,13 +156,21 @@ func (c *attendanceCore) createAttendanceLog(ctx context.Context, data coreentit
 			SortOrder:     1,
 		})
 		if err != nil {
-			log.Ctx(txCtx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create storage file link for attendance log")
+			log.Ctx(txCtx).
+				Error().
+				Err(err).
+				Any(common.LogKeyPayload, data).
+				Msg("Failed to create storage file link for attendance log")
 			return err
 		}
 
 		err = c.storageRepo.MarkFileAttached(txCtx, data.TenantID, data.SelfieFileID)
 		if err != nil {
-			log.Ctx(txCtx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to mark storage file attached for attendance log")
+			log.Ctx(txCtx).
+				Error().
+				Err(err).
+				Any(common.LogKeyPayload, data).
+				Msg("Failed to mark storage file attached for attendance log")
 			return err
 		}
 

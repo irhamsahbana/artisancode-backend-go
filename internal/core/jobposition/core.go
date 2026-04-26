@@ -22,21 +22,30 @@ func NewJobPositionCore(cfg Config) *jobPositionCore {
 	return &jobPositionCore{repo: cfg.Repo}
 }
 
-func (c *jobPositionCore) GetJobPositions(ctx context.Context, filter coreentity.JobPositionListFilter) ([]coreentity.JobPosition, int, error) {
+func (c *jobPositionCore) GetJobPositions(
+	ctx context.Context,
+	filter coreentity.JobPositionListFilter,
+) ([]coreentity.JobPosition, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:jobposition:core:GetJobPositions")
 	defer span.End()
 
 	return c.repo.GetJobPositions(ctx, filter)
 }
 
-func (c *jobPositionCore) GetJobPosition(ctx context.Context, filter coreentity.JobPosition) (*coreentity.JobPosition, error) {
+func (c *jobPositionCore) GetJobPosition(
+	ctx context.Context,
+	filter coreentity.JobPosition,
+) (*coreentity.JobPosition, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:jobposition:core:GetJobPosition")
 	defer span.End()
 
 	return c.repo.GetJobPosition(ctx, filter)
 }
 
-func (c *jobPositionCore) CreateJobPosition(ctx context.Context, data coreentity.JobPosition) (*coreentity.JobPosition, error) {
+func (c *jobPositionCore) CreateJobPosition(
+	ctx context.Context,
+	data coreentity.JobPosition,
+) (*coreentity.JobPosition, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:jobposition:core:CreateJobPosition")
 	defer span.End()
 

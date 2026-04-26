@@ -11,7 +11,10 @@ import (
 )
 
 func (r *workShiftRepo) CreateWorkShift(ctx context.Context, data coreentity.WorkShift) (*coreentity.WorkShift, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:workshift:create_work_shift:CreateWorkShift")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:workshift:create_work_shift:CreateWorkShift",
+	)
 	defer span.End()
 
 	query := `

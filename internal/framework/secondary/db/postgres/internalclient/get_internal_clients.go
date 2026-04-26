@@ -10,8 +10,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *internalClientRepo) GetInternalClients(ctx context.Context, filter coreentity.InternalClientListFilter) ([]coreentity.InternalClient, int, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalclient:get_internal_clients:GetInternalClients")
+func (r *internalClientRepo) GetInternalClients(
+	ctx context.Context,
+	filter coreentity.InternalClientListFilter,
+) ([]coreentity.InternalClient, int, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalclient:get_internal_clients:GetInternalClients",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -68,7 +74,14 @@ func (r *internalClientRepo) GetInternalClients(ctx context.Context, filter core
 	`
 
 	if filter.Q != "" {
-		query += ` AND (name ILIKE '%' || ? || '%' OR code ILIKE '%' || ? || '%' OR owner_name ILIKE '%' || ? || '%' OR owner_email ILIKE '%' || ? || '%')`
+		query += `
+			AND (
+				name ILIKE '%' || ? || '%'
+				OR code ILIKE '%' || ? || '%'
+				OR owner_name ILIKE '%' || ? || '%'
+				OR owner_email ILIKE '%' || ? || '%'
+			)
+		`
 		args = append(args, filter.Q, filter.Q, filter.Q, filter.Q)
 	}
 	if filter.Owner != "" {

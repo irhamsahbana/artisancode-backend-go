@@ -9,3 +9,7 @@ import (
 func coreentityTenant(ctx context.Context) string {
 	return common.GetUserContext(ctx).TenantID
 }
+
+func userTenant(ctx context.Context) string {
+	return coreentityTenant(ctx)
+}

@@ -35,21 +35,30 @@ func NewInternalProductCore(cfg Config) *internalProductCore {
 	return &internalProductCore{repo: cfg.Repo}
 }
 
-func (c *internalProductCore) GetInternalProducts(ctx context.Context, filter coreentity.InternalProductListFilter) ([]coreentity.InternalProduct, int, error) {
+func (c *internalProductCore) GetInternalProducts(
+	ctx context.Context,
+	filter coreentity.InternalProductListFilter,
+) ([]coreentity.InternalProduct, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:GetInternalProducts")
 	defer span.End()
 
 	return c.repo.GetInternalProducts(ctx, filter)
 }
 
-func (c *internalProductCore) GetInternalProduct(ctx context.Context, filter coreentity.InternalProductFilter) (*coreentity.InternalProduct, error) {
+func (c *internalProductCore) GetInternalProduct(
+	ctx context.Context,
+	filter coreentity.InternalProductFilter,
+) (*coreentity.InternalProduct, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:GetInternalProduct")
 	defer span.End()
 
 	return c.repo.GetInternalProduct(ctx, filter)
 }
 
-func (c *internalProductCore) CreateInternalProduct(ctx context.Context, data coreentity.InternalProduct) (*coreentity.InternalProduct, error) {
+func (c *internalProductCore) CreateInternalProduct(
+	ctx context.Context,
+	data coreentity.InternalProduct,
+) (*coreentity.InternalProduct, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:CreateInternalProduct")
 	defer span.End()
 
@@ -95,7 +104,10 @@ func (c *internalProductCore) UpdateInternalProduct(ctx context.Context, data co
 	return c.repo.UpdateInternalProduct(ctx, data)
 }
 
-func (c *internalProductCore) DeleteInternalProduct(ctx context.Context, filter coreentity.InternalProductDeleteFilter) error {
+func (c *internalProductCore) DeleteInternalProduct(
+	ctx context.Context,
+	filter coreentity.InternalProductDeleteFilter,
+) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:DeleteInternalProduct")
 	defer span.End()
 
@@ -106,21 +118,30 @@ func (c *internalProductCore) DeleteInternalProduct(ctx context.Context, filter 
 	return c.repo.DeleteInternalProduct(ctx, filter)
 }
 
-func (c *internalProductCore) GetInternalProductPricings(ctx context.Context, filter coreentity.InternalProductPricingListFilter) ([]coreentity.InternalProductPricing, int, error) {
+func (c *internalProductCore) GetInternalProductPricings(
+	ctx context.Context,
+	filter coreentity.InternalProductPricingListFilter,
+) ([]coreentity.InternalProductPricing, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:GetInternalProductPricings")
 	defer span.End()
 
 	return c.repo.GetInternalProductPricings(ctx, filter)
 }
 
-func (c *internalProductCore) GetInternalProductPricing(ctx context.Context, filter coreentity.InternalProductPricingFilter) (*coreentity.InternalProductPricing, error) {
+func (c *internalProductCore) GetInternalProductPricing(
+	ctx context.Context,
+	filter coreentity.InternalProductPricingFilter,
+) (*coreentity.InternalProductPricing, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:GetInternalProductPricing")
 	defer span.End()
 
 	return c.repo.GetInternalProductPricing(ctx, filter)
 }
 
-func (c *internalProductCore) CreateInternalProductPricing(ctx context.Context, data coreentity.InternalProductPricing) (*coreentity.InternalProductPricing, error) {
+func (c *internalProductCore) CreateInternalProductPricing(
+	ctx context.Context,
+	data coreentity.InternalProductPricing,
+) (*coreentity.InternalProductPricing, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:CreateInternalProductPricing")
 	defer span.End()
 
@@ -147,7 +168,10 @@ func (c *internalProductCore) CreateInternalProductPricing(ctx context.Context, 
 	return c.repo.CreateInternalProductPricing(ctx, data)
 }
 
-func (c *internalProductCore) UpdateInternalProductPricing(ctx context.Context, data coreentity.InternalProductPricing) error {
+func (c *internalProductCore) UpdateInternalProductPricing(
+	ctx context.Context,
+	data coreentity.InternalProductPricing,
+) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:UpdateInternalProductPricing")
 	defer span.End()
 
@@ -174,7 +198,10 @@ func (c *internalProductCore) UpdateInternalProductPricing(ctx context.Context, 
 	return c.repo.UpdateInternalProductPricing(ctx, data)
 }
 
-func (c *internalProductCore) DeleteInternalProductPricing(ctx context.Context, filter coreentity.InternalProductPricingDeleteFilter) error {
+func (c *internalProductCore) DeleteInternalProductPricing(
+	ctx context.Context,
+	filter coreentity.InternalProductPricingDeleteFilter,
+) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:DeleteInternalProductPricing")
 	defer span.End()
 
@@ -185,7 +212,10 @@ func (c *internalProductCore) DeleteInternalProductPricing(ctx context.Context, 
 	return c.repo.DeleteInternalProductPricing(ctx, filter)
 }
 
-func (c *internalProductCore) GetInternalProductPrices(ctx context.Context, filter coreentity.InternalProductPriceListFilter) ([]coreentity.InternalProductPrice, int, error) {
+func (c *internalProductCore) GetInternalProductPrices(
+	ctx context.Context,
+	filter coreentity.InternalProductPriceListFilter,
+) ([]coreentity.InternalProductPrice, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:GetInternalProductPrices")
 	defer span.End()
 
@@ -196,7 +226,10 @@ func (c *internalProductCore) GetInternalProductPrices(ctx context.Context, filt
 	return c.repo.GetInternalProductPrices(ctx, filter)
 }
 
-func (c *internalProductCore) CreateInternalProductPrice(ctx context.Context, data coreentity.InternalProductPrice) (*coreentity.InternalProductPrice, error) {
+func (c *internalProductCore) CreateInternalProductPrice(
+	ctx context.Context,
+	data coreentity.InternalProductPrice,
+) (*coreentity.InternalProductPrice, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:CreateInternalProductPrice")
 	defer span.End()
 
@@ -204,7 +237,9 @@ func (c *internalProductCore) CreateInternalProductPrice(ctx context.Context, da
 		return nil, err
 	}
 
-	if _, err := c.repo.GetInternalProductPricing(ctx, coreentity.InternalProductPricingFilter{ID: data.InternalProductPricingID}); err != nil {
+	if _, err := c.repo.GetInternalProductPricing(ctx, coreentity.InternalProductPricingFilter{
+		ID: data.InternalProductPricingID,
+	}); err != nil {
 		return nil, err
 	}
 
@@ -228,7 +263,10 @@ func (c *internalProductCore) CreateInternalProductPrice(ctx context.Context, da
 	return c.repo.CreateInternalProductPrice(ctx, data)
 }
 
-func (c *internalProductCore) UpdateInternalProductPrice(ctx context.Context, data coreentity.InternalProductPrice) error {
+func (c *internalProductCore) UpdateInternalProductPrice(
+	ctx context.Context,
+	data coreentity.InternalProductPrice,
+) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:UpdateInternalProductPrice")
 	defer span.End()
 
@@ -236,7 +274,9 @@ func (c *internalProductCore) UpdateInternalProductPrice(ctx context.Context, da
 		return err
 	}
 
-	if _, err := c.repo.GetInternalProductPricing(ctx, coreentity.InternalProductPricingFilter{ID: data.InternalProductPricingID}); err != nil {
+	if _, err := c.repo.GetInternalProductPricing(ctx, coreentity.InternalProductPricingFilter{
+		ID: data.InternalProductPricingID,
+	}); err != nil {
 		return err
 	}
 
@@ -261,7 +301,10 @@ func (c *internalProductCore) UpdateInternalProductPrice(ctx context.Context, da
 	return c.repo.UpdateInternalProductPrice(ctx, data)
 }
 
-func (c *internalProductCore) DeleteInternalProductPrice(ctx context.Context, filter coreentity.InternalProductPriceDeleteFilter) error {
+func (c *internalProductCore) DeleteInternalProductPrice(
+	ctx context.Context,
+	filter coreentity.InternalProductPriceDeleteFilter,
+) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalproduct:core:DeleteInternalProductPrice")
 	defer span.End()
 
@@ -273,7 +316,8 @@ func (c *internalProductCore) DeleteInternalProductPrice(ctx context.Context, fi
 }
 
 func (c *internalProductCore) authorizeWrite(userCtx common.UserContext) error {
-	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) && !userCtx.HasRole(coreentity.InternalUserRoleOperator) {
+	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) &&
+		!userCtx.HasRole(coreentity.InternalUserRoleOperator) {
 		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to manage internal products")
 	}
 
@@ -302,7 +346,10 @@ func (c *internalProductCore) normalizeAndValidateProduct(ctx context.Context, d
 	return nil
 }
 
-func (c *internalProductCore) normalizeAndValidatePricing(ctx context.Context, data *coreentity.InternalProductPricing) error {
+func (c *internalProductCore) normalizeAndValidatePricing(
+	ctx context.Context,
+	data *coreentity.InternalProductPricing,
+) error {
 	data.Code = strings.ToUpper(strings.TrimSpace(data.Code))
 	data.Name = strings.TrimSpace(data.Name)
 	data.Description = strings.TrimSpace(data.Description)
@@ -324,7 +371,10 @@ func (c *internalProductCore) normalizeAndValidatePricing(ctx context.Context, d
 	return nil
 }
 
-func (c *internalProductCore) normalizeAndValidatePrice(ctx context.Context, data *coreentity.InternalProductPrice) error {
+func (c *internalProductCore) normalizeAndValidatePrice(
+	ctx context.Context,
+	data *coreentity.InternalProductPrice,
+) error {
 	data.CurrencyCode = strings.ToUpper(strings.TrimSpace(data.CurrencyCode))
 	data.StartedAt = strings.TrimSpace(data.StartedAt)
 	if data.EndedAt != nil {

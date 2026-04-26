@@ -12,7 +12,7 @@ import (
 
 func CreateInternalQuotationFromRest(ctx context.Context, req restentity.CreateInternalQuotationReq) coreentity.CreateInternalQuotationInput {
 	return coreentity.CreateInternalQuotationInput{
-		UserCtx: common.GetUserContext(ctx), InternalProductID: req.InternalProductID, InternalProductPricingID: req.InternalProductPricingID,
+		UserCtx: common.GetUserContext(ctx), TenantID: req.TenantID, InternalProductID: req.InternalProductID, InternalProductPricingID: req.InternalProductPricingID,
 		CurrencyCode: req.CurrencyCode, SubtotalAmount: mustDecimal(req.SubtotalAmount), DiscountAmount: mustDecimal(req.DiscountAmount),
 		TaxAmount: mustDecimal(req.TaxAmount), TotalAmount: mustDecimal(req.TotalAmount), ExpiresAt: req.ExpiresAt,
 		QuoteSnapshot: req.QuoteSnapshot, Metadata: req.Metadata,
@@ -21,7 +21,7 @@ func CreateInternalQuotationFromRest(ctx context.Context, req restentity.CreateI
 
 func CreateInternalOrderFromRest(ctx context.Context, req restentity.CreateInternalOrderReq) coreentity.CreateInternalOrderInput {
 	return coreentity.CreateInternalOrderInput{
-		UserCtx: common.GetUserContext(ctx), InternalProductID: req.InternalProductID, InternalProductPricingID: req.InternalProductPricingID,
+		UserCtx: common.GetUserContext(ctx), TenantID: req.TenantID, InternalProductID: req.InternalProductID, InternalProductPricingID: req.InternalProductPricingID,
 		CurrencyCode: req.CurrencyCode, InvoiceDueAt: req.InvoiceDueAt, Metadata: req.Metadata,
 	}
 }

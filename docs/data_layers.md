@@ -105,6 +105,30 @@ func (r *repo) DeleteEmployee(ctx context.Context, filter coreentity.EmployeeDel
 3. **Extensibility**: Easy to add new filter criteria without breaking existing signatures
 4. **Consistency**: Same pattern across all repository methods
 
+## Repository Readability
+
+Keep repository and core code vertical when a line becomes hard to scan:
+
+- Break long function signatures and call arguments onto multiple lines.
+- Break long struct literals and map literals onto multiple lines.
+- In Postgres repositories, write SQL column lists, `VALUES`, `RETURNING`, `SET`, and multi-condition `WHERE` clauses one item per line when they contain multiple fields or predicates.
+- Avoid wide one-line mapper calls; prefer shared row structs or helper mappers when repeated scan-to-core mapping becomes long.
+
+Example:
+
+```go
+query := `
+    UPDATE internal_products
+    SET
+        code = ?,
+        name = ?,
+        status = ?,
+        updated_at = NOW()
+    WHERE id = ?
+        AND deleted_at IS NULL
+`
+```
+
 ## Transaction Boundary
 
 - Transaction boundaries for multi-step business flows must be in `internal/core/<module>`, not spread across multiple repository methods.

@@ -9,7 +9,10 @@ import (
 	"codebase-app/pkg/errmsg"
 )
 
-func (c *userInvitationCore) ResendInvitation(ctx context.Context, data coreentity.UserInvitation) (*coreentity.UserInvitation, error) {
+func (c *userInvitationCore) ResendInvitation(
+	ctx context.Context,
+	data coreentity.UserInvitation,
+) (*coreentity.UserInvitation, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:userinvitation:resend_invitation:ResendInvitation")
 	defer span.End()
 

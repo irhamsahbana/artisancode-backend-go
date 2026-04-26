@@ -26,7 +26,10 @@ func NewInternalClientCore(cfg Config) *internalClientCore {
 	return &internalClientCore{repo: cfg.Repo}
 }
 
-func (c *internalClientCore) GetInternalClients(ctx context.Context, filter coreentity.InternalClientListFilter) ([]coreentity.InternalClient, int, error) {
+func (c *internalClientCore) GetInternalClients(
+	ctx context.Context,
+	filter coreentity.InternalClientListFilter,
+) ([]coreentity.InternalClient, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalclient:core:GetInternalClients")
 	defer span.End()
 
@@ -37,7 +40,10 @@ func (c *internalClientCore) GetInternalClients(ctx context.Context, filter core
 	return c.repo.GetInternalClients(ctx, filter)
 }
 
-func (c *internalClientCore) GetInternalClientOwnerPermissions(ctx context.Context, clientID string) (*coreentity.InternalClientOwnerPermissions, error) {
+func (c *internalClientCore) GetInternalClientOwnerPermissions(
+	ctx context.Context,
+	clientID string,
+) (*coreentity.InternalClientOwnerPermissions, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalclient:core:GetInternalClientOwnerPermissions")
 	defer span.End()
 
@@ -48,7 +54,10 @@ func (c *internalClientCore) GetInternalClientOwnerPermissions(ctx context.Conte
 	return c.repo.GetInternalClientOwnerPermissions(ctx, clientID)
 }
 
-func (c *internalClientCore) UpdateInternalClientOwnerPermissions(ctx context.Context, data coreentity.InternalClientOwnerPermissionUpdate) error {
+func (c *internalClientCore) UpdateInternalClientOwnerPermissions(
+	ctx context.Context,
+	data coreentity.InternalClientOwnerPermissionUpdate,
+) error {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internalclient:core:UpdateInternalClientOwnerPermissions")
 	defer span.End()
 
@@ -61,7 +70,8 @@ func (c *internalClientCore) UpdateInternalClientOwnerPermissions(ctx context.Co
 }
 
 func (c *internalClientCore) authorizeRead(userCtx common.UserContext) error {
-	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) && !userCtx.HasRole(coreentity.InternalUserRoleOperator) {
+	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) &&
+		!userCtx.HasRole(coreentity.InternalUserRoleOperator) {
 		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to view internal clients")
 	}
 
@@ -69,7 +79,8 @@ func (c *internalClientCore) authorizeRead(userCtx common.UserContext) error {
 }
 
 func (c *internalClientCore) authorizeManage(userCtx common.UserContext) error {
-	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) && !userCtx.HasRole(coreentity.InternalUserRoleOperator) {
+	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) &&
+		!userCtx.HasRole(coreentity.InternalUserRoleOperator) {
 		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to manage internal client permissions")
 	}
 

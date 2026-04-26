@@ -11,8 +11,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *internalUserRepo) FindActiveInternalUserByEmail(ctx context.Context, email string) (*coreentity.InternalUser, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internaluser:repo:FindActiveInternalUserByEmail")
+func (r *internalUserRepo) FindActiveInternalUserByEmail(
+	ctx context.Context,
+	email string,
+) (*coreentity.InternalUser, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internaluser:repo:FindActiveInternalUserByEmail",
+	)
 	defer span.End()
 
 	query := `

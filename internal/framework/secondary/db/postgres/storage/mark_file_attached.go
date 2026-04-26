@@ -12,7 +12,10 @@ import (
 )
 
 func (r *storageRepo) MarkFileAttached(ctx context.Context, tenantID, id string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:storage:mark_file_attached:MarkFileAttached")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:storage:mark_file_attached:MarkFileAttached",
+	)
 	defer span.End()
 
 	query := `

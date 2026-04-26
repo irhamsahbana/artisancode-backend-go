@@ -12,8 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) GetOwnerAttendanceDashboardExceptions(ctx context.Context, filter coreentity.OwnerAttendanceDashboardFilter) ([]coreentity.OwnerAttendanceDashboardException, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:get_owner_attendance_dashboard_exceptions:GetOwnerAttendanceDashboardExceptions")
+func (r *attendanceRepo) GetOwnerAttendanceDashboardExceptions(
+	ctx context.Context,
+	filter coreentity.OwnerAttendanceDashboardFilter,
+) ([]coreentity.OwnerAttendanceDashboardException, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:get_owner_attendance_dashboard_exceptions:GetOwnerAttendanceDashboardExceptions",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -112,7 +118,11 @@ func (r *attendanceRepo) GetOwnerAttendanceDashboardExceptions(ctx context.Conte
 		filter.TenantID,
 	)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to query owner attendance dashboard exceptions")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, filter).
+			Msg("Failed to query owner attendance dashboard exceptions")
 		return nil, err
 	}
 

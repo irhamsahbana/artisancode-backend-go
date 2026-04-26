@@ -8,8 +8,14 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 )
 
-func (c *messageQueueCore) CleanupProcessedMessages(ctx context.Context, req coreentity.CleanupProcessedMessageQueueReq) (*coreentity.CleanupProcessedMessageQueueResp, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:core:message_queue:cleanup_processed_messages:CleanupProcessedMessages")
+func (c *messageQueueCore) CleanupProcessedMessages(
+	ctx context.Context,
+	req coreentity.CleanupProcessedMessageQueueReq,
+) (*coreentity.CleanupProcessedMessageQueueResp, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:core:message_queue:cleanup_processed_messages:CleanupProcessedMessages",
+	)
 	defer span.End()
 
 	before := req.Before

@@ -20,7 +20,16 @@ func (r *orgUnitRepo) CreateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 	`
 
 	var id string
-	err := r.db.GetContext(ctx, &id, r.db.Rebind(query), data.TenantID, data.Code, data.Name, data.ParentID, data.Category)
+	err := r.db.GetContext(
+		ctx,
+		&id,
+		r.db.Rebind(query),
+		data.TenantID,
+		data.Code,
+		data.Name,
+		data.ParentID,
+		data.Category,
+	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to create org unit")
 		return nil, err

@@ -7,8 +7,14 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 )
 
-func (r *userRepo) FindActiveUserByEmailAndTenant(ctx context.Context, email, tenantCode string) (*coreentity.User, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:login:FindActiveUserByEmailAndTenant")
+func (r *userRepo) FindActiveUserByEmailAndTenant(
+	ctx context.Context,
+	email, tenantCode string,
+) (*coreentity.User, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:login:FindActiveUserByEmailAndTenant",
+	)
 	defer span.End()
 
 	// Get user base data

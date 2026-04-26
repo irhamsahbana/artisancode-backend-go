@@ -7,7 +7,10 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 )
 
-func (c *storageCore) UploadFile(ctx context.Context, req *coreentity.UploadFileReq) (*coreentity.UploadFileResp, error) {
+func (c *storageCore) UploadFile(
+	ctx context.Context,
+	req *coreentity.UploadFileReq,
+) (*coreentity.UploadFileResp, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:storage:upload_file:UploadFile")
 	defer span.End()
 

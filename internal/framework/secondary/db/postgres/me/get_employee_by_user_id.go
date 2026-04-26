@@ -13,7 +13,10 @@ import (
 )
 
 func (r *meRepo) GetEmployeeByUserID(ctx context.Context, tenantID, userID string) (*coreentity.Employee, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:me:get_employee_by_user_id:GetEmployeeByUserID")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:me:get_employee_by_user_id:GetEmployeeByUserID",
+	)
 	defer span.End()
 
 	var data struct {

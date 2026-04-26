@@ -12,7 +12,11 @@ func (c *userCore) VerifyEmail(ctx context.Context, token coreentity.UserActionT
 	defer span.End()
 
 	return c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
-		foundToken, err := c.repo.GetValidUserActionToken(txCtx, hashUserActionToken(token.Token), coreentity.UserActionTokenPurposeEmailVerification)
+		foundToken, err := c.repo.GetValidUserActionToken(
+			txCtx,
+			hashUserActionToken(token.Token),
+			coreentity.UserActionTokenPurposeEmailVerification,
+		)
 		if err != nil {
 			return err
 		}

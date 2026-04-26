@@ -11,7 +11,10 @@ import (
 )
 
 func (r *workShiftRepo) UpdateWorkShift(ctx context.Context, data coreentity.WorkShift) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:workshift:update_work_shift:UpdateWorkShift")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:workshift:update_work_shift:UpdateWorkShift",
+	)
 	defer span.End()
 
 	query := `

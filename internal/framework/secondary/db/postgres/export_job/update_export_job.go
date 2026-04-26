@@ -11,7 +11,10 @@ import (
 )
 
 func (r *exportJobRepo) UpdateExportJob(ctx context.Context, data coreentity.ExportJobUpdate) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:export_job:update_export_job:UpdateExportJob")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:export_job:update_export_job:UpdateExportJob",
+	)
 	defer span.End()
 
 	query := `

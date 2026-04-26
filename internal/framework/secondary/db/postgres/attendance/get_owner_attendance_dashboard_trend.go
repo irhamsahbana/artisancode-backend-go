@@ -11,8 +11,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) GetOwnerAttendanceDashboardTrend(ctx context.Context, filter coreentity.OwnerAttendanceDashboardFilter) ([]coreentity.OwnerAttendanceDashboardDailyTrend, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:get_owner_attendance_dashboard_trend:GetOwnerAttendanceDashboardTrend")
+func (r *attendanceRepo) GetOwnerAttendanceDashboardTrend(
+	ctx context.Context,
+	filter coreentity.OwnerAttendanceDashboardFilter,
+) ([]coreentity.OwnerAttendanceDashboardDailyTrend, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:get_owner_attendance_dashboard_trend:GetOwnerAttendanceDashboardTrend",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -42,7 +48,12 @@ func (r *attendanceRepo) GetOwnerAttendanceDashboardTrend(ctx context.Context, f
 			WHERE e.tenant_id = ? AND e.deleted_at IS NULL AND e.status = 'active'
 		),
 		date_series AS (
-			SELECT generate_series((tw.selected_date - tw.days_back * INTERVAL '1 day')::date, tw.selected_date, INTERVAL '1 day')::date AS attendance_date
+			SELECT
+				generate_series(
+					(tw.selected_date - tw.days_back * INTERVAL '1 day')::date,
+					tw.selected_date,
+					INTERVAL '1 day'
+				)::date AS attendance_date
 			FROM trend_window tw
 		),
 		daily_logs AS (
@@ -96,7 +107,11 @@ func (r *attendanceRepo) GetOwnerAttendanceDashboardTrend(ctx context.Context, f
 		filter.TenantID,
 	)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to query owner attendance dashboard trend")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, filter).
+			Msg("Failed to query owner attendance dashboard trend")
 		return nil, err
 	}
 

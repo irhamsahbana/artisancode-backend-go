@@ -9,7 +9,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *orgUnitRepo) GetOrgUnits(ctx context.Context, filter coreentity.OrgUnitListFilter) ([]coreentity.OrgUnit, int, error) {
+func (r *orgUnitRepo) GetOrgUnits(
+	ctx context.Context,
+	filter coreentity.OrgUnitListFilter,
+) ([]coreentity.OrgUnit, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:orgunit:repo:GetOrgUnits")
 	defer span.End()
 

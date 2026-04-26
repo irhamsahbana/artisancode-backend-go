@@ -10,12 +10,21 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (c *attendanceCore) GetOwnerAttendanceDashboard(ctx context.Context, filter coreentity.OwnerAttendanceDashboardFilter) (*coreentity.OwnerAttendanceDashboard, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:get_owner_attendance_dashboard:GetOwnerAttendanceDashboard")
+func (c *attendanceCore) GetOwnerAttendanceDashboard(
+	ctx context.Context,
+	filter coreentity.OwnerAttendanceDashboardFilter,
+) (*coreentity.OwnerAttendanceDashboard, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:core:attendance:get_owner_attendance_dashboard:GetOwnerAttendanceDashboard",
+	)
 	defer span.End()
 
 	if !filter.UserCtx.HasRole("owner") && !filter.UserCtx.HasRole("admin") {
-		return nil, errmsg.NewCustomErrors(fiber.StatusForbidden, errmsg.WithMessage("You are not allowed to access this resource"))
+		return nil, errmsg.NewCustomErrors(
+			fiber.StatusForbidden,
+			errmsg.WithMessage("You are not allowed to access this resource"),
+		)
 	}
 
 	summary, err := c.repo.GetOwnerAttendanceDashboardSummary(ctx, filter)

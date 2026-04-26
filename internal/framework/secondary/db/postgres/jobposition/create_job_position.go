@@ -9,7 +9,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *jobPositionRepo) CreateJobPosition(ctx context.Context, data coreentity.JobPosition) (*coreentity.JobPosition, error) {
+func (r *jobPositionRepo) CreateJobPosition(
+	ctx context.Context,
+	data coreentity.JobPosition,
+) (*coreentity.JobPosition, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:jobposition:repo:CreateJobPosition")
 	defer span.End()
 

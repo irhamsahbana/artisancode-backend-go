@@ -102,7 +102,10 @@ func (c *rbacCore) SetRolePermissions(ctx context.Context, roleID, tenantID stri
 	return c.repo.SetRolePermissions(ctx, roleID, tenantID, permissionIDs)
 }
 
-func (c *rbacCore) GetPermissions(ctx context.Context, filter coreentity.PermissionListFilter) ([]coreentity.Permission, int, error) {
+func (c *rbacCore) GetPermissions(
+	ctx context.Context,
+	filter coreentity.PermissionListFilter,
+) ([]coreentity.Permission, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:rbac:core:GetPermissions")
 	defer span.End()
 

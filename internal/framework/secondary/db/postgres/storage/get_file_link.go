@@ -12,7 +12,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *storageRepo) GetFileLink(ctx context.Context, filter coreentity.StorageFileLinkFilter) (*coreentity.StorageFileLink, error) {
+func (r *storageRepo) GetFileLink(
+	ctx context.Context,
+	filter coreentity.StorageFileLinkFilter,
+) (*coreentity.StorageFileLink, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:storage:get_file_link:GetFileLink")
 	defer span.End()
 

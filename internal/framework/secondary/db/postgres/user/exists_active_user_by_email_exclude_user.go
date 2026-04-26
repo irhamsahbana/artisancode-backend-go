@@ -10,8 +10,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userRepo) ExistsActiveUserByEmailAndTenantExcludeUser(ctx context.Context, email, tenantID, excludeUserID string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:exists_active_user_by_email_exclude_user:ExistsActiveUserByEmailAndTenantExcludeUser")
+func (r *userRepo) ExistsActiveUserByEmailAndTenantExcludeUser(
+	ctx context.Context,
+	email, tenantID, excludeUserID string,
+) (bool, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:exists_active_user_by_email_exclude_user:ExistsActiveUserByEmailAndTenantExcludeUser",
+	)
 	defer span.End()
 
 	var existing string

@@ -7,8 +7,16 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *workLocationRepo) ExistsWorkLocationByName(ctx context.Context, tenantID string, name string, excludeID *string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:worklocation:repo:ExistsWorkLocationByName")
+func (r *workLocationRepo) ExistsWorkLocationByName(
+	ctx context.Context,
+	tenantID string,
+	name string,
+	excludeID *string,
+) (bool, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:worklocation:repo:ExistsWorkLocationByName",
+	)
 	defer span.End()
 
 	var exists bool

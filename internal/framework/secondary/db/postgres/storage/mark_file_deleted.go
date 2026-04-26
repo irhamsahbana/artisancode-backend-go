@@ -11,7 +11,10 @@ import (
 )
 
 func (r *storageRepo) MarkFileDeleted(ctx context.Context, tenantID, id string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:storage:mark_file_deleted:MarkFileDeleted")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:storage:mark_file_deleted:MarkFileDeleted",
+	)
 	defer span.End()
 
 	query := `

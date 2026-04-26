@@ -6,7 +6,11 @@ import (
 	"context"
 )
 
-func (c *orgUnitCore) GetOrgUnitTree(ctx context.Context, tenantID string, companyID string) ([]coreentity.OrgUnitTreeNode, error) {
+func (c *orgUnitCore) GetOrgUnitTree(
+	ctx context.Context,
+	tenantID string,
+	companyID string,
+) ([]coreentity.OrgUnitTreeNode, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:orgunit:get_org_unit_tree:GetOrgUnitTree")
 	defer span.End()
 

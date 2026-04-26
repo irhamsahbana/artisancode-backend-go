@@ -9,7 +9,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *internalUserRepo) GetInternalUsers(ctx context.Context, filter coreentity.InternalUserListFilter) ([]coreentity.InternalUser, int, error) {
+func (r *internalUserRepo) GetInternalUsers(
+	ctx context.Context,
+	filter coreentity.InternalUserListFilter,
+) ([]coreentity.InternalUser, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internaluser:repo:GetInternalUsers")
 	defer span.End()
 

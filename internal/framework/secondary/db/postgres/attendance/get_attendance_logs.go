@@ -12,8 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentity.AttendanceLogListFilter) ([]coreentity.AttendanceLog, int, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:get_attendance_logs:GetAttendanceLogs")
+func (r *attendanceRepo) GetAttendanceLogs(
+	ctx context.Context,
+	filter coreentity.AttendanceLogListFilter,
+) ([]coreentity.AttendanceLog, int, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:get_attendance_logs:GetAttendanceLogs",
+	)
 	defer span.End()
 
 	type dao struct {
@@ -56,8 +62,18 @@ func (r *attendanceRepo) GetAttendanceLogs(ctx context.Context, filter coreentit
 			SELECT
 				day_logs.employee_id,
 				day_logs.attendance_date,
-				MIN(CASE WHEN day_logs.type = 'check_in' THEN timezone(COALESCE(day_logs.shift_timezone, 'UTC'), day_logs.logged_at) END) AS first_check_in_local,
-				MAX(CASE WHEN day_logs.type = 'check_out' THEN timezone(COALESCE(day_logs.shift_timezone, 'UTC'), day_logs.logged_at) END) AS last_check_out_local
+				MIN(
+					CASE
+						WHEN day_logs.type = 'check_in'
+							THEN timezone(COALESCE(day_logs.shift_timezone, 'UTC'), day_logs.logged_at)
+					END
+				) AS first_check_in_local,
+				MAX(
+					CASE
+						WHEN day_logs.type = 'check_out'
+							THEN timezone(COALESCE(day_logs.shift_timezone, 'UTC'), day_logs.logged_at)
+					END
+				) AS last_check_out_local
 			FROM attendance_logs day_logs
 			INNER JOIN employees day_employee ON day_employee.id = day_logs.employee_id AND day_employee.deleted_at IS NULL
 			WHERE day_logs.deleted_at IS NULL AND day_logs.tenant_id = ?

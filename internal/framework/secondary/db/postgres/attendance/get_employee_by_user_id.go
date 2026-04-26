@@ -12,8 +12,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) GetEmployeeByUserID(ctx context.Context, tenantID, userID string) (*coreentity.Employee, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:get_employee_by_user_id:GetEmployeeByUserID")
+func (r *attendanceRepo) GetEmployeeByUserID(
+	ctx context.Context,
+	tenantID, userID string,
+) (*coreentity.Employee, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:get_employee_by_user_id:GetEmployeeByUserID",
+	)
 	defer span.End()
 
 	var data struct {

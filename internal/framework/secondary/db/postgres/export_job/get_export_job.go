@@ -13,8 +13,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *exportJobRepo) GetExportJob(ctx context.Context, filter coreentity.ExportJobDetailFilter) (*coreentity.ExportJob, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:export_job:get_export_job:GetExportJob")
+func (r *exportJobRepo) GetExportJob(
+	ctx context.Context,
+	filter coreentity.ExportJobDetailFilter,
+) (*coreentity.ExportJob, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:export_job:get_export_job:GetExportJob",
+	)
 	defer span.End()
 
 	var data struct {

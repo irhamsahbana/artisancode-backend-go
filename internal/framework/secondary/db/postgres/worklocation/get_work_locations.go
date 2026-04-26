@@ -10,7 +10,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *workLocationRepo) GetWorkLocations(ctx context.Context, filter coreentity.WorkLocationListFilter) ([]coreentity.WorkLocation, int, error) {
+func (r *workLocationRepo) GetWorkLocations(
+	ctx context.Context,
+	filter coreentity.WorkLocationListFilter,
+) ([]coreentity.WorkLocation, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:worklocation:repo:GetWorkLocations")
 	defer span.End()
 

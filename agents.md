@@ -126,6 +126,12 @@ internal/framework/primary/http/attendance/
 - Expected business rejections in core should generally use `Warn`.
 - Unexpected errors or DB/integration failures should use `Error`.
 
+### Readability Formatting
+
+- Keep backend code vertical when expressions get long. Do not leave wide one-line struct literals, map literals, function calls, or argument lists when they are hard to scan.
+- In Postgres repositories, format SQL column lists, `VALUES`, `RETURNING`, `SET`, and multi-condition `WHERE` clauses one item per line when there are multiple fields or predicates.
+- Apply this convention consistently across modules, including `internal/core/<module>` and `internal/framework/secondary/db/postgres/<module>`.
+
 ### Localization
 
 - Do not parse `Accept-Language` inside feature modules.

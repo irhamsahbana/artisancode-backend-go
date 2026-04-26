@@ -12,7 +12,10 @@ import (
 )
 
 func (r *userRepo) GetTenantPreferredLanguage(ctx context.Context, tenantID string) (string, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:get_tenant_preferred_language:GetTenantPreferredLanguage")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:get_tenant_preferred_language:GetTenantPreferredLanguage",
+	)
 	defer span.End()
 
 	query := `

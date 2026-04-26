@@ -10,7 +10,10 @@ import (
 )
 
 func (r *userRepo) MarkUserActionTokenUsed(ctx context.Context, tokenID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:mark_user_action_token_used:MarkUserActionTokenUsed")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:mark_user_action_token_used:MarkUserActionTokenUsed",
+	)
 	defer span.End()
 
 	query := `

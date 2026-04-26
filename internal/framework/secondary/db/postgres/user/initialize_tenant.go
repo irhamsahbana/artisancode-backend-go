@@ -11,8 +11,16 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userRepo) InitializeTenant(ctx context.Context, tenantID string, companyName string, preferredLanguage string) (string, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:InitializeTenant")
+func (r *userRepo) InitializeTenant(
+	ctx context.Context,
+	tenantID string,
+	companyName string,
+	preferredLanguage string,
+) (string, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:initialize_tenant:InitializeTenant",
+	)
 	defer span.End()
 
 	tx := r.executor(ctx)
@@ -51,7 +59,10 @@ func (r *userRepo) insertDefaultHeadquarterBranch(ctx context.Context, tx interf
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Rebind(string) string
 }, tenantID string, companyID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:insertDefaultHeadquarterBranch")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:initialize_tenant:insertDefaultHeadquarterBranch",
+	)
 	defer span.End()
 
 	query := `
@@ -65,7 +76,11 @@ func (r *userRepo) insertDefaultHeadquarterBranch(ctx context.Context, tx interf
 			deleted_at = NULL
 	`
 	if _, err := tx.ExecContext(ctx, tx.Rebind(query), tenantID, companyID); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "companyID": companyID}).Msg("Failed to insert default headquarter branch")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "companyID": companyID}).
+			Msg("Failed to insert default headquarter branch")
 		return err
 	}
 
@@ -78,7 +93,10 @@ func (r *userRepo) insertDefaultCompany(ctx context.Context, tx interface {
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Rebind(string) string
 }, tenantID string, companyName string, preferredLanguage string) (string, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:insertDefaultCompany")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:initialize_tenant:insertDefaultCompany",
+	)
 	defer span.End()
 
 	config := coreentity.DefaultCompanyConfig()
@@ -87,7 +105,11 @@ func (r *userRepo) insertDefaultCompany(ctx context.Context, tx interface {
 	}
 	configJSON, err := json.Marshal(config)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "companyName": companyName}).Msg("Failed to marshal company config")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "companyName": companyName}).
+			Msg("Failed to marshal company config")
 		return "", err
 	}
 
@@ -99,7 +121,11 @@ func (r *userRepo) insertDefaultCompany(ctx context.Context, tx interface {
 	var companyID string
 	err = tx.GetContext(ctx, &companyID, tx.Rebind(query), tenantID, companyName, companyName, configJSON)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "companyName": companyName}).Msg("Failed to insert default company")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "companyName": companyName}).
+			Msg("Failed to insert default company")
 		return "", err
 	}
 	return companyID, nil
@@ -111,7 +137,10 @@ func (r *userRepo) copyTemplateRoles(ctx context.Context, tx interface {
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Rebind(string) string
 }, tenantID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplateRoles")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplateRoles",
+	)
 	defer span.End()
 
 	payload := map[string]string{"tenantID": tenantID}
@@ -158,7 +187,10 @@ func (r *userRepo) copyTemplatePermissions(ctx context.Context, tx interface {
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Rebind(string) string
 }, tenantID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplatePermissions")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplatePermissions",
+	)
 	defer span.End()
 
 	type templatePermission struct {
@@ -168,9 +200,17 @@ func (r *userRepo) copyTemplatePermissions(ctx context.Context, tx interface {
 	}
 
 	permissions := []templatePermission{}
-	err := tx.SelectContext(ctx, &permissions, `SELECT id, name, COALESCE(description, '') AS description FROM internal_template_permissions WHERE deleted_at IS NULL`)
+	err := tx.SelectContext(
+		ctx,
+		&permissions,
+		`SELECT id, name, COALESCE(description, '') AS description FROM internal_template_permissions WHERE deleted_at IS NULL`,
+	)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).Msg("Failed to select template permissions")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).
+			Msg("Failed to select template permissions")
 		return err
 	}
 
@@ -189,7 +229,11 @@ func (r *userRepo) copyTemplatePermissions(ctx context.Context, tx interface {
 			RETURNING id
 		`), tenantID, perm.Name, perm.Description)
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "permissionName": perm.Name}).Msg("Failed to copy permission")
+			log.Ctx(ctx).
+				Error().
+				Err(err).
+				Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "permissionName": perm.Name}).
+				Msg("Failed to copy permission")
 			return err
 		}
 		permissionIDMapping[perm.ID] = newPermID
@@ -204,7 +248,10 @@ func (r *userRepo) copyTemplateRolePermissions(ctx context.Context, tx interface
 	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Rebind(string) string
 }, tenantID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplateRolePermissions")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:initialize_tenant:copyTemplateRolePermissions",
+	)
 	defer span.End()
 
 	type templateRole struct {
@@ -225,23 +272,45 @@ func (r *userRepo) copyTemplateRolePermissions(ctx context.Context, tx interface
 	roles := []templateRole{}
 	err := tx.SelectContext(ctx, &roles, `SELECT id, name FROM internal_template_roles WHERE deleted_at IS NULL`)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).Msg("Failed to select template roles for role permissions")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).
+			Msg("Failed to select template roles for role permissions")
 		return err
 	}
 
 	permissions := []templatePermission{}
-	err = tx.SelectContext(ctx, &permissions, `SELECT id, name FROM internal_template_permissions WHERE deleted_at IS NULL`)
+	err = tx.SelectContext(
+		ctx,
+		&permissions,
+		`SELECT id, name FROM internal_template_permissions WHERE deleted_at IS NULL`,
+	)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).Msg("Failed to select template permissions for role permissions")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).
+			Msg("Failed to select template permissions for role permissions")
 		return err
 	}
 
 	roleIDMapping := make(map[string]string)
 	for _, role := range roles {
 		var newRoleID string
-		err = tx.GetContext(ctx, &newRoleID, tx.Rebind(`SELECT id FROM roles WHERE tenant_id = ? AND name = ?`), tenantID, role.Name)
+		err = tx.GetContext(
+			ctx,
+			&newRoleID,
+			tx.Rebind(`SELECT id FROM roles WHERE tenant_id = ? AND name = ?`),
+			tenantID,
+			role.Name,
+		)
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "roleName": role.Name}).Msg("Failed to get copied role id")
+			log.Ctx(ctx).
+				Error().
+				Err(err).
+				Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "roleName": role.Name}).
+				Msg("Failed to get copied role id")
 			return err
 		}
 		roleIDMapping[role.ID] = newRoleID
@@ -250,18 +319,36 @@ func (r *userRepo) copyTemplateRolePermissions(ctx context.Context, tx interface
 	permissionIDMapping := make(map[string]string)
 	for _, perm := range permissions {
 		var newPermID string
-		err = tx.GetContext(ctx, &newPermID, tx.Rebind(`SELECT id FROM permissions WHERE tenant_id = ? AND name = ?`), tenantID, perm.Name)
+		err = tx.GetContext(
+			ctx,
+			&newPermID,
+			tx.Rebind(`SELECT id FROM permissions WHERE tenant_id = ? AND name = ?`),
+			tenantID,
+			perm.Name,
+		)
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "permissionName": perm.Name}).Msg("Failed to get copied permission id")
+			log.Ctx(ctx).
+				Error().
+				Err(err).
+				Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "permissionName": perm.Name}).
+				Msg("Failed to get copied permission id")
 			return err
 		}
 		permissionIDMapping[perm.ID] = newPermID
 	}
 
 	rolePermissions := []rolePermission{}
-	err = tx.SelectContext(ctx, &rolePermissions, `SELECT role_id, permission_id FROM internal_template_role_permissions`)
+	err = tx.SelectContext(
+		ctx,
+		&rolePermissions,
+		`SELECT role_id, permission_id FROM internal_template_role_permissions`,
+	)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).Msg("Failed to select template role permissions")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID}).
+			Msg("Failed to select template role permissions")
 		return err
 	}
 
@@ -275,7 +362,11 @@ func (r *userRepo) copyTemplateRolePermissions(ctx context.Context, tx interface
 				ON CONFLICT (role_id, permission_id) DO NOTHING
 			`), newRoleID, newPermID, tenantID)
 			if err != nil {
-				log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "roleID": newRoleID, "permissionID": newPermID}).Msg("Failed to insert role permission")
+				log.Ctx(ctx).
+					Error().
+					Err(err).
+					Any(common.LogKeyPayload, map[string]string{"tenantID": tenantID, "roleID": newRoleID, "permissionID": newPermID}).
+					Msg("Failed to insert role permission")
 				return err
 			}
 		}

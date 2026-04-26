@@ -8,7 +8,10 @@ import (
 )
 
 func (r *userInvitationRepo) RevokeInvitation(ctx context.Context, tenantID, invitationID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:userinvitation:revoke_invitation:RevokeInvitation")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:userinvitation:revoke_invitation:RevokeInvitation",
+	)
 	defer span.End()
 
 	query := `

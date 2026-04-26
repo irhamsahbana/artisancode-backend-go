@@ -9,7 +9,10 @@ import (
 	"codebase-app/pkg/errmsg"
 )
 
-func (c *exportJobCore) CreateExportJob(ctx context.Context, data coreentity.ExportJobCreate) (*coreentity.ExportJob, error) {
+func (c *exportJobCore) CreateExportJob(
+	ctx context.Context,
+	data coreentity.ExportJobCreate,
+) (*coreentity.ExportJob, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:export_job:create_export_job:CreateExportJob")
 	defer span.End()
 

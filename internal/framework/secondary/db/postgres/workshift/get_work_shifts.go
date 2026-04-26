@@ -10,8 +10,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *workShiftRepo) GetWorkShifts(ctx context.Context, filter coreentity.WorkShiftListFilter) ([]coreentity.WorkShift, int, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:workshift:get_work_shifts:GetWorkShifts")
+func (r *workShiftRepo) GetWorkShifts(
+	ctx context.Context,
+	filter coreentity.WorkShiftListFilter,
+) ([]coreentity.WorkShift, int, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:workshift:get_work_shifts:GetWorkShifts",
+	)
 	defer span.End()
 
 	type dao struct {

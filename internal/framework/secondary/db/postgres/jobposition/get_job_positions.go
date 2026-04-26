@@ -10,7 +10,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *jobPositionRepo) GetJobPositions(ctx context.Context, filter coreentity.JobPositionListFilter) ([]coreentity.JobPosition, int, error) {
+func (r *jobPositionRepo) GetJobPositions(
+	ctx context.Context,
+	filter coreentity.JobPositionListFilter,
+) ([]coreentity.JobPosition, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:jobposition:repo:GetJobPositions")
 	defer span.End()
 

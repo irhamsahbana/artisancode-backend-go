@@ -8,7 +8,10 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 )
 
-func (c *meCore) GetMyShiftToday(ctx context.Context, filter coreentity.SelfFilter) (*coreentity.WorkShiftToday, error) {
+func (c *meCore) GetMyShiftToday(
+	ctx context.Context,
+	filter coreentity.SelfFilter,
+) (*coreentity.WorkShiftToday, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:me:get_my_shift_today:GetMyShiftToday")
 	defer span.End()
 

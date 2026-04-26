@@ -39,7 +39,11 @@ func (r *userRepo) InsertUser(ctx context.Context, user coreentity.User) (string
 	for _, roleID := range user.RoleIDs {
 		_, err = exec.ExecContext(ctx, exec.Rebind(roleQuery), userID, roleID)
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"userID": userID, "roleID": roleID}).Msg("Failed to insert user_role")
+			log.Ctx(ctx).
+				Error().
+				Err(err).
+				Any(common.LogKeyPayload, map[string]string{"userID": userID, "roleID": roleID}).
+				Msg("Failed to insert user_role")
 			return "", err
 		}
 	}

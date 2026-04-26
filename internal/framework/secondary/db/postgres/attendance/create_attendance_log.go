@@ -11,8 +11,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *attendanceRepo) CreateAttendanceLog(ctx context.Context, data coreentity.AttendanceLog) (*coreentity.AttendanceLog, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:attendance:create_attendance_log:CreateAttendanceLog")
+func (r *attendanceRepo) CreateAttendanceLog(
+	ctx context.Context,
+	data coreentity.AttendanceLog,
+) (*coreentity.AttendanceLog, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:attendance:create_attendance_log:CreateAttendanceLog",
+	)
 	defer span.End()
 
 	loggedAt, err := time.Parse(time.RFC3339, data.LoggedAt)

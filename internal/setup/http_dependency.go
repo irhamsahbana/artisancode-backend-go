@@ -49,8 +49,10 @@ import (
 	employeeRepo "codebase-app/internal/framework/secondary/db/postgres/employee"
 	exportJobRepo "codebase-app/internal/framework/secondary/db/postgres/export_job"
 	internalClientRepo "codebase-app/internal/framework/secondary/db/postgres/internalclient"
-	internalCommerceRepo "codebase-app/internal/framework/secondary/db/postgres/internalcommerce"
+	internalInvoiceRepo "codebase-app/internal/framework/secondary/db/postgres/internalinvoice"
+	internalOrderRepo "codebase-app/internal/framework/secondary/db/postgres/internalorder"
 	internalProductRepo "codebase-app/internal/framework/secondary/db/postgres/internalproduct"
+	internalQuotationRepo "codebase-app/internal/framework/secondary/db/postgres/internalquotation"
 	internalUserRepo "codebase-app/internal/framework/secondary/db/postgres/internaluser"
 	jobpositionRepo "codebase-app/internal/framework/secondary/db/postgres/jobposition"
 	meRepo "codebase-app/internal/framework/secondary/db/postgres/me"
@@ -132,7 +134,13 @@ func HttpDependencies() {
 	internalUserRepository := internalUserRepo.NewInternalUserRepository(internalUserRepo.Config{
 		DB: db,
 	})
-	internalCommerceRepository := internalCommerceRepo.NewInternalCommerceRepository(internalCommerceRepo.Config{
+	internalQuotationRepository := internalQuotationRepo.NewInternalQuotationRepository(internalQuotationRepo.Config{
+		DB: db,
+	})
+	internalOrderRepository := internalOrderRepo.NewInternalOrderRepository(internalOrderRepo.Config{
+		DB: db,
+	})
+	internalInvoiceRepository := internalInvoiceRepo.NewInternalInvoiceRepository(internalInvoiceRepo.Config{
 		DB: db,
 	})
 
@@ -198,17 +206,22 @@ func HttpDependencies() {
 		Repo: internalClientRepository,
 	})
 	internalQuotationCoreInst := internalQuotationCore.NewInternalQuotationCore(internalQuotationCore.Config{
-		Repo: internalCommerceRepository,
-		Tx:   tx,
+		QuotationRepo: internalQuotationRepository,
+		OrderRepo:     internalOrderRepository,
+		InvoiceRepo:   internalInvoiceRepository,
+		Tx:            tx,
 	})
 	internalOrderCoreInst := internalOrderCore.NewInternalOrderCore(internalOrderCore.Config{
-		Repo: internalCommerceRepository,
-		Tx:   tx,
+		OrderRepo:   internalOrderRepository,
+		InvoiceRepo: internalInvoiceRepository,
+		Tx:          tx,
 	})
 	internalInvoiceCoreInst := internalInvoiceCore.NewInternalInvoiceCore(internalInvoiceCore.Config{
-		Repo: internalCommerceRepository,
-		Tx:   tx,
-		DOKU: dokuClient,
+		InvoiceRepo:   internalInvoiceRepository,
+		OrderRepo:     internalOrderRepository,
+		QuotationRepo: internalQuotationRepository,
+		Tx:            tx,
+		DOKU:          dokuClient,
 	})
 	internalUserCoreInst := internalUserCore.NewInternalUserCore(internalUserCore.Config{
 		Repo:       internalUserRepository,

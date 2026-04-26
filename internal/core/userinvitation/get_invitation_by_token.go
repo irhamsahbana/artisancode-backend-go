@@ -8,7 +8,10 @@ import (
 	"codebase-app/pkg/errmsg"
 )
 
-func (c *userInvitationCore) GetInvitationByToken(ctx context.Context, token string) (*coreentity.UserInvitation, error) {
+func (c *userInvitationCore) GetInvitationByToken(
+	ctx context.Context,
+	token string,
+) (*coreentity.UserInvitation, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:userinvitation:get_invitation_by_token:GetInvitationByToken")
 	defer span.End()
 

@@ -181,6 +181,7 @@ type InternalPaymentReceipt struct {
 
 type CreateInternalQuotationInput struct {
 	UserCtx                  common.UserContext
+	TenantID                 string
 	InternalProductID        string
 	InternalProductPricingID string
 	CurrencyCode             string
@@ -195,6 +196,7 @@ type CreateInternalQuotationInput struct {
 
 type CreateInternalOrderInput struct {
 	UserCtx                  common.UserContext
+	TenantID                 string
 	InternalProductID        string
 	InternalProductPricingID string
 	CurrencyCode             string

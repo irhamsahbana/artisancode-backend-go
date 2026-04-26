@@ -8,7 +8,10 @@ import (
 )
 
 func (r *userInvitationRepo) MarkInvitationAccepted(ctx context.Context, invitationID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:userinvitation:mark_invitation_accepted:MarkInvitationAccepted")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:userinvitation:mark_invitation_accepted:MarkInvitationAccepted",
+	)
 	defer span.End()
 
 	query := `

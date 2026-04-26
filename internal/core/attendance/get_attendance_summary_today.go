@@ -9,8 +9,14 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 )
 
-func (c *attendanceCore) GetAttendanceSummaryToday(ctx context.Context, filter coreentity.SelfFilter) (*coreentity.AttendanceSummary, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:core:attendance:get_attendance_summary_today:GetAttendanceSummaryToday")
+func (c *attendanceCore) GetAttendanceSummaryToday(
+	ctx context.Context,
+	filter coreentity.SelfFilter,
+) (*coreentity.AttendanceSummary, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:core:attendance:get_attendance_summary_today:GetAttendanceSummaryToday",
+	)
 	defer span.End()
 
 	employee, err := c.repo.GetEmployeeByUserID(ctx, filter.TenantID, filter.UserID)

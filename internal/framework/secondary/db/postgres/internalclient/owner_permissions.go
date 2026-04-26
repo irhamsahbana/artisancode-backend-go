@@ -13,8 +13,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *internalClientRepo) GetInternalClientOwnerPermissions(ctx context.Context, clientID string) (*coreentity.InternalClientOwnerPermissions, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalclient:owner_permissions:GetInternalClientOwnerPermissions")
+func (r *internalClientRepo) GetInternalClientOwnerPermissions(
+	ctx context.Context,
+	clientID string,
+) (*coreentity.InternalClientOwnerPermissions, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalclient:owner_permissions:GetInternalClientOwnerPermissions",
+	)
 	defer span.End()
 
 	ownerRoleID, err := r.getOwnerRoleID(ctx, clientID)
@@ -30,7 +36,11 @@ func (r *internalClientRepo) GetInternalClientOwnerPermissions(ctx context.Conte
 		ORDER BY name ASC
 	`
 	if err := r.db.SelectContext(ctx, &available, r.db.Rebind(availableQuery), clientID); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"client_id": clientID}).Msg("Failed to query internal client permissions")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"client_id": clientID}).
+			Msg("Failed to query internal client permissions")
 		return nil, err
 	}
 
@@ -46,7 +56,11 @@ func (r *internalClientRepo) GetInternalClientOwnerPermissions(ctx context.Conte
 		ORDER BY p.name ASC
 	`
 	if err := r.db.SelectContext(ctx, &selectedRows, r.db.Rebind(selectedQuery), ownerRoleID, clientID); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"client_id": clientID}).Msg("Failed to query internal client owner permissions")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"client_id": clientID}).
+			Msg("Failed to query internal client owner permissions")
 		return nil, err
 	}
 
@@ -62,8 +76,14 @@ func (r *internalClientRepo) GetInternalClientOwnerPermissions(ctx context.Conte
 	}, nil
 }
 
-func (r *internalClientRepo) UpdateInternalClientOwnerPermissions(ctx context.Context, data coreentity.InternalClientOwnerPermissionUpdate) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalclient:owner_permissions:UpdateInternalClientOwnerPermissions")
+func (r *internalClientRepo) UpdateInternalClientOwnerPermissions(
+	ctx context.Context,
+	data coreentity.InternalClientOwnerPermissionUpdate,
+) error {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalclient:owner_permissions:UpdateInternalClientOwnerPermissions",
+	)
 	defer span.End()
 
 	ownerRoleID, err := r.getOwnerRoleID(ctx, data.ClientID)
@@ -84,7 +104,11 @@ func (r *internalClientRepo) UpdateInternalClientOwnerPermissions(ctx context.Co
 		}
 		query = r.db.Rebind(query)
 		if err := r.db.GetContext(ctx, &validCount, query, args...); err != nil {
-			log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to validate internal client owner permissions")
+			log.Ctx(ctx).
+				Error().
+				Err(err).
+				Any(common.LogKeyPayload, data).
+				Msg("Failed to validate internal client owner permissions")
 			return err
 		}
 		if validCount != len(data.PermissionIDs) {
@@ -94,7 +118,11 @@ func (r *internalClientRepo) UpdateInternalClientOwnerPermissions(ctx context.Co
 
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to begin internal client owner permission transaction")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, data).
+			Msg("Failed to begin internal client owner permission transaction")
 		return err
 	}
 	defer tx.Rollback()
@@ -116,7 +144,11 @@ func (r *internalClientRepo) UpdateInternalClientOwnerPermissions(ctx context.Co
 	}
 
 	if err := tx.Commit(); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to commit internal client owner permission transaction")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, data).
+			Msg("Failed to commit internal client owner permission transaction")
 		return err
 	}
 
@@ -124,7 +156,10 @@ func (r *internalClientRepo) UpdateInternalClientOwnerPermissions(ctx context.Co
 }
 
 func (r *internalClientRepo) getOwnerRoleID(ctx context.Context, clientID string) (string, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:internalclient:owner_permissions:getOwnerRoleID")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:internalclient:owner_permissions:getOwnerRoleID",
+	)
 	defer span.End()
 
 	var ownerRoleID string
@@ -139,7 +174,11 @@ func (r *internalClientRepo) getOwnerRoleID(ctx context.Context, clientID string
 		if err == sql.ErrNoRows {
 			return "", errmsg.NewCustomErrors(404).SetMessage("Client owner role not found")
 		}
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{"client_id": clientID}).Msg("Failed to get internal client owner role")
+		log.Ctx(ctx).
+			Error().
+			Err(err).
+			Any(common.LogKeyPayload, map[string]string{"client_id": clientID}).
+			Msg("Failed to get internal client owner role")
 		return "", err
 	}
 	return ownerRoleID, nil

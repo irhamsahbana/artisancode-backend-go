@@ -11,7 +11,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *employeeRepo) GetEmployees(ctx context.Context, filter coreentity.EmployeeListFilter) ([]coreentity.Employee, int, error) {
+func (r *employeeRepo) GetEmployees(
+	ctx context.Context,
+	filter coreentity.EmployeeListFilter,
+) ([]coreentity.Employee, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:employee:get_employees:GetEmployees")
 	defer span.End()
 

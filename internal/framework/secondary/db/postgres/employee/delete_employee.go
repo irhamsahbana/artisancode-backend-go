@@ -11,7 +11,10 @@ import (
 )
 
 func (r *employeeRepo) DeleteEmployee(ctx context.Context, filter coreentity.EmployeeDeleteFilter) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:employee:delete_employee:DeleteEmployee")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:employee:delete_employee:DeleteEmployee",
+	)
 	defer span.End()
 
 	query := `

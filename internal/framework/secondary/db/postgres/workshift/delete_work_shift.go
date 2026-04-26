@@ -11,7 +11,10 @@ import (
 )
 
 func (r *workShiftRepo) DeleteWorkShift(ctx context.Context, filter coreentity.WorkShiftDeleteFilter) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:workshift:delete_work_shift:DeleteWorkShift")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:workshift:delete_work_shift:DeleteWorkShift",
+	)
 	defer span.End()
 
 	query := `

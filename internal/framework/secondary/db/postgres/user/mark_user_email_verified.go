@@ -10,7 +10,10 @@ import (
 )
 
 func (r *userRepo) MarkUserEmailVerified(ctx context.Context, userID string) error {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:user:mark_user_email_verified:MarkUserEmailVerified")
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:user:mark_user_email_verified:MarkUserEmailVerified",
+	)
 	defer span.End()
 
 	query := `

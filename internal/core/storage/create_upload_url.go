@@ -11,7 +11,10 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 )
 
-func (c *storageCore) CreateUploadURL(ctx context.Context, req coreentity.PresignUploadURLReq) (*coreentity.PresignUploadURLResp, error) {
+func (c *storageCore) CreateUploadURL(
+	ctx context.Context,
+	req coreentity.PresignUploadURLReq,
+) (*coreentity.PresignUploadURLResp, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:storage:create_upload_url:CreateUploadURL")
 	defer span.End()
 
@@ -40,7 +43,12 @@ func (c *storageCore) CreateUploadURL(ctx context.Context, req coreentity.Presig
 	return resp, nil
 }
 
-func buildObjectKey(tenantID, userID string, folder common.S3Folder, filename, contentType string, isPublic bool) string {
+func buildObjectKey(
+	tenantID, userID string,
+	folder common.S3Folder,
+	filename, contentType string,
+	isPublic bool,
+) string {
 	extension := ".jpg"
 	switch strings.ToLower(contentType) {
 	case "image/png":

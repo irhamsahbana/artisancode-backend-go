@@ -54,7 +54,10 @@ func (c *internalUserCore) Login(ctx context.Context, user coreentity.InternalUs
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password)); err != nil {
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{"email": user.Email}).Msg("Invalid internal credentials")
+		log.Ctx(ctx).
+			Warn().
+			Any(common.LogKeyPayload, map[string]string{"email": user.Email}).
+			Msg("Invalid internal credentials")
 		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid credentials")
 	}
 
@@ -84,7 +87,10 @@ func (c *internalUserCore) Login(ctx context.Context, user coreentity.InternalUs
 	}, nil
 }
 
-func (c *internalUserCore) RefreshToken(ctx context.Context, user coreentity.InternalUser) (*coreentity.AuthTokens, error) {
+func (c *internalUserCore) RefreshToken(
+	ctx context.Context,
+	user coreentity.InternalUser,
+) (*coreentity.AuthTokens, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internaluser:core:RefreshToken")
 	defer span.End()
 
@@ -124,7 +130,10 @@ func (c *internalUserCore) RefreshToken(ctx context.Context, user coreentity.Int
 	}, nil
 }
 
-func (c *internalUserCore) GetInternalUsers(ctx context.Context, filter coreentity.InternalUserListFilter) ([]coreentity.InternalUser, int, error) {
+func (c *internalUserCore) GetInternalUsers(
+	ctx context.Context,
+	filter coreentity.InternalUserListFilter,
+) ([]coreentity.InternalUser, int, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internaluser:core:GetInternalUsers")
 	defer span.End()
 
@@ -135,7 +144,10 @@ func (c *internalUserCore) GetInternalUsers(ctx context.Context, filter coreenti
 	return c.repo.GetInternalUsers(ctx, filter)
 }
 
-func (c *internalUserCore) GetInternalUser(ctx context.Context, filter coreentity.InternalUserFilter) (*coreentity.InternalUser, error) {
+func (c *internalUserCore) GetInternalUser(
+	ctx context.Context,
+	filter coreentity.InternalUserFilter,
+) (*coreentity.InternalUser, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internaluser:core:GetInternalUser")
 	defer span.End()
 
@@ -146,7 +158,10 @@ func (c *internalUserCore) GetInternalUser(ctx context.Context, filter coreentit
 	return c.repo.GetInternalUser(ctx, filter)
 }
 
-func (c *internalUserCore) CreateInternalUser(ctx context.Context, data coreentity.InternalUser) (*coreentity.InternalUser, error) {
+func (c *internalUserCore) CreateInternalUser(
+	ctx context.Context,
+	data coreentity.InternalUser,
+) (*coreentity.InternalUser, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:internaluser:core:CreateInternalUser")
 	defer span.End()
 

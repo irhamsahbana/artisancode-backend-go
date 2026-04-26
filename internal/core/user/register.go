@@ -12,7 +12,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (c *userCore) RegisterOwner(ctx context.Context, user coreentity.User, tenant coreentity.Tenant) (*coreentity.RegisterResult, error) {
+func (c *userCore) RegisterOwner(
+	ctx context.Context,
+	user coreentity.User,
+	tenant coreentity.Tenant,
+) (*coreentity.RegisterResult, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:register:RegisterOwner")
 	defer span.End()
 
@@ -23,7 +27,10 @@ func (c *userCore) RegisterOwner(ctx context.Context, user coreentity.User, tena
 			return err
 		}
 		if tenantExist {
-			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, map[string]string{"tenantCode": tenant.Code}).Msg("Tenant code already registered")
+			log.Ctx(txCtx).
+				Warn().
+				Any(common.LogKeyPayload, map[string]string{"tenantCode": tenant.Code}).
+				Msg("Tenant code already registered")
 			return errmsg.NewCustomErrors(400).SetMessage("Tenant code is already registered")
 		}
 

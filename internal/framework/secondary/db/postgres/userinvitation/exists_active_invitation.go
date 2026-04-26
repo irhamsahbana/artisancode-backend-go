@@ -10,8 +10,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (r *userInvitationRepo) ExistsActiveInvitation(ctx context.Context, tenantID, email, roleCode string, employeeID *string) (bool, error) {
-	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:db:postgres:userinvitation:exists_active_invitation:ExistsActiveInvitation")
+func (r *userInvitationRepo) ExistsActiveInvitation(
+	ctx context.Context,
+	tenantID, email, roleCode string,
+	employeeID *string,
+) (bool, error) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:userinvitation:exists_active_invitation:ExistsActiveInvitation",
+	)
 	defer span.End()
 
 	query := `

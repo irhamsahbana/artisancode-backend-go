@@ -13,7 +13,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (c *userInvitationCore) AcceptInvitation(ctx context.Context, data coreentity.UserInvitationAcceptPayload) (*coreentity.User, error) {
+func (c *userInvitationCore) AcceptInvitation(
+	ctx context.Context,
+	data coreentity.UserInvitationAcceptPayload,
+) (*coreentity.User, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:userinvitation:accept_invitation:AcceptInvitation")
 	defer span.End()
 
@@ -84,7 +87,12 @@ func (c *userInvitationCore) AcceptInvitation(ctx context.Context, data coreenti
 	return result, nil
 }
 
-func (c *userInvitationCore) buildAcceptedUser(ctx context.Context, item *coreentity.UserInvitation, data coreentity.UserInvitationAcceptPayload, roleID string) (coreentity.User, error) {
+func (c *userInvitationCore) buildAcceptedUser(
+	ctx context.Context,
+	item *coreentity.UserInvitation,
+	data coreentity.UserInvitationAcceptPayload,
+	roleID string,
+) (coreentity.User, error) {
 	passwordHash, err := hashInvitationPassword(data.Password)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to hash invitation password")
