@@ -36,7 +36,7 @@ func (c *exportJobCore) CreateExportJob(
 		}
 		item = createdItem
 
-		return c.bus.PublishJSON(txCtx, common.MessageSubjectExportJobRequested, coreentity.ExportJobRequestedEvent{
+		return c.bus.PublishJSON(txCtx, common.MessageTopicExportJobRequested, coreentity.ExportJobRequestedEvent{
 			JobID:    item.ID,
 			TenantID: item.TenantID,
 		})

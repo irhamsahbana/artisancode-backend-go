@@ -75,7 +75,7 @@ Because of that, when adding a new route:
 
 ## Consumer Registration Pattern
 
-The consumer runtime does not register HTTP routes. It builds dependencies for the subscription manager and the handler loop.
+The consumer runtime does not register HTTP routes. It builds dependencies for the Watermill router and registers one consumer handler per topic.
 
 The primary Postgres consumer structure is now split per feature to stay consistent with the HTTP split pattern:
 
@@ -92,17 +92,23 @@ The primary Postgres consumer structure is now split per feature to stay consist
 
 `NewConsumerDependencies(...)` currently prepares:
 
-- email subscription
-- export job subscription
 - export job core
 - shutdown callback
 
+Message subscriptions use Watermill SQL default Postgres Pub/Sub schema. Each topic has its own `watermill_<topic>` table and `watermill_offsets_<topic>` table, with production schema managed manually by goose migrations. Subscribers must set an explicit consumer group such as `notification_service`, `stock_service`, or `audit_service`.
+
+The current consumer router also installs shared middleware for:
+
+- panic recovery
+- bounded retry using message-bus retry config
+- poison queue publish to the shared `dead_letter` topic after retries are exhausted
+
 When adding a new consumer:
 
-1. create a new subscription config
+1. create topic constants in `internal/entity/common/message_bus.go`
 2. inject the dependencies required by the core/processor
-3. expose the result through `ConsumerDependencies`
-4. assign the result in `internal/framework/primary/consumer/postgres/build.go`
+3. expose the result through `ConsumerDependencies` when the handler needs new core dependencies
+4. register a dedicated Watermill router consumer handler in `internal/framework/primary/consumer/postgres/build.go`
 5. place handlers in the matching feature consumer folder instead of dropping all handler files into the root `consumer/postgres` folder
 
 ## Cross-Module Dependencies

@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"strings"
 	"time"
 )
 
@@ -32,21 +31,4 @@ func (c Config) normalized() Config {
 	}
 
 	return cfg
-}
-
-func subjectMatches(subject string, patterns []string) bool {
-	for _, pattern := range patterns {
-		if pattern == subject {
-			return true
-		}
-
-		if strings.HasSuffix(pattern, ".>") {
-			prefix := strings.TrimSuffix(pattern, ">")
-			if strings.HasPrefix(subject, prefix) {
-				return true
-			}
-		}
-	}
-
-	return false
 }

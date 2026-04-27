@@ -20,6 +20,11 @@ func (c *userCore) RegisterOwner(
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:register:RegisterOwner")
 	defer span.End()
 
+	payload := map[string]any{
+		"user":   user,
+		"tenant": tenant,
+	}
+
 	var result *coreentity.RegisterResult
 	err := c.tx.WithinTransaction(ctx, func(txCtx context.Context) error {
 		tenantExist, err := c.repo.ExistsTenantByCode(txCtx, tenant.Code)
@@ -27,10 +32,7 @@ func (c *userCore) RegisterOwner(
 			return err
 		}
 		if tenantExist {
-			log.Ctx(txCtx).
-				Warn().
-				Any(common.LogKeyPayload, map[string]string{"tenantCode": tenant.Code}).
-				Msg("Tenant code already registered")
+			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, payload).Msg("Tenant code already registered")
 			return errmsg.NewCustomErrors(400).SetMessage("Tenant code is already registered")
 		}
 

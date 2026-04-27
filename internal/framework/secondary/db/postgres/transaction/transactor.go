@@ -8,6 +8,7 @@ import (
 	portsRepo "codebase-app/internal/ports/secondary/db"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 )
 
 type contextKey string
@@ -47,6 +48,12 @@ func ExecutorFromContext(ctx context.Context, fallback *sqlx.DB) SQLExecutor {
 		}
 	}
 
+	if fallback == nil {
+		log.Ctx(ctx).Debug().Msg("No SQLExecutor found in context and fallback is nil")
+		return nil
+	}
+
+	log.Ctx(ctx).Debug().Msg("No SQLExecutor found in context, using fallback")
 	return fallback
 }
 
@@ -56,29 +63,46 @@ func (t *transactor) WithinTransaction(ctx context.Context, fn func(context.Cont
 		"internal:framework:secondary:db:postgres:transaction:transactor:WithinTransaction",
 	)
 	defer span.End()
+	log.Ctx(ctx).Debug().Msg("Starting transaction")
 
 	if existing := ExecutorFromContext(ctx, nil); existing != nil {
+		log.Ctx(ctx).Debug().Msg("Already within a transaction, executing function directly")
 		return fn(ctx)
 	}
 
+	log.Ctx(ctx).Debug().Msg("Beginning new transaction")
 	tx, err := t.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
+		log.Ctx(ctx).Error().Err(err).Msg("Failed to begin transaction")
 		return err
 	}
 
 	defer func() {
 		if recovered := recover(); recovered != nil {
-			_ = tx.Rollback()
+			log.Ctx(ctx).Debug().Msg("Recovering from panic")
+			errRollback := tx.Rollback()
+			if errRollback != nil {
+				log.Ctx(ctx).Error().Err(errRollback).Msg("Failed to rollback transaction")
+			}
 			panic(recovered)
 		}
 
 		if err != nil {
-			_ = tx.Rollback()
+			log.Ctx(ctx).Debug().Msg("Error occurred, rolling back transaction")
+			errRollback := tx.Rollback()
+			if errRollback != nil {
+				log.Ctx(ctx).Error().Err(errRollback).Msg("Failed to rollback transaction")
+			}
 			return
 		}
 
+		log.Ctx(ctx).Debug().Msg("Committing transaction")
 		err = tx.Commit()
+		if err != nil {
+			log.Ctx(ctx).Error().Err(err).Msg("Failed to commit transaction")
+		}
 	}()
 
+	log.Ctx(ctx).Debug().Msg("Executing function within transaction")
 	return fn(WithExecutor(ctx, tx))
 }

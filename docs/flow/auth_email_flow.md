@@ -121,7 +121,7 @@ Behavior:
 
 - handler creates or refreshes invitation data
 - core renders the invitation email with tenant language preference
-- message is published to `email.invitation`
+- message is published to `email_invitation`
 - consumer sends the HTML email through the configured SMTP transport
 - HTTP response includes `email_sent` so UI can hide manual fallback details when delivery is queued successfully
 

@@ -13,14 +13,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type queuedInvitationEmailPayload struct {
-	Email             string `json:"email"`
-	UserName          string `json:"user_name"`
-	TenantName        string `json:"tenant_name"`
-	ActionLink        string `json:"action_link"`
-	PreferredLanguage string `json:"preferred_language"`
-}
-
 func buildInvitationActionURL(rawToken string) string {
 	return fmt.Sprintf("%s%s?token=%s",
 		config.Envs.FrontendURL.ClientBaseURL,
@@ -57,7 +49,7 @@ func (c *userInvitationCore) trySendInvitationEmail(
 		userName = *item.EmployeeName
 	}
 
-	err = c.bus.PublishJSON(ctx, common.MessageSubjectEmailInvitation, queuedInvitationEmailPayload{
+	err = c.bus.PublishJSON(ctx, common.MessageTopicEmailInvitation, coreentity.QueuedEmailMessage{
 		Email:             item.Email,
 		UserName:          userName,
 		TenantName:        item.TenantName,

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"codebase-app/internal/infrastructure/config"
+
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -188,7 +189,7 @@ func StartSpan(ctx context.Context, name string, opts ...oteltrace.SpanStartOpti
 }
 
 func RecordError(span oteltrace.Span, err error) {
-	if err == nil {
+	if span == nil || err == nil {
 		return
 	}
 
@@ -197,7 +198,7 @@ func RecordError(span oteltrace.Span, err error) {
 }
 
 func AddLogEvent(span oteltrace.Span, key string, value string) {
-	if !span.SpanContext().IsValid() {
+	if span == nil || !span.SpanContext().IsValid() {
 		return
 	}
 

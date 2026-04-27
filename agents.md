@@ -17,7 +17,9 @@ If a task changes backend workflow, coding conventions, or agent behavior, updat
 - [Error Handling](./docs/error_handling.md)
 - [Handler Pattern](./docs/handler_pattern.md)
 - [Parameter Convention](./docs/parameter_convention.md)
-- [Auth Email Flow](./docs/auth_email_flow.md)
+- [Auth Email Flow](./docs/flow/auth_email_flow.md)
+- [Storage Upload Flow](./docs/flow/storage_upload_flow.md)
+- [User Invitation Flow](./docs/flow/user_invitation_flow.md)
 
 
 ## Backend Reality Check
@@ -156,7 +158,10 @@ internal/framework/primary/http/attendance/
 
 ### Consumers and Jobs
 
-- Active consumer dependencies currently include email subscriptions and export job subscriptions.
+- Active consumer runtime uses a Watermill router with one consumer handler per topic.
+- Consumer dependency wiring currently prepares export job core dependencies; router handler registration lives in `internal/framework/primary/consumer/postgres/build.go`.
+- Consumer router middleware currently applies recoverer, bounded retry, and a shared poison queue topic.
+- Message-bus topics use manually managed Watermill Postgres tables. When adding a topic or router consumer handler, update goose migrations for both `watermill_<topic>` and `watermill_offsets_<topic>` tables, keep the shared dead-letter table available, and set an explicit consumer group.
 - Existing cron tasks include:
   - `cleanup-expired-storage-files`
   - `process-export-jobs`

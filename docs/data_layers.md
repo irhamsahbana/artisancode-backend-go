@@ -135,7 +135,9 @@ query := `
 - Postgres repositories must use the executor from `context.Context` so that multiple repository calls within one use case can share the same transaction.
 - Repository methods must not open their own transactions just to chain multiple business operations across repositories; that is the responsibility of the core/application service.
 - The exception is only for repository operations that are indeed a single internal claim/locking unit that is not exposed as cross-module orchestration.
-- Message publish written to Postgres `message_queue` can participate in the same transaction as long as the publisher also uses the executor from context.
+- Message publish uses Watermill SQL default Postgres Pub/Sub schema. Each topic has a `watermill_<topic>` table and a matching `watermill_offsets_<topic>` table.
+- Failed consumer messages that exhaust router retries are republished to the shared `watermill_dead_letter` table, with Watermill poison-queue metadata describing the original topic, handler, subscriber, and error reason.
+- The publisher can participate in the same transaction as long as it uses the executor from context. Production schema is created by goose migrations; Watermill auto-initialization is disabled.
 - Side effects outside of Postgres such as S3, email provider, or HTTP callback cannot be considered ACID just with DB transaction; for those cases use patterns like outbox/consumer if full reliability is needed.
 
 ## Tracing

@@ -40,7 +40,6 @@ func (h *userHandler) register(c *fiber.Ctx) error {
 	tenant := mapper.RegisterReqToTenant(ctx, *req)
 	result, err := h.core.RegisterOwner(ctx, user, tenant)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Register service error")
 		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}

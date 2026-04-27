@@ -1,13 +1,7 @@
 package consumer
 
 import (
-	"codebase-app/internal/entity/common"
-	exportjobconsumer "codebase-app/internal/framework/primary/consumer/postgres/export_job"
-	sharedconsumer "codebase-app/internal/framework/primary/consumer/postgres/shared"
-	userconsumer "codebase-app/internal/framework/primary/consumer/postgres/user"
-	userinvitationconsumer "codebase-app/internal/framework/primary/consumer/postgres/userinvitation"
 	infraTracing "codebase-app/internal/infrastructure/tracing"
-	integrationPorts "codebase-app/internal/ports/integration"
 	"context"
 	"errors"
 	"os"
@@ -15,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/rs/zerolog/log"
-	"go.opentelemetry.io/otel"
 )
 
 func (a *App) Run(ctx context.Context) error {
@@ -37,38 +30,21 @@ func (a *App) Run(ctx context.Context) error {
 		return err
 	}
 
-	emailConsumeCtx, err := a.emailSubscription.Consume(ctx, func(consumeCtx context.Context, msg integrationPorts.MessageBusMessage) {
-		msgCtx := otel.GetTextMapPropagator().Extract(consumeCtx, sharedconsumer.MessageHeadersCarrier(msg.Headers()))
-
-		switch msg.Subject() {
-		case common.MessageSubjectEmailVerification:
-			userconsumer.EmailVerificationHandler(msgCtx, msg)
-		case common.MessageSubjectEmailForgotPassword:
-			userconsumer.ForgotPasswordHandler(msgCtx, msg)
-		case common.MessageSubjectEmailInvitation:
-			userinvitationconsumer.InvitationHandler(msgCtx, msg)
-		default:
+	go func() {
+		<-ctx.Done()
+		logShutdownHandlers(ctx, a.handlers)
+		if a.router == nil {
+			return
 		}
-	})
-	if err != nil {
-		infraTracing.RecordError(span, err)
-		return err
-	}
+		if closeErr := a.router.Close(); closeErr != nil {
+			log.Ctx(ctx).Error().Err(closeErr).Msg("failed to close message router")
+		}
+	}()
 
-	exportConsumeCtx, err := a.exportSubscription.Consume(ctx, exportjobconsumer.RequestedHandler(a.exportCore))
-	if err != nil {
-		emailConsumeCtx.Stop()
-		infraTracing.RecordError(span, err)
-		return err
-	}
-
-	err = a.waitForShutdown(ctx)
-	if err != nil {
+	err = a.router.Run(ctx)
+	if err != nil && !errors.Is(err, context.Canceled) {
 		infraTracing.RecordError(span, err)
 	}
-
-	exportConsumeCtx.Stop()
-	emailConsumeCtx.Stop()
 
 	if shutdownErr := a.shutdownResources(ctx); shutdownErr != nil {
 		if err == nil {
@@ -81,12 +57,28 @@ func (a *App) Run(ctx context.Context) error {
 	return err
 }
 
-func (a *App) validate() error {
-	if a.emailSubscription == nil {
-		return errors.New("email subscription is required")
+func logShutdownHandlers(ctx context.Context, handlers []consumerHandlerInfo) {
+	if len(handlers) == 0 {
+		log.Ctx(ctx).Info().Msg("consumer shutdown requested with no registered handlers")
+		return
 	}
-	if a.exportSubscription == nil {
-		return errors.New("export subscription is required")
+
+	log.Ctx(ctx).Info().
+		Int("handler_count", len(handlers)).
+		Msg("consumer shutdown requested")
+
+	for _, handler := range handlers {
+		log.Ctx(ctx).Info().
+			Str("handler_name", handler.Name).
+			Str("topic", handler.Topic).
+			Str("consumer_group", handler.ConsumerGroup).
+			Msg("stopping consumer handler")
+	}
+}
+
+func (a *App) validate() error {
+	if a.router == nil {
+		return errors.New("message router is required")
 	}
 	if a.exportCore == nil {
 		return errors.New("export job processor is required")
@@ -100,12 +92,27 @@ func (a *App) shutdownResources(ctx context.Context) error {
 	defer span.End()
 
 	if a.shutdown == nil {
-		return nil
+		if a.routerClose == nil {
+			return nil
+		}
+		return a.routerClose()
 	}
 
 	err := a.shutdown()
 	if err != nil {
 		infraTracing.RecordError(span, err)
+	}
+
+	if a.routerClose != nil {
+		closeErr := a.routerClose()
+		if closeErr != nil {
+			infraTracing.RecordError(span, closeErr)
+			if err == nil {
+				err = closeErr
+			} else {
+				err = errors.Join(err, closeErr)
+			}
+		}
 	}
 
 	return err

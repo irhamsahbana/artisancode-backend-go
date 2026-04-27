@@ -110,14 +110,6 @@ func buildFrontendActionURL(path, rawToken string) string {
 	)
 }
 
-type queuedEmailPayload struct {
-	Email             string `json:"email"`
-	UserName          string `json:"user_name"`
-	TenantName        string `json:"tenant_name"`
-	ActionLink        string `json:"action_link"`
-	PreferredLanguage string `json:"preferred_language"`
-}
-
 func (c *userCore) enqueueVerificationEmail(
 	ctx context.Context,
 	userName, email, tenantName, verificationLink, preferredLanguage string,
@@ -126,7 +118,7 @@ func (c *userCore) enqueueVerificationEmail(
 		return errmsg.NewCustomErrors(500).SetMessage("Email message bus is not configured")
 	}
 
-	return c.bus.PublishJSON(ctx, common.MessageSubjectEmailVerification, queuedEmailPayload{
+	return c.bus.PublishJSON(ctx, common.MessageTopicEmailVerification, coreentity.QueuedEmailMessage{
 		Email:             email,
 		UserName:          userName,
 		TenantName:        tenantName,
@@ -143,7 +135,7 @@ func (c *userCore) enqueuePasswordResetEmail(
 		return errmsg.NewCustomErrors(500).SetMessage("Email message bus is not configured")
 	}
 
-	return c.bus.PublishJSON(ctx, common.MessageSubjectEmailForgotPassword, queuedEmailPayload{
+	return c.bus.PublishJSON(ctx, common.MessageTopicEmailForgotPassword, coreentity.QueuedEmailMessage{
 		Email:             email,
 		UserName:          userName,
 		TenantName:        tenantName,

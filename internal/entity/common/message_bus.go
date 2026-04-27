@@ -1,29 +1,20 @@
 package common
 
-import "time"
-
 const (
-	MessageSubjectEmailVerification   = "email.verification"
-	MessageSubjectEmailForgotPassword = "email.forgot-password"
-	MessageSubjectEmailInvitation     = "email.invitation"
-	MessageSubjectEmailAll            = "email.>"
-	MessageSubjectExportJobRequested  = "export.job.requested"
+	MessageTopicEmailVerification   = "email_verification"
+	MessageTopicEmailForgotPassword = "email_forgot_password"
+	MessageTopicEmailInvitation     = "email_invitation"
+	MessageTopicExportJobRequested  = "export_job_requested"
+	MessageTopicDeadLetter          = "dead_letter"
 )
 
 const (
-	MessageStreamEmailService       = "email-service"
-	MessageConsumerEmailService     = "email-service-consumer"
-	MessageStreamExportJobService   = "export-job-service"
-	MessageConsumerExportJobService = "export-job-service-consumer"
+	MessageConsumerGroupNotificationService = "notification_service"
+	MessageConsumerGroupExportJobService    = "export_job_service"
 )
 
 type MessageBusSubscriptionConfig struct {
-	StreamName          string
-	StreamDescription   string
-	Subjects            []string
-	MaxBytes            int64
-	MaxAge              time.Duration
-	ConsumerName        string
-	Durable             string
+	Topics              []string
+	ConsumerGroup       string
 	ConsumerDescription string
 }

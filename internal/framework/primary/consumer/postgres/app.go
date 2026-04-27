@@ -2,28 +2,39 @@ package consumer
 
 import (
 	corePorts "codebase-app/internal/ports/core"
-	integrationPorts "codebase-app/internal/ports/integration"
+
+	watermillMessage "github.com/ThreeDotsLabs/watermill/message"
 )
 
 type App struct {
-	emailSubscription  integrationPorts.MessageBusSubscription
-	exportSubscription integrationPorts.MessageBusSubscription
-	exportCore         corePorts.ExportJobCore
-	shutdown           func() error
+	router      *watermillMessage.Router
+	routerClose func() error
+	exportCore  corePorts.ExportJobCore
+	handlers    []consumerHandlerInfo
+	shutdown    func() error
 }
 
 type AppConfig struct {
-	EmailSubscription  integrationPorts.MessageBusSubscription
-	ExportSubscription integrationPorts.MessageBusSubscription
-	ExportCore         corePorts.ExportJobCore
-	Shutdown           func() error
+	Router      *watermillMessage.Router
+	RouterClose func() error
+	ExportCore  corePorts.ExportJobCore
+	Handlers    []consumerHandlerInfo
+	Shutdown    func() error
+}
+
+type consumerHandlerInfo struct {
+	Name          string
+	Topic         string
+	ConsumerGroup string
+	Description   string
 }
 
 func NewApp(cfg AppConfig) *App {
 	return &App{
-		emailSubscription:  cfg.EmailSubscription,
-		exportSubscription: cfg.ExportSubscription,
-		exportCore:         cfg.ExportCore,
-		shutdown:           cfg.Shutdown,
+		router:      cfg.Router,
+		routerClose: cfg.RouterClose,
+		exportCore:  cfg.ExportCore,
+		handlers:    cfg.Handlers,
+		shutdown:    cfg.Shutdown,
 	}
 }

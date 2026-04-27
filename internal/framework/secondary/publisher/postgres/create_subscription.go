@@ -3,11 +3,12 @@ package postgres
 import (
 	"context"
 
+	watermillSQL "github.com/ThreeDotsLabs/watermill-sql/v4/pkg/sql"
+	"github.com/jmoiron/sqlx"
+
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/infrastructure/tracing"
 	integrationPorts "codebase-app/internal/ports/integration"
-
-	"github.com/jmoiron/sqlx"
 )
 
 type consumerManager struct {
@@ -28,10 +29,20 @@ func (m *consumerManager) CreateSubscription(ctx context.Context, cfg common.Mes
 	ctx, span := tracing.StartSpan(ctx, "internal:framework:secondary:publisher:postgres:create_subscription:CreateSubscription")
 	defer span.End()
 
+	subscriber, err := newWatermillSubscriber(
+		watermillSQL.BeginnerFromStdSQL(m.db.DB),
+		m.cfg,
+		cfg,
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return &postgresConsumer{
-		db:  m.db,
-		cfg: m.cfg,
-		def: cfg,
+		db:         m.db,
+		cfg:        m.cfg,
+		def:        cfg,
+		subscriber: subscriber,
 	}, nil
 }
 
