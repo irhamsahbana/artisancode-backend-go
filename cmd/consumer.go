@@ -69,6 +69,6 @@ func RunConsumer(cmd *flag.FlagSet, args []string) {
 
 	err = app.Run(context.Background())
 	if err != nil {
-		log.Fatal().Err(err).Msg("consumer::RunConsumer::Failed to run consumer app")
+		log.Fatal().Err(err).Msg("Failed to run consumer app")
 	}
 }

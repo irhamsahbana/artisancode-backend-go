@@ -86,6 +86,6 @@ func RunHttpServer(cmd *flag.FlagSet, args []string) {
 		serverPort,
 	)
 	if err != nil {
-		log.Fatal().Err(err).Msg("http::RunHttpServer::Failed to run HTTP app")
+		log.Fatal().Err(err).Msg("Failed to run HTTP app")
 	}
 }

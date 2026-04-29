@@ -51,10 +51,12 @@ Do not document `internal/module/<module>` as the primary backend pattern when y
   - `make ws`
   - `go run ./cmd/bin/main.go consumer`
   - `make scheduler`
+  - `go run ./cmd/bin/main.go cronjob --task=process-export-jobs --limit=100`
   - `make migrate cmd=up`
   - `make create-migration name=create_users_table`
   - `make seed table=rbac`
 - There is no dedicated Make test target right now. Use direct `go test` commands for verification, starting with the touched package when possible and escalating to `go test ./...` for broader changes.
+- `Taskfile.yml` still exposes `task clear-data confirm=DELETE_ALL_DATA` for destructive local data resets. There is no Make wrapper for it; only use it when a task explicitly calls for wiping local application data.
 - When changing queued email templates or copy, render previews with `go run ./cmd/bin/main.go email-preview`.
 - When changing storage upload cleanup or message queue cleanup behavior, use the existing helpers:
   - `make test-storage-upload`
