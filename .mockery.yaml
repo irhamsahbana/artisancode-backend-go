@@ -1,0 +1,54 @@
+all: false
+dir: '{{.InterfaceDir}}/mocks'
+filename: '{{.InterfaceName | snakecase}}.go'
+force-file-write: true
+formatter: goimports
+include-auto-generated: false
+log-level: info
+pkgname: mocks
+recursive: false
+require-template-schema-exists: true
+structname: '{{.InterfaceName}}'
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  codebase-app/internal/ports/secondary/db:
+    config:
+      dir: internal/ports/secondary/db/mocks
+      pkgname: mocks
+    interfaces:
+      AttendanceRepository:
+      CompanyRepository:
+      EmployeeRepository:
+      ExportJobRepository:
+      InternalClientRepository:
+      InternalInvoiceRepository:
+      InternalOrderRepository:
+      InternalProductRepository:
+      InternalQuotationRepository:
+      InternalUserRepository:
+      JobPositionRepository:
+      MasterRepository:
+      MeRepository:
+      MessageQueueRepository:
+      OrgUnitRepository:
+      RbacRepository:
+      StorageRepository:
+      Transactor:
+      UserInvitationRepository:
+      UserRepository:
+      WorkLocationRepository:
+      WorkShiftRepository:
+  codebase-app/internal/ports/integration:
+    config:
+      dir: internal/ports/integration/mocks
+      pkgname: mocks
+    interfaces:
+      DokuClient:
+      DOKUWebhookVerifier:
+      MessageBusMessage:
+      MessageBusSubscription:
+      MessageBusSubscriptionContext:
+      MessagePublisher:
+      MessageSubscriptionManager:
+      StorageContract:

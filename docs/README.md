@@ -13,5 +13,6 @@ When a backend task changes workflow expectations, coding conventions, or agent 
 - [Auth Context](./auth_context.md) - UserContext, access control, company structure
 - [Module Integration](./module_integration.md) - DI, route protection, cross-module usage
 - [Error Handling](./error_handling.md) - Error types, status codes, per-layer patterns
+- [Unit Testing Guidelines](./unit-testing-guidelines.md) - Mockery, generated mocks, and core usecase test style
 - [Handler Pattern](./handler_pattern.md) - CRUD handler boilerplate, pagination, log levels
 - [Parameter Convention](./parameter_convention.md) - Value vs pointer, filter structs, mapper naming

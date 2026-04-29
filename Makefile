@@ -1,9 +1,10 @@
-.PHONY: migrate restore create-migration seed dev daemon ws build build-dev build-staging build-production lint-fix lint-ci nats commit help test-storage-upload cleanup-storage-orphans cleanup-message-queue scheduler
+.PHONY: migrate restore create-migration seed dev daemon ws build build-dev build-staging build-production lint-fix lint-ci nats commit help mock test-storage-upload cleanup-storage-orphans cleanup-message-queue scheduler
 
 # Variables
 GOOSE_CMD := goose
 APP_NAME := app
 APP_PORT := 3939
+MOCKERY_VERSION := v3.7.0
 
 # Default
 help: ## Show this help message
@@ -25,6 +26,9 @@ seed: ## Run seed (usage: make seed table=rbac)
 # Development
 dev: ## Run development server
 	@go run ./cmd/bin/main.go --port=$(APP_PORT)
+
+mock: ## Generate mocks using mockery
+	@go run github.com/vektra/mockery/v3@$(MOCKERY_VERSION)
 
 test-storage-upload: ## Test storage presigned upload (usage: AUTH_TOKEN=xxx make test-storage-upload [file=./path.jpg])
 	@./scripts/test_storage_upload.sh $(file)

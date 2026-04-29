@@ -15,6 +15,7 @@ If a task changes backend workflow, coding conventions, or agent behavior, updat
 - [Localization](./docs/localization.md)
 - [Module Integration](./docs/module_integration.md)
 - [Error Handling](./docs/error_handling.md)
+- [Unit Testing Guidelines](./docs/unit-testing-guidelines.md)
 - [Handler Pattern](./docs/handler_pattern.md)
 - [Parameter Convention](./docs/parameter_convention.md)
 - [Auth Email Flow](./docs/flow/auth_email_flow.md)

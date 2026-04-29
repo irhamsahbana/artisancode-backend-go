@@ -3,21 +3,12 @@ package core
 import (
 	"codebase-app/internal/entity/coreentity"
 	infraConfig "codebase-app/internal/infrastructure/config"
+	integrationMocks "codebase-app/internal/ports/integration/mocks"
 	"context"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
-
-type fakeDOKUVerifier struct {
-	valid bool
-}
-
-func (f fakeDOKUVerifier) VerifyWebhookSignatureHeaders(
-	headers coreentity.DOKUWebhookSignatureHeaders,
-	body []byte,
-	targetPath string,
-) bool {
-	return f.valid
-}
 
 func init() {
 	infraConfig.Envs = &infraConfig.Config{}
@@ -25,11 +16,8 @@ func init() {
 }
 
 func TestHandleDOKUWebhook(t *testing.T) {
-	core := NewWebhookCore(Config{
-		DOKUVerifier: fakeDOKUVerifier{valid: true},
-	})
-
-	result, err := core.HandleDOKUWebhook(context.Background(), coreentity.DOKUWebhookNotification{
+	ctx := context.Background()
+	notification := coreentity.DOKUWebhookNotification{
 		TargetPath: "/webhooks/doku",
 		RawBody:    []byte(`{"order":{"invoice_number":"INV-001"}}`),
 		Headers: coreentity.DOKUWebhookSignatureHeaders{
@@ -44,25 +32,48 @@ func TestHandleDOKUWebhook(t *testing.T) {
 				Status: "SUCCESS",
 			},
 		},
+	}
+	verifier := integrationMocks.NewDOKUWebhookVerifier(t)
+	verifier.EXPECT().
+		VerifyWebhookSignatureHeaders(notification.Headers, notification.RawBody, notification.TargetPath).
+		Return(true)
+
+	core := NewWebhookCore(Config{
+		DOKUVerifier: verifier,
 	})
-	if err != nil {
-		t.Fatalf("HandleDOKUWebhook returned error: %v", err)
-	}
-	if result.Provider != "doku" {
-		t.Fatalf("expected provider doku, got %s", result.Provider)
-	}
+
+	result, err := core.HandleDOKUWebhook(ctx, notification)
+
+	require.NoError(t, err)
+	require.Equal(t, "doku", result.Provider)
+	require.Equal(t, "INV-001", result.InvoiceNumber)
+	require.Equal(t, "PAID", result.OrderStatus)
+	require.Equal(t, "SUCCESS", result.PaymentStatus)
 }
 
 func TestHandleDOKUWebhookInvalidSignature(t *testing.T) {
-	core := NewWebhookCore(Config{
-		DOKUVerifier: fakeDOKUVerifier{valid: false},
-	})
-
-	_, err := core.HandleDOKUWebhook(context.Background(), coreentity.DOKUWebhookNotification{
+	notification := coreentity.DOKUWebhookNotification{
 		TargetPath: "/webhooks/doku",
 		RawBody:    []byte(`{}`),
-	})
-	if err == nil {
-		t.Fatal("expected invalid signature error")
 	}
+	verifier := integrationMocks.NewDOKUWebhookVerifier(t)
+	verifier.EXPECT().
+		VerifyWebhookSignatureHeaders(notification.Headers, notification.RawBody, notification.TargetPath).
+		Return(false)
+
+	core := NewWebhookCore(Config{
+		DOKUVerifier: verifier,
+	})
+
+	_, err := core.HandleDOKUWebhook(context.Background(), notification)
+
+	require.Error(t, err)
+}
+
+func TestHandleDOKUWebhookMissingVerifier(t *testing.T) {
+	core := NewWebhookCore(Config{})
+
+	_, err := core.HandleDOKUWebhook(context.Background(), coreentity.DOKUWebhookNotification{})
+
+	require.Error(t, err)
 }
