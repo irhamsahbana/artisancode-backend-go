@@ -13,24 +13,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestExportJobCore_ProcessPendingExportJobs(t *testing.T) {
+func TestExportJobCore_ProcessExportJob(t *testing.T) {
 	ctx := context.Background()
+	filter := coreentity.ExportJobDetailFilter{
+		TenantID: "tenant-1",
+		ID:       "export-1",
+	}
 
 	tests := []struct {
 		name  string
-		limit int
 		setup func(
 			repo *repositoryMocks.ExportJobRepository,
 			attendanceRepo *repositoryMocks.AttendanceRepository,
 			storageRepo *repositoryMocks.StorageRepository,
 			s3 *integrationMocks.StorageContract,
 		)
-		want      *coreentity.ExportJobProcessResult
 		wantError bool
 	}{
 		{
-			name:  "returns empty result when no job is claimed",
-			limit: 10,
+			name: "success processes pending attendance export",
 			setup: func(
 				repo *repositoryMocks.ExportJobRepository,
 				attendanceRepo *repositoryMocks.AttendanceRepository,
@@ -38,33 +39,24 @@ func TestExportJobCore_ProcessPendingExportJobs(t *testing.T) {
 				s3 *integrationMocks.StorageContract,
 			) {
 				repo.EXPECT().
-					ClaimPendingExportJob(mock.Anything).
-					Return(nil, nil)
-			},
-			want: &coreentity.ExportJobProcessResult{},
-		},
-		{
-			name:  "uses minimum limit and processes one claimed job",
-			limit: 0,
-			setup: func(
-				repo *repositoryMocks.ExportJobRepository,
-				attendanceRepo *repositoryMocks.AttendanceRepository,
-				storageRepo *repositoryMocks.StorageRepository,
-				s3 *integrationMocks.StorageContract,
-			) {
-				startedAt := "2026-04-30T10:00:00Z"
-				repo.EXPECT().
-					ClaimPendingExportJob(mock.Anything).
+					GetExportJob(mock.Anything, filter).
 					Return(&coreentity.ExportJob{
 						ID:           "export-1",
 						TenantID:     "tenant-1",
 						RequestedBy:  "user-1",
 						ProcessorKey: "attendance_logs",
 						Format:       coreentity.ExportJobFormatCSV,
-						Status:       coreentity.ExportJobStatusProcessing,
+						Status:       coreentity.ExportJobStatusPending,
 						ParamsJSON:   `{"language":"en"}`,
-						StartedAt:    &startedAt,
 					}, nil)
+				repo.EXPECT().
+					UpdateExportJob(mock.Anything, mock.MatchedBy(func(update coreentity.ExportJobUpdate) bool {
+						return update.TenantID == "tenant-1" &&
+							update.ID == "export-1" &&
+							update.Status == coreentity.ExportJobStatusProcessing &&
+							update.StartedAt != nil
+					})).
+					Return(nil)
 				attendanceRepo.EXPECT().
 					GetAttendanceLogsAll(mock.Anything, mock.MatchedBy(func(filter coreentity.AttendanceLogListFilter) bool {
 						return filter.TenantID == "tenant-1" &&
@@ -73,11 +65,19 @@ func TestExportJobCore_ProcessPendingExportJobs(t *testing.T) {
 					})).
 					Return(nil, nil)
 				storageRepo.EXPECT().
-					CreateFile(mock.Anything, mock.AnythingOfType("coreentity.File")).
+					CreateFile(mock.Anything, mock.MatchedBy(func(file coreentity.File) bool {
+						return file.TenantID == "tenant-1" &&
+							file.CreatedBy == "user-1" &&
+							file.OriginalFilename != nil &&
+							file.ContentType != nil &&
+							*file.ContentType == "text/csv"
+					})).
 					Return(&coreentity.File{ID: "file-1"}, nil)
 				s3.EXPECT().
 					UploadBytes(mock.Anything, mock.MatchedBy(func(req *coreentity.UploadBytesReq) bool {
-						return req != nil && req.ContentType == "text/csv" && len(req.Body) > 0
+						return req != nil &&
+							req.ContentType == "text/csv" &&
+							len(req.Body) > 0
 					})).
 					Return(&coreentity.UploadFileResp{Filename: "private/report.csv"}, nil)
 				storageRepo.EXPECT().
@@ -95,19 +95,20 @@ func TestExportJobCore_ProcessPendingExportJobs(t *testing.T) {
 					Return(nil)
 				repo.EXPECT().
 					UpdateExportJob(mock.Anything, mock.MatchedBy(func(update coreentity.ExportJobUpdate) bool {
-						return update.Status == coreentity.ExportJobStatusCompleted &&
+						return update.TenantID == "tenant-1" &&
+							update.ID == "export-1" &&
+							update.Status == coreentity.ExportJobStatusCompleted &&
 							update.FileID != nil &&
 							*update.FileID == "file-1" &&
 							update.StartedAt != nil &&
-							*update.StartedAt == startedAt
+							update.CompletedAt != nil &&
+							update.ExpiresAt != nil
 					})).
 					Return(nil)
 			},
-			want: &coreentity.ExportJobProcessResult{Processed: 1},
 		},
 		{
-			name:  "returns claim error",
-			limit: 1,
+			name: "does nothing when job is not pending",
 			setup: func(
 				repo *repositoryMocks.ExportJobRepository,
 				attendanceRepo *repositoryMocks.AttendanceRepository,
@@ -115,38 +116,72 @@ func TestExportJobCore_ProcessPendingExportJobs(t *testing.T) {
 				s3 *integrationMocks.StorageContract,
 			) {
 				repo.EXPECT().
-					ClaimPendingExportJob(mock.Anything).
-					Return(nil, errors.New("claim failed"))
+					GetExportJob(mock.Anything, filter).
+					Return(&coreentity.ExportJob{
+						ID:       "export-1",
+						TenantID: "tenant-1",
+						Status:   coreentity.ExportJobStatusCompleted,
+					}, nil)
+			},
+		},
+		{
+			name: "returns repository lookup error",
+			setup: func(
+				repo *repositoryMocks.ExportJobRepository,
+				attendanceRepo *repositoryMocks.AttendanceRepository,
+				storageRepo *repositoryMocks.StorageRepository,
+				s3 *integrationMocks.StorageContract,
+			) {
+				repo.EXPECT().
+					GetExportJob(mock.Anything, filter).
+					Return(nil, errors.New("get export job failed"))
 			},
 			wantError: true,
 		},
 		{
-			name:  "marks job failed when processing fails",
-			limit: 1,
+			name: "returns processing status update error",
 			setup: func(
 				repo *repositoryMocks.ExportJobRepository,
 				attendanceRepo *repositoryMocks.AttendanceRepository,
 				storageRepo *repositoryMocks.StorageRepository,
 				s3 *integrationMocks.StorageContract,
 			) {
-				startedAt := "2026-04-30T10:00:00Z"
 				repo.EXPECT().
-					ClaimPendingExportJob(mock.Anything).
+					GetExportJob(mock.Anything, filter).
 					Return(&coreentity.ExportJob{
 						ID:           "export-1",
 						TenantID:     "tenant-1",
-						ProcessorKey: "unsupported",
-						Status:       coreentity.ExportJobStatusProcessing,
-						StartedAt:    &startedAt,
+						ProcessorKey: "attendance_logs",
+						Status:       coreentity.ExportJobStatusPending,
+						ParamsJSON:   `{}`,
 					}, nil)
 				repo.EXPECT().
 					UpdateExportJob(mock.Anything, mock.MatchedBy(func(update coreentity.ExportJobUpdate) bool {
-						return update.TenantID == "tenant-1" &&
-							update.ID == "export-1" &&
-							update.Status == coreentity.ExportJobStatusFailed &&
-							update.ErrorMessage != nil &&
-							update.StartedAt != nil &&
-							*update.StartedAt == startedAt
+						return update.Status == coreentity.ExportJobStatusProcessing
+					})).
+					Return(errors.New("update processing failed"))
+			},
+			wantError: true,
+		},
+		{
+			name: "returns processor error",
+			setup: func(
+				repo *repositoryMocks.ExportJobRepository,
+				attendanceRepo *repositoryMocks.AttendanceRepository,
+				storageRepo *repositoryMocks.StorageRepository,
+				s3 *integrationMocks.StorageContract,
+			) {
+				repo.EXPECT().
+					GetExportJob(mock.Anything, filter).
+					Return(&coreentity.ExportJob{
+						ID:           "export-1",
+						TenantID:     "tenant-1",
+						ProcessorKey: "unknown",
+						Status:       coreentity.ExportJobStatusPending,
+					}, nil)
+				repo.EXPECT().
+					UpdateExportJob(mock.Anything, mock.MatchedBy(func(update coreentity.ExportJobUpdate) bool {
+						return update.Status == coreentity.ExportJobStatusProcessing
 					})).
 					Return(nil)
 			},
@@ -168,7 +203,7 @@ func TestExportJobCore_ProcessPendingExportJobs(t *testing.T) {
 				StorageRepo:    storageRepo,
 				S3:             s3,
 			})
-			got, err := core.ProcessPendingExportJobs(ctx, tt.limit)
+			err := core.ProcessExportJob(ctx, filter)
 
 			if tt.wantError {
 				require.Error(t, err)
@@ -176,7 +211,6 @@ func TestExportJobCore_ProcessPendingExportJobs(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			require.Equal(t, tt.want, got)
 		})
 	}
 }
