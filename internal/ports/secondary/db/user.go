@@ -9,8 +9,13 @@ type UserRepository interface {
 	ExistsTenantByCode(ctx context.Context, code string) (bool, error)
 	InsertTenant(ctx context.Context, tenant coreentity.Tenant) (string, error)
 	FindActiveUserByEmailAndTenant(ctx context.Context, email, tenantCode string) (*coreentity.User, error)
+	FindActiveUsersByEmail(ctx context.Context, email string) ([]coreentity.User, error)
 	FindActiveUserByEmailAndTenantID(ctx context.Context, email, tenantID string) (*coreentity.User, error)
 	FindActiveUserByIDAndTenant(ctx context.Context, userID, tenantID string) (*coreentity.User, error)
+	FindAuthIdentityByProviderSubject(ctx context.Context, provider, providerSubject string) (*coreentity.UserAuthIdentity, error)
+	CreateAuthIdentity(ctx context.Context, identity coreentity.UserAuthIdentity) error
+	UpdateAuthIdentityLastLogin(ctx context.Context, identityID string) error
+	GetTenantProfile(ctx context.Context, tenantID string) (*coreentity.TenantProfile, error)
 	GetTenantPreferredLanguage(ctx context.Context, tenantID string) (string, error)
 	ExistsActiveUserByEmailAndTenant(ctx context.Context, email, tenantID string) (bool, error)
 	ExistsActiveUserByEmailAndTenantExcludeUser(ctx context.Context, email, tenantID, excludeUserID string) (bool, error)

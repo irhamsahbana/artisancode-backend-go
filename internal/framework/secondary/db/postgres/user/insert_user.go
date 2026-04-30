@@ -15,8 +15,14 @@ func (r *userRepo) InsertUser(ctx context.Context, user coreentity.User) (string
 
 	query := `
 		INSERT INTO users (
-			tenant_id, company_id, name, username, email, password
-		) VALUES (?, ?, ?, ?, ?, ?)
+			tenant_id,
+			company_id,
+			name,
+			username,
+			email,
+			password,
+			email_verified_at
+		) VALUES (?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
 	`
 
@@ -29,6 +35,7 @@ func (r *userRepo) InsertUser(ctx context.Context, user coreentity.User) (string
 		user.UserName,
 		user.Email,
 		user.Password,
+		user.EmailVerifiedAt,
 	)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, user).Msg("Failed to insert user")

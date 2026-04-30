@@ -36,11 +36,15 @@ func Error(errorMsg any) Response {
 	}
 
 	if errHttp, ok := errorMsg.(*errmsg.CustomError); ok {
-		return Response{
+		resp := Response{
 			"errors":  errHttp.Errors,
 			"success": false,
 			"message": errHttp.Msg,
 		}
+		if errHttp.ErrorCode != "" {
+			resp["code"] = errHttp.ErrorCode
+		}
+		return resp
 	}
 
 	if err, ok := errorMsg.(error); ok {

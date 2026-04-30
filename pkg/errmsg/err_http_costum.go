@@ -1,9 +1,10 @@
 package errmsg
 
 type CustomError struct {
-	Code   int
-	Errors map[string][]string
-	Msg    string
+	Code      int
+	ErrorCode string
+	Errors    map[string][]string
+	Msg       string
 }
 
 func (e *CustomError) Error() string {
@@ -64,9 +65,10 @@ func WithMessage(msg string) Option {
 
 func errorCustomHandler(lang Language, err *CustomError) (int, *CustomError) {
 	localized := &CustomError{
-		Code:   err.Code,
-		Errors: make(map[string][]string, len(err.Errors)),
-		Msg:    TranslateText(lang, err.Msg),
+		Code:      err.Code,
+		ErrorCode: err.ErrorCode,
+		Errors:    make(map[string][]string, len(err.Errors)),
+		Msg:       TranslateText(lang, err.Msg),
 	}
 
 	for field, messages := range err.Errors {
@@ -78,4 +80,9 @@ func errorCustomHandler(lang Language, err *CustomError) (int, *CustomError) {
 	}
 
 	return localized.Code, localized
+}
+
+func (e *CustomError) SetErrorCode(code string) *CustomError {
+	e.ErrorCode = code
+	return e
 }

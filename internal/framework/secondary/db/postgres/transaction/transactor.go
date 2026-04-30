@@ -80,29 +80,51 @@ func (t *transactor) WithinTransaction(ctx context.Context, fn func(context.Cont
 	defer func() {
 		if recovered := recover(); recovered != nil {
 			log.Ctx(ctx).Debug().Msg("Recovering from panic")
-			errRollback := tx.Rollback()
-			if errRollback != nil {
-				log.Ctx(ctx).Error().Err(errRollback).Msg("Failed to rollback transaction")
-			}
+			t.rollbackTransaction(ctx, tx)
 			panic(recovered)
 		}
 
 		if err != nil {
 			log.Ctx(ctx).Debug().Msg("Error occurred, rolling back transaction")
-			errRollback := tx.Rollback()
-			if errRollback != nil {
-				log.Ctx(ctx).Error().Err(errRollback).Msg("Failed to rollback transaction")
-			}
+			t.rollbackTransaction(ctx, tx)
 			return
 		}
 
-		log.Ctx(ctx).Debug().Msg("Committing transaction")
-		err = tx.Commit()
-		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Msg("Failed to commit transaction")
-		}
+		err = t.commitTransaction(ctx, tx)
 	}()
 
 	log.Ctx(ctx).Debug().Msg("Executing function within transaction")
 	return fn(WithExecutor(ctx, tx))
+}
+
+func (t *transactor) rollbackTransaction(ctx context.Context, tx *sqlx.Tx) {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:transaction:transactor:rollbackTransaction",
+	)
+	defer span.End()
+
+	log.Ctx(ctx).Debug().Msg("Rolling back transaction")
+	err := tx.Rollback()
+	if err != nil {
+		tracing.RecordError(span, err)
+		log.Ctx(ctx).Error().Err(err).Msg("Failed to rollback transaction")
+	}
+}
+
+func (t *transactor) commitTransaction(ctx context.Context, tx *sqlx.Tx) error {
+	ctx, span := tracing.StartSpan(
+		ctx,
+		"internal:framework:secondary:db:postgres:transaction:transactor:commitTransaction",
+	)
+	defer span.End()
+
+	log.Ctx(ctx).Debug().Msg("Committing transaction")
+	err := tx.Commit()
+	if err != nil {
+		tracing.RecordError(span, err)
+		log.Ctx(ctx).Error().Err(err).Msg("Failed to commit transaction")
+	}
+
+	return err
 }

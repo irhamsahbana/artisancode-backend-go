@@ -28,6 +28,8 @@ func NewUserHandler(cfg Config) *userHandler {
 func (h *userHandler) Register(router fiber.Router) {
 	router.Post("/login", h.login)
 	router.Post("/register", h.register)
+	router.Post("/google/register", h.googleRegister)
+	router.Post("/google/login", h.googleLogin)
 	router.Post("/verify-email", h.verifyEmail)
 	router.Post("/resend-verification-email", h.resendVerificationEmail)
 	router.Post("/forgot-password", h.forgotPassword)
@@ -38,4 +40,8 @@ func (h *userHandler) Register(router fiber.Router) {
 	router.Post("/", middleware.Auth, h.createUser)
 	router.Put("/:id", middleware.Auth, h.updateUser)
 	router.Delete("/:id", middleware.Auth, h.deleteUser)
+}
+
+func (h *userHandler) RegisterTenant(router fiber.Router) {
+	router.Get("/profile", h.getTenantProfile)
 }

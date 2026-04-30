@@ -7,8 +7,11 @@ import (
 
 type UserCore interface {
 	Login(ctx context.Context, user coreentity.User) (*coreentity.AuthTokens, error)
+	GoogleRegister(ctx context.Context, input coreentity.GoogleRegisterInput) (*coreentity.GoogleRegisterResult, error)
+	GoogleLogin(ctx context.Context, input coreentity.GoogleLoginInput) (*coreentity.AuthTokens, error)
 	RefreshToken(ctx context.Context, user coreentity.User) (*coreentity.AuthTokens, error)
 	RegisterOwner(ctx context.Context, user coreentity.User, tenant coreentity.Tenant) (*coreentity.RegisterResult, error)
+	GetTenantProfile(ctx context.Context) (*coreentity.TenantProfile, error)
 	VerifyEmail(ctx context.Context, token coreentity.UserActionToken) error
 	ResendVerificationEmail(ctx context.Context, user coreentity.User) error
 	ForgotPassword(ctx context.Context, user coreentity.User) error

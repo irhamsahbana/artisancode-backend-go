@@ -7,6 +7,7 @@ This project separates normal auth sessions from one-time email actions.
 Current covered flows:
 
 - email verification after register
+- Google register/login session creation
 - resend verification email
 - employee or admin invitation email
 - forgot password
@@ -19,6 +20,8 @@ Current covered flows:
 - Email verification and password reset must use separate one-time tokens.
 - Store action tokens in `user_action_tokens`.
 - Login must reject users whose `email_verified_at` is still `NULL`.
+- Google register may set `email_verified_at` immediately when Google `email_verified` is true.
+- Google access tokens, refresh tokens, authorization codes, and raw `id_token` values must not be stored or logged.
 - Forgot-password responses must stay generic enough to avoid leaking whether an email exists.
 
 ## Database
@@ -27,6 +30,7 @@ Relevant schema:
 
 - `users.email_verified_at`
 - `user_action_tokens`
+- `user_auth_identities`
 
 `user_action_tokens` stores:
 
@@ -43,6 +47,13 @@ Purposes currently used:
 
 Invitation acceptance currently uses `user_invitations.accept_token_hash` and is delivered through the invitation flow, not `user_action_tokens`.
 
+`user_auth_identities` links external providers to active users. For Google SSO V1:
+
+- provider is `google`
+- `(provider, provider_subject)` is globally unique for active identities
+- one Google account can be linked to one active Presense user only
+- auto-link is allowed only when the Google email matches exactly one active user globally
+
 ## HTTP Endpoints
 
 Public auth routes:
@@ -54,12 +65,22 @@ Public auth routes:
 - `POST /users/resend-verification-email`
 - `POST /users/forgot-password`
 - `POST /users/reset-password`
+- `POST /users/google/register`
+- `POST /users/google/login`
+
+Protected tenant route:
+
+- `GET /tenant/profile`
 
 Tenant-aware request payloads:
 
 - `POST /users/login` requires `email`, `password`, and `tenant_code`
 - `POST /users/resend-verification-email` requires `email` and `tenant_code`
 - `POST /users/forgot-password` requires `email` and `tenant_code`
+- `POST /users/google/register` requires `id_token`, `tenant_name`, `tenant_code`, and `confirm_tenant_setup=true`
+- `POST /users/google/login` requires `id_token`
+
+Google register requires a user-chosen `tenant_code` before tenant creation. Backend normalizes it to uppercase and enforces 3-5 alphanumeric characters, excluding ambiguous `0`, `O`, `1`, and `I`, reserved codes, and active tenant collisions.
 
 ## Rate Limiting
 
@@ -107,6 +128,10 @@ Environment config:
 - `APP_SUPPORT_EMAIL`
 - `FRONTEND_CLIENT_BASE_URL` (used to build the default logo asset URL when `APP_EMAIL_LOGO_URL` is empty)
 - `FRONTEND_INVITATION_URL` (used to build employee/admin invitation links in outgoing email)
+- `GOOGLE_WEB_CLIENT_ID`
+- `GOOGLE_IOS_CLIENT_ID`
+- `GOOGLE_ANDROID_CLIENT_ID`
+- `GOOGLE_CLIENT_ID` (fallback compatibility)
 
 ## Invitation Delivery
 

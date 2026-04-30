@@ -170,8 +170,11 @@ func parseHeaders(headersStr string) map[string]string {
 
 func StartSpan(ctx context.Context, name string, opts ...oteltrace.SpanStartOption) (context.Context, oteltrace.Span) {
 	tracerName := globalServiceName
-	if tracerName == "" {
+	if tracerName == "" && config.Envs != nil {
 		tracerName = config.Envs.App.Name
+	}
+	if tracerName == "" {
+		tracerName = "codebase-app"
 	}
 
 	ctx, span := otel.Tracer(tracerName).Start(ctx, name, opts...)

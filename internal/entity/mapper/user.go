@@ -96,6 +96,47 @@ func AuthTokensToLoginResp(tokens coreentity.AuthTokens) restentity.LoginResp {
 	}
 }
 
+func GoogleRegisterReqToCore(ctx context.Context, req restentity.GoogleRegisterReq) coreentity.GoogleRegisterInput {
+	_ = common.GetUserContext(ctx)
+	preferredLanguage := req.Language
+	if preferredLanguage == "" {
+		preferredLanguage = "id"
+	}
+	return coreentity.GoogleRegisterInput{
+		IDToken:            req.IDToken,
+		Nonce:              req.Nonce,
+		TenantName:         req.TenantName,
+		TenantCode:         req.TenantCode,
+		ConfirmTenantSetup: req.ConfirmTenantSetup,
+		PreferredLanguage:  preferredLanguage,
+	}
+}
+
+func GoogleLoginReqToCore(ctx context.Context, req restentity.GoogleLoginReq) coreentity.GoogleLoginInput {
+	_ = common.GetUserContext(ctx)
+	return coreentity.GoogleLoginInput{
+		IDToken: req.IDToken,
+		Nonce:   req.Nonce,
+	}
+}
+
+func GoogleRegisterResultToResp(result coreentity.GoogleRegisterResult) restentity.GoogleRegisterResp {
+	return restentity.GoogleRegisterResp{
+		AccessToken:  result.AccessToken,
+		RefreshToken: result.RefreshToken,
+		TenantCode:   result.TenantCode,
+	}
+}
+
+func TenantProfileToResp(profile coreentity.TenantProfile) restentity.TenantProfileResp {
+	return restentity.TenantProfileResp{
+		TenantID:            profile.ID,
+		TenantName:          profile.Name,
+		TenantCode:          profile.Code,
+		CanChangeTenantCode: profile.CanChangeTenantCode,
+	}
+}
+
 func RegisterResultToRegisterResp(result coreentity.RegisterResult) restentity.RegisterResp {
 	return restentity.RegisterResp{
 		Email:                result.Email,

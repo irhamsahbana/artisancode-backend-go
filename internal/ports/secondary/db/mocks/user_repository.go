@@ -38,6 +38,63 @@ func (_m *UserRepository) EXPECT() *UserRepository_Expecter {
 	return &UserRepository_Expecter{mock: &_m.Mock}
 }
 
+// CreateAuthIdentity provides a mock function for the type UserRepository
+func (_mock *UserRepository) CreateAuthIdentity(ctx context.Context, identity coreentity.UserAuthIdentity) error {
+	ret := _mock.Called(ctx, identity)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateAuthIdentity")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, coreentity.UserAuthIdentity) error); ok {
+		r0 = returnFunc(ctx, identity)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// UserRepository_CreateAuthIdentity_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateAuthIdentity'
+type UserRepository_CreateAuthIdentity_Call struct {
+	*mock.Call
+}
+
+// CreateAuthIdentity is a helper method to define mock.On call
+//   - ctx context.Context
+//   - identity coreentity.UserAuthIdentity
+func (_e *UserRepository_Expecter) CreateAuthIdentity(ctx interface{}, identity interface{}) *UserRepository_CreateAuthIdentity_Call {
+	return &UserRepository_CreateAuthIdentity_Call{Call: _e.mock.On("CreateAuthIdentity", ctx, identity)}
+}
+
+func (_c *UserRepository_CreateAuthIdentity_Call) Run(run func(ctx context.Context, identity coreentity.UserAuthIdentity)) *UserRepository_CreateAuthIdentity_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 coreentity.UserAuthIdentity
+		if args[1] != nil {
+			arg1 = args[1].(coreentity.UserAuthIdentity)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepository_CreateAuthIdentity_Call) Return(err error) *UserRepository_CreateAuthIdentity_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *UserRepository_CreateAuthIdentity_Call) RunAndReturn(run func(ctx context.Context, identity coreentity.UserAuthIdentity) error) *UserRepository_CreateAuthIdentity_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateUser provides a mock function for the type UserRepository
 func (_mock *UserRepository) CreateUser(ctx context.Context, data coreentity.User) (*coreentity.User, error) {
 	ret := _mock.Called(ctx, data)
@@ -721,6 +778,148 @@ func (_c *UserRepository_FindActiveUserByIDAndTenant_Call) RunAndReturn(run func
 	return _c
 }
 
+// FindActiveUsersByEmail provides a mock function for the type UserRepository
+func (_mock *UserRepository) FindActiveUsersByEmail(ctx context.Context, email string) ([]coreentity.User, error) {
+	ret := _mock.Called(ctx, email)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindActiveUsersByEmail")
+	}
+
+	var r0 []coreentity.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ([]coreentity.User, error)); ok {
+		return returnFunc(ctx, email)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) []coreentity.User); ok {
+		r0 = returnFunc(ctx, email)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]coreentity.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, email)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepository_FindActiveUsersByEmail_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindActiveUsersByEmail'
+type UserRepository_FindActiveUsersByEmail_Call struct {
+	*mock.Call
+}
+
+// FindActiveUsersByEmail is a helper method to define mock.On call
+//   - ctx context.Context
+//   - email string
+func (_e *UserRepository_Expecter) FindActiveUsersByEmail(ctx interface{}, email interface{}) *UserRepository_FindActiveUsersByEmail_Call {
+	return &UserRepository_FindActiveUsersByEmail_Call{Call: _e.mock.On("FindActiveUsersByEmail", ctx, email)}
+}
+
+func (_c *UserRepository_FindActiveUsersByEmail_Call) Run(run func(ctx context.Context, email string)) *UserRepository_FindActiveUsersByEmail_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepository_FindActiveUsersByEmail_Call) Return(users []coreentity.User, err error) *UserRepository_FindActiveUsersByEmail_Call {
+	_c.Call.Return(users, err)
+	return _c
+}
+
+func (_c *UserRepository_FindActiveUsersByEmail_Call) RunAndReturn(run func(ctx context.Context, email string) ([]coreentity.User, error)) *UserRepository_FindActiveUsersByEmail_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindAuthIdentityByProviderSubject provides a mock function for the type UserRepository
+func (_mock *UserRepository) FindAuthIdentityByProviderSubject(ctx context.Context, provider string, providerSubject string) (*coreentity.UserAuthIdentity, error) {
+	ret := _mock.Called(ctx, provider, providerSubject)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindAuthIdentityByProviderSubject")
+	}
+
+	var r0 *coreentity.UserAuthIdentity
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*coreentity.UserAuthIdentity, error)); ok {
+		return returnFunc(ctx, provider, providerSubject)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *coreentity.UserAuthIdentity); ok {
+		r0 = returnFunc(ctx, provider, providerSubject)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*coreentity.UserAuthIdentity)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, provider, providerSubject)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepository_FindAuthIdentityByProviderSubject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindAuthIdentityByProviderSubject'
+type UserRepository_FindAuthIdentityByProviderSubject_Call struct {
+	*mock.Call
+}
+
+// FindAuthIdentityByProviderSubject is a helper method to define mock.On call
+//   - ctx context.Context
+//   - provider string
+//   - providerSubject string
+func (_e *UserRepository_Expecter) FindAuthIdentityByProviderSubject(ctx interface{}, provider interface{}, providerSubject interface{}) *UserRepository_FindAuthIdentityByProviderSubject_Call {
+	return &UserRepository_FindAuthIdentityByProviderSubject_Call{Call: _e.mock.On("FindAuthIdentityByProviderSubject", ctx, provider, providerSubject)}
+}
+
+func (_c *UserRepository_FindAuthIdentityByProviderSubject_Call) Run(run func(ctx context.Context, provider string, providerSubject string)) *UserRepository_FindAuthIdentityByProviderSubject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepository_FindAuthIdentityByProviderSubject_Call) Return(userAuthIdentity *coreentity.UserAuthIdentity, err error) *UserRepository_FindAuthIdentityByProviderSubject_Call {
+	_c.Call.Return(userAuthIdentity, err)
+	return _c
+}
+
+func (_c *UserRepository_FindAuthIdentityByProviderSubject_Call) RunAndReturn(run func(ctx context.Context, provider string, providerSubject string) (*coreentity.UserAuthIdentity, error)) *UserRepository_FindAuthIdentityByProviderSubject_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetRoleByName provides a mock function for the type UserRepository
 func (_mock *UserRepository) GetRoleByName(ctx context.Context, roleName string, tenantID string) (*coreentity.Role, error) {
 	ret := _mock.Called(ctx, roleName, tenantID)
@@ -857,6 +1056,74 @@ func (_c *UserRepository_GetTenantPreferredLanguage_Call) Return(s string, err e
 }
 
 func (_c *UserRepository_GetTenantPreferredLanguage_Call) RunAndReturn(run func(ctx context.Context, tenantID string) (string, error)) *UserRepository_GetTenantPreferredLanguage_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetTenantProfile provides a mock function for the type UserRepository
+func (_mock *UserRepository) GetTenantProfile(ctx context.Context, tenantID string) (*coreentity.TenantProfile, error) {
+	ret := _mock.Called(ctx, tenantID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetTenantProfile")
+	}
+
+	var r0 *coreentity.TenantProfile
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*coreentity.TenantProfile, error)); ok {
+		return returnFunc(ctx, tenantID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *coreentity.TenantProfile); ok {
+		r0 = returnFunc(ctx, tenantID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*coreentity.TenantProfile)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, tenantID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// UserRepository_GetTenantProfile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetTenantProfile'
+type UserRepository_GetTenantProfile_Call struct {
+	*mock.Call
+}
+
+// GetTenantProfile is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tenantID string
+func (_e *UserRepository_Expecter) GetTenantProfile(ctx interface{}, tenantID interface{}) *UserRepository_GetTenantProfile_Call {
+	return &UserRepository_GetTenantProfile_Call{Call: _e.mock.On("GetTenantProfile", ctx, tenantID)}
+}
+
+func (_c *UserRepository_GetTenantProfile_Call) Run(run func(ctx context.Context, tenantID string)) *UserRepository_GetTenantProfile_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepository_GetTenantProfile_Call) Return(tenantProfile *coreentity.TenantProfile, err error) *UserRepository_GetTenantProfile_Call {
+	_c.Call.Return(tenantProfile, err)
+	return _c
+}
+
+func (_c *UserRepository_GetTenantProfile_Call) RunAndReturn(run func(ctx context.Context, tenantID string) (*coreentity.TenantProfile, error)) *UserRepository_GetTenantProfile_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1397,6 +1664,63 @@ func (_c *UserRepository_MarkUserEmailVerified_Call) Return(err error) *UserRepo
 }
 
 func (_c *UserRepository_MarkUserEmailVerified_Call) RunAndReturn(run func(ctx context.Context, userID string) error) *UserRepository_MarkUserEmailVerified_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateAuthIdentityLastLogin provides a mock function for the type UserRepository
+func (_mock *UserRepository) UpdateAuthIdentityLastLogin(ctx context.Context, identityID string) error {
+	ret := _mock.Called(ctx, identityID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateAuthIdentityLastLogin")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, identityID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// UserRepository_UpdateAuthIdentityLastLogin_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateAuthIdentityLastLogin'
+type UserRepository_UpdateAuthIdentityLastLogin_Call struct {
+	*mock.Call
+}
+
+// UpdateAuthIdentityLastLogin is a helper method to define mock.On call
+//   - ctx context.Context
+//   - identityID string
+func (_e *UserRepository_Expecter) UpdateAuthIdentityLastLogin(ctx interface{}, identityID interface{}) *UserRepository_UpdateAuthIdentityLastLogin_Call {
+	return &UserRepository_UpdateAuthIdentityLastLogin_Call{Call: _e.mock.On("UpdateAuthIdentityLastLogin", ctx, identityID)}
+}
+
+func (_c *UserRepository_UpdateAuthIdentityLastLogin_Call) Run(run func(ctx context.Context, identityID string)) *UserRepository_UpdateAuthIdentityLastLogin_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *UserRepository_UpdateAuthIdentityLastLogin_Call) Return(err error) *UserRepository_UpdateAuthIdentityLastLogin_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *UserRepository_UpdateAuthIdentityLastLogin_Call) RunAndReturn(run func(ctx context.Context, identityID string) error) *UserRepository_UpdateAuthIdentityLastLogin_Call {
 	_c.Call.Return(run)
 	return _c
 }

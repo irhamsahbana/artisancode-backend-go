@@ -32,7 +32,7 @@ func (r *userRepo) FindActiveUserByIDAndTenant(ctx context.Context, userID, tena
 			c.name AS company_name,
 			u.email_verified_at
 		FROM users u
-		JOIN tenants t ON t.id = u.tenant_id
+		JOIN tenants t ON t.id = u.tenant_id AND t.deleted_at IS NULL
 		LEFT JOIN org_units c ON c.id = u.company_id AND c.category = 'company'
 		WHERE u.id = ? AND u.tenant_id = ? AND u.deleted_at IS NULL
 		LIMIT 1

@@ -71,6 +71,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"codebase-app/internal/infrastructure"
+	"codebase-app/internal/integration/googleidentity"
 	"codebase-app/internal/integration/ratelimit"
 	"codebase-app/internal/integration/tokencache"
 	"codebase-app/internal/middleware"
@@ -145,10 +146,11 @@ func HttpDependencies() {
 	})
 
 	userCoreInst := userCore.NewUserCore(userCore.Config{
-		Repo:       userRepository,
-		Tx:         tx,
-		TokenCache: tokenCache,
-		Bus:        bus,
+		Repo:                 userRepository,
+		Tx:                   tx,
+		TokenCache:           tokenCache,
+		Bus:                  bus,
+		GoogleTokenValidator: googleidentity.NewValidatorFromEnv(),
 	})
 	companyCoreInst := companyCore.NewCompanyCore(companyCore.Config{
 		Repo: companyRepository,
@@ -234,10 +236,12 @@ func HttpDependencies() {
 	webhookCoreInst := webhookCore.NewWebhookCore(webhookCore.Config{
 		DOKUVerifier: dokuClient,
 	})
-	userHandler.NewUserHandler(userHandler.Config{
+	userHandlerInst := userHandler.NewUserHandler(userHandler.Config{
 		Core:        userCoreInst,
 		RateLimiter: authRateLimiter,
-	}).Register(app.Group("/users"))
+	})
+	userHandlerInst.Register(app.Group("/users"))
+	userHandlerInst.RegisterTenant(app.Group("/tenant", middleware.Auth))
 	userInvitationHandler.NewUserInvitationHandler(userInvitationHandler.Config{
 		Core: userInvitationCoreInst,
 	}).Register(app.Group("/user-invitations"))

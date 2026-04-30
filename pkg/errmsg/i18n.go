@@ -94,6 +94,50 @@ var defaultCatalog = MessageCatalog{
 		ID: "Kode tenant sudah terdaftar",
 		EN: "Tenant code is already registered",
 	},
+	"Tenant code is invalid": {
+		ID: "Kode tenant tidak valid",
+		EN: "Tenant code is invalid",
+	},
+	"Tenant code is reserved": {
+		ID: "Kode tenant tidak boleh digunakan",
+		EN: "Tenant code is reserved",
+	},
+	"Tenant setup confirmation is required": {
+		ID: "Konfirmasi setup tenant wajib dilakukan",
+		EN: "Tenant setup confirmation is required",
+	},
+	"Invalid Google token": {
+		ID: "Token Google tidak valid",
+		EN: "Invalid Google token",
+	},
+	"Google registration successful": {
+		ID: "Registrasi Google berhasil",
+		EN: "Google registration successful",
+	},
+	"Google login successful": {
+		ID: "Login Google berhasil",
+		EN: "Google login successful",
+	},
+	"Google account is not connected to a Presense user": {
+		ID: "Akun Google belum terhubung ke pengguna Presense",
+		EN: "Google account is not connected to a Presense user",
+	},
+	"This Google email exists in multiple tenants. Sign in with email and password first.": {
+		ID: "Email Google ini ada di beberapa tenant. Masuk dengan email dan password terlebih dahulu.",
+		EN: "This Google email exists in multiple tenants. Sign in with email and password first.",
+	},
+	"Google email is already registered": {
+		ID: "Email Google sudah terdaftar",
+		EN: "Google email is already registered",
+	},
+	"Google identity is already linked": {
+		ID: "Identitas Google sudah terhubung",
+		EN: "Google identity is already linked",
+	},
+	"Tenant not found": {
+		ID: "Tenant tidak ditemukan",
+		EN: "Tenant not found",
+	},
 	"Role not found": {
 		ID: "Peran tidak ditemukan",
 		EN: "Role not found",

@@ -11,6 +11,7 @@ import (
 func TestMain(m *testing.M) {
 	config.Envs = &config.Config{}
 	config.Envs.App.Name = "test"
+	config.Envs.Guard.JwtPrivateKey = "test-secret"
 	os.Exit(m.Run())
 }
 

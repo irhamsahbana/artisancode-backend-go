@@ -36,7 +36,7 @@ func (c *userCore) RegisterOwner(
 			return errmsg.NewCustomErrors(400).SetMessage("Tenant code is already registered")
 		}
 
-		tenantID, err := c.createTenant(txCtx, tenant)
+		tenantID, _, err := c.createTenant(txCtx, tenant)
 		if err != nil {
 			return err
 		}
@@ -76,7 +76,7 @@ func (c *userCore) RegisterOwner(
 	return result, nil
 }
 
-func (c *userCore) createTenant(ctx context.Context, tenant coreentity.Tenant) (string, error) {
+func (c *userCore) createTenant(ctx context.Context, tenant coreentity.Tenant) (string, string, error) {
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:register:createTenant")
 	defer span.End()
 
@@ -90,15 +90,15 @@ func (c *userCore) createTenant(ctx context.Context, tenant coreentity.Tenant) (
 		Code: tenant.Code,
 	})
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	_, err = c.repo.InitializeTenant(ctx, tenantID, tenant.Name, preferredLanguage)
+	companyID, err := c.repo.InitializeTenant(ctx, tenantID, tenant.Name, preferredLanguage)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return tenantID, nil
+	return tenantID, companyID, nil
 }
 
 func (c *userCore) getOwnerRole(ctx context.Context, tenantID string) (*coreentity.Role, error) {

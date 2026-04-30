@@ -46,6 +46,7 @@ packages:
     interfaces:
       DokuClient:
       DOKUWebhookVerifier:
+      GoogleIDTokenValidator:
       MessageBusMessage:
       MessageBusSubscription:
       MessageBusSubscriptionContext:
