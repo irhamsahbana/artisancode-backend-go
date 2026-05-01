@@ -10,13 +10,15 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
+	"codebase-app/internal/integration/tokencache"
 	"codebase-app/pkg/errmsg"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 )
 
 var (
-	tenantCodePattern  = regexp.MustCompile(`^[A-HJ-NP-Z2-9]{3,5}$`)
+	tenantCodePattern  = regexp.MustCompile(`^[A-Z0-9]{3,5}$`)
 	tenantCodeReserved = map[string]struct{}{
 		"ADMIN": {},
 		"OWNER": {},
@@ -31,15 +33,50 @@ var (
 )
 
 const (
-	errorCodeGoogleAccountNotConnected       = "google_account_not_connected"
-	errorCodeGoogleEmailAmbiguous            = "google_email_ambiguous"
-	errorCodeGoogleEmailAlreadyRegistered    = "google_email_already_registered"
-	errorCodeGoogleIdentityAlreadyLinked     = "google_identity_already_linked"
-	errorCodeTenantCodeInvalid               = "tenant_code_invalid"
-	errorCodeTenantCodeReserved              = "tenant_code_reserved"
-	errorCodeTenantCodeAlreadyUsed           = "tenant_code_already_used"
-	errorCodeTenantSetupConfirmationRequired = "tenant_setup_confirmation_required"
+	errorCodeGoogleAccountNotConnected        = "google_account_not_connected"
+	errorCodeGoogleEmailAmbiguous             = "google_email_ambiguous"
+	errorCodeGoogleEmailAlreadyRegistered     = "google_email_already_registered"
+	errorCodeGoogleIdentityAlreadyLinked      = "google_identity_already_linked"
+	errorCodeTenantCodeInvalid                = "tenant_code_invalid"
+	errorCodeTenantCodeReserved               = "tenant_code_reserved"
+	errorCodeTenantCodeAlreadyUsed            = "tenant_code_already_used"
+	errorCodeTenantSetupConfirmationRequired  = "tenant_setup_confirmation_required"
+	errorCodeGoogleRegistrationSessionInvalid = "google_registration_session_invalid"
 )
+
+const googleRegistrationTokenTTL = 10 * time.Minute
+
+func (c *userCore) GoogleRegisterInit(
+	ctx context.Context,
+	input coreentity.GoogleRegisterInitInput,
+) (*coreentity.GoogleRegisterInitResult, error) {
+	ctx, span := tracing.StartSpan(ctx, "internal:core:user:google_auth:GoogleRegisterInit")
+	defer span.End()
+
+	identity, err := c.validateGoogleIDToken(ctx, input.IDToken, input.Nonce)
+	if err != nil {
+		tracing.RecordError(span, err)
+		log.Ctx(ctx).Warn().Err(err).Msg("Google register init token validation failed")
+		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid Google token")
+	}
+
+	registrationToken := uuid.NewString()
+	c.tokenCache.SetGoogleRegistration(registrationToken, tokencache.GoogleRegistrationData{
+		Subject:       identity.Subject,
+		Email:         identity.Email,
+		EmailVerified: identity.EmailVerified,
+		DisplayName:   identity.DisplayName,
+		PictureURL:    identity.PictureURL,
+		Nonce:         identity.Nonce,
+	}, googleRegistrationTokenTTL)
+
+	return &coreentity.GoogleRegisterInitResult{
+		RegistrationToken: registrationToken,
+		Email:             identity.Email,
+		DisplayName:       identity.DisplayName,
+		PictureURL:        identity.PictureURL,
+	}, nil
+}
 
 func (c *userCore) GoogleRegister(
 	ctx context.Context,
@@ -63,11 +100,10 @@ func (c *userCore) GoogleRegister(
 		return nil, err
 	}
 
-	identity, err := c.validateGoogleIDToken(ctx, input.IDToken, input.Nonce)
+	identity, err := c.resolveGoogleRegisterIdentity(ctx, input)
 	if err != nil {
 		tracing.RecordError(span, err)
-		log.Ctx(ctx).Warn().Err(err).Msg("Google register token validation failed")
-		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid Google token")
+		return nil, err
 	}
 
 	var result *coreentity.GoogleRegisterResult
@@ -184,7 +220,45 @@ func (c *userCore) GoogleRegister(
 		return nil, err
 	}
 
+	if strings.TrimSpace(input.RegistrationToken) != "" {
+		c.tokenCache.DeleteGoogleRegistration(input.RegistrationToken)
+	}
+
 	return result, nil
+}
+
+func (c *userCore) resolveGoogleRegisterIdentity(
+	ctx context.Context,
+	input coreentity.GoogleRegisterInput,
+) (*coreentity.GoogleIdentity, error) {
+	if strings.TrimSpace(input.RegistrationToken) != "" {
+		cachedIdentity, found := c.tokenCache.GetGoogleRegistration(input.RegistrationToken)
+		if !found {
+			log.Ctx(ctx).Warn().Msg("Google registration session is missing or expired")
+			return nil, codedError(
+				400,
+				"Google registration session is invalid or expired",
+				errorCodeGoogleRegistrationSessionInvalid,
+			)
+		}
+
+		return &coreentity.GoogleIdentity{
+			Subject:       cachedIdentity.Subject,
+			Email:         cachedIdentity.Email,
+			EmailVerified: cachedIdentity.EmailVerified,
+			DisplayName:   cachedIdentity.DisplayName,
+			PictureURL:    cachedIdentity.PictureURL,
+			Nonce:         cachedIdentity.Nonce,
+		}, nil
+	}
+
+	identity, err := c.validateGoogleIDToken(ctx, input.IDToken, input.Nonce)
+	if err != nil {
+		log.Ctx(ctx).Warn().Err(err).Msg("Google register token validation failed")
+		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid Google token")
+	}
+
+	return identity, nil
 }
 
 func (c *userCore) GoogleLogin(

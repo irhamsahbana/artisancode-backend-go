@@ -30,6 +30,7 @@ type UserAuthIdentity struct {
 
 type GoogleRegisterInput struct {
 	IDToken            string
+	RegistrationToken  string
 	Nonce              string
 	TenantName         string
 	TenantCode         string
@@ -46,6 +47,18 @@ type GoogleRegisterResult struct {
 type GoogleLoginInput struct {
 	IDToken string
 	Nonce   string
+}
+
+type GoogleRegisterInitInput struct {
+	IDToken string
+	Nonce   string
+}
+
+type GoogleRegisterInitResult struct {
+	RegistrationToken string
+	Email             string
+	DisplayName       string
+	PictureURL        *string
 }
 
 type TenantProfile struct {

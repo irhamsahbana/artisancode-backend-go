@@ -28,6 +28,7 @@ func NewUserHandler(cfg Config) *userHandler {
 func (h *userHandler) Register(router fiber.Router) {
 	router.Post("/login", h.login)
 	router.Post("/register", h.register)
+	router.Post("/google/register/init", h.googleRegisterInit)
 	router.Post("/google/register", h.googleRegister)
 	router.Post("/google/login", h.googleLogin)
 	router.Post("/verify-email", h.verifyEmail)

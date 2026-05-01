@@ -11,11 +11,23 @@ type TokenCacheContract interface {
 	GetRefreshToken(token string) (RefreshTokenData, bool)
 	DeleteRefreshToken(token string)
 	DeleteUserRefreshTokens(userID string)
+	SetGoogleRegistration(token string, data GoogleRegistrationData, expiration time.Duration)
+	GetGoogleRegistration(token string) (GoogleRegistrationData, bool)
+	DeleteGoogleRegistration(token string)
 }
 
 type RefreshTokenData struct {
 	UserID   string
 	TenantID string
+}
+
+type GoogleRegistrationData struct {
+	Subject       string
+	Email         string
+	EmailVerified bool
+	DisplayName   string
+	PictureURL    *string
+	Nonce         string
 }
 
 type TokenCache struct {
@@ -53,4 +65,20 @@ func (t *TokenCache) DeleteUserRefreshTokens(userID string) {
 			}
 		}
 	}
+}
+
+func (t *TokenCache) SetGoogleRegistration(token string, data GoogleRegistrationData, expiration time.Duration) {
+	t.cache.Set(token, data, expiration)
+}
+
+func (t *TokenCache) GetGoogleRegistration(token string) (GoogleRegistrationData, bool) {
+	data, found := t.cache.Get(token)
+	if !found {
+		return GoogleRegistrationData{}, false
+	}
+	return data.(GoogleRegistrationData), true
+}
+
+func (t *TokenCache) DeleteGoogleRegistration(token string) {
+	t.cache.Delete(token)
 }

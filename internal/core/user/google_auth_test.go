@@ -36,13 +36,13 @@ func TestUserCore_GoogleRegister(t *testing.T) {
 			RunAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
 				return fn(ctx)
 			})
-		repo.EXPECT().ExistsTenantByCode(mock.Anything, "T2K2").Return(false, nil)
+		repo.EXPECT().ExistsTenantByCode(mock.Anything, "GOOG").Return(false, nil)
 		repo.EXPECT().
 			FindAuthIdentityByProviderSubject(mock.Anything, coreentity.AuthProviderGoogle, identity.Subject).
 			Return(nil, nil)
 		repo.EXPECT().FindActiveUsersByEmail(mock.Anything, identity.Email).Return(nil, nil)
 		repo.EXPECT().
-			InsertTenant(mock.Anything, coreentity.Tenant{Name: "PT Contoh", Code: "T2K2"}).
+			InsertTenant(mock.Anything, coreentity.Tenant{Name: "PT Contoh", Code: "GOOG"}).
 			Return("tenant-1", nil)
 		repo.EXPECT().
 			InitializeTenant(mock.Anything, "tenant-1", "PT Contoh", "id").
@@ -76,7 +76,7 @@ func TestUserCore_GoogleRegister(t *testing.T) {
 		got, err := core.GoogleRegister(ctx, coreentity.GoogleRegisterInput{
 			IDToken:            "id-token",
 			TenantName:         "PT Contoh",
-			TenantCode:         "t2k2",
+			TenantCode:         "goog",
 			ConfirmTenantSetup: true,
 			PreferredLanguage:  "id",
 		})
@@ -84,7 +84,7 @@ func TestUserCore_GoogleRegister(t *testing.T) {
 		require.NoError(t, err)
 		require.NotEmpty(t, got.AccessToken)
 		require.NotEmpty(t, got.RefreshToken)
-		require.Equal(t, "T2K2", got.TenantCode)
+		require.Equal(t, "GOOG", got.TenantCode)
 	})
 
 	t.Run("rejects missing confirmation before token validation", func(t *testing.T) {
@@ -112,18 +112,110 @@ func TestUserCore_GoogleRegister(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("rejects ambiguous tenant code characters", func(t *testing.T) {
-		core := NewUserCore(Config{})
+	t.Run("success consumes registration token without validating id token again", func(t *testing.T) {
+		repo := dbMocks.NewUserRepository(t)
+		tx := dbMocks.NewTransactor(t)
+		cache := tokencache.NewTokenCache(time.Hour, time.Minute)
+		cache.SetGoogleRegistration("reg-token", tokencache.GoogleRegistrationData{
+			Subject:       identity.Subject,
+			Email:         identity.Email,
+			EmailVerified: identity.EmailVerified,
+			DisplayName:   identity.DisplayName,
+		}, time.Hour)
+
+		tx.EXPECT().
+			WithinTransaction(mock.Anything, mock.Anything).
+			RunAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+				return fn(ctx)
+			})
+		repo.EXPECT().ExistsTenantByCode(mock.Anything, "GOOG").Return(false, nil)
+		repo.EXPECT().
+			FindAuthIdentityByProviderSubject(mock.Anything, coreentity.AuthProviderGoogle, identity.Subject).
+			Return(nil, nil)
+		repo.EXPECT().FindActiveUsersByEmail(mock.Anything, identity.Email).Return(nil, nil)
+		repo.EXPECT().
+			InsertTenant(mock.Anything, coreentity.Tenant{Name: "PT Contoh", Code: "GOOG"}).
+			Return("tenant-1", nil)
+		repo.EXPECT().
+			InitializeTenant(mock.Anything, "tenant-1", "PT Contoh", "id").
+			Return("company-1", nil)
+		repo.EXPECT().
+			GetRoleByName(mock.Anything, "owner", "tenant-1").
+			Return(&coreentity.Role{ID: "role-owner", Name: "owner"}, nil)
+		repo.EXPECT().
+			InsertUser(mock.Anything, mock.Anything).
+			Return("user-1", nil)
+		repo.EXPECT().
+			CreateAuthIdentity(mock.Anything, mock.Anything).
+			Return(nil)
+
+		core := NewUserCore(Config{
+			Repo:       repo,
+			Tx:         tx,
+			TokenCache: cache,
+		})
 
 		got, err := core.GoogleRegister(ctx, coreentity.GoogleRegisterInput{
-			IDToken:            "id-token",
-			TenantCode:         "TOI1",
+			RegistrationToken:  "reg-token",
+			TenantName:         "PT Contoh",
+			TenantCode:         "goog",
+			ConfirmTenantSetup: true,
+			PreferredLanguage:  "id",
+		})
+
+		require.NoError(t, err)
+		require.NotEmpty(t, got.AccessToken)
+		require.False(t, hasGoogleRegistration(cache, "reg-token"))
+	})
+
+	t.Run("rejects invalid registration token", func(t *testing.T) {
+		core := NewUserCore(Config{
+			TokenCache: tokencache.NewTokenCache(time.Hour, time.Minute),
+		})
+
+		got, err := core.GoogleRegister(ctx, coreentity.GoogleRegisterInput{
+			RegistrationToken:  "missing",
+			TenantName:         "PT Contoh",
+			TenantCode:         "T2K2",
 			ConfirmTenantSetup: true,
 		})
 
 		require.Nil(t, got)
 		require.Error(t, err)
 	})
+}
+
+func TestUserCore_GoogleRegisterInit(t *testing.T) {
+	ctx := context.Background()
+	repo := dbMocks.NewUserRepository(t)
+	tx := dbMocks.NewTransactor(t)
+	validator := integrationMocks.NewGoogleIDTokenValidator(t)
+	cache := tokencache.NewTokenCache(time.Hour, time.Minute)
+
+	validator.EXPECT().
+		Validate(mock.Anything, "id-token", "").
+		Return(&coreentity.GoogleIdentity{
+			Subject:       "google-subject-1",
+			Email:         "owner@example.com",
+			EmailVerified: true,
+			DisplayName:   "Owner Example",
+		}, nil)
+
+	core := NewUserCore(Config{
+		Repo:                 repo,
+		Tx:                   tx,
+		TokenCache:           cache,
+		GoogleTokenValidator: validator,
+	})
+
+	got, err := core.GoogleRegisterInit(ctx, coreentity.GoogleRegisterInitInput{
+		IDToken: "id-token",
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, got.RegistrationToken)
+	require.Equal(t, "owner@example.com", got.Email)
+	require.True(t, hasGoogleRegistration(cache, got.RegistrationToken))
 }
 
 func TestUserCore_GoogleLogin(t *testing.T) {
@@ -217,4 +309,9 @@ func TestUserCore_GoogleLogin(t *testing.T) {
 		require.Nil(t, got)
 		require.Error(t, err)
 	})
+}
+
+func hasGoogleRegistration(cache *tokencache.TokenCache, token string) bool {
+	_, found := cache.GetGoogleRegistration(token)
+	return found
 }

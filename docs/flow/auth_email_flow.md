@@ -80,7 +80,7 @@ Tenant-aware request payloads:
 - `POST /users/google/register` requires `id_token`, `tenant_name`, `tenant_code`, and `confirm_tenant_setup=true`
 - `POST /users/google/login` requires `id_token`
 
-Google register requires a user-chosen `tenant_code` before tenant creation. Backend normalizes it to uppercase and enforces 3-5 alphanumeric characters, excluding ambiguous `0`, `O`, `1`, and `I`, reserved codes, and active tenant collisions.
+Google register requires a user-chosen `tenant_code` before tenant creation. Backend normalizes it to uppercase and enforces 3-5 alphanumeric characters, reserved codes, and active tenant collisions.
 
 ## Rate Limiting
 

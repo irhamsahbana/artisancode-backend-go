@@ -7,6 +7,7 @@ import (
 
 type UserCore interface {
 	Login(ctx context.Context, user coreentity.User) (*coreentity.AuthTokens, error)
+	GoogleRegisterInit(ctx context.Context, input coreentity.GoogleRegisterInitInput) (*coreentity.GoogleRegisterInitResult, error)
 	GoogleRegister(ctx context.Context, input coreentity.GoogleRegisterInput) (*coreentity.GoogleRegisterResult, error)
 	GoogleLogin(ctx context.Context, input coreentity.GoogleLoginInput) (*coreentity.AuthTokens, error)
 	RefreshToken(ctx context.Context, user coreentity.User) (*coreentity.AuthTokens, error)

@@ -13,17 +13,17 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (h *userHandler) googleRegister(c *fiber.Ctx) error {
+func (h *userHandler) googleRegisterInit(c *fiber.Ctx) error {
 	tracedCtx, span := tracing.StartSpan(
 		c.UserContext(),
-		"internal:framework:primary:http:user:google_register:googleRegister",
+		"internal:framework:primary:http:user:google_register_init:googleRegisterInit",
 	)
 	defer span.End()
 	c.SetUserContext(tracedCtx)
 
 	var (
 		ctx = c.UserContext()
-		req = new(restentity.GoogleRegisterReq)
+		req = new(restentity.GoogleRegisterInitReq)
 		v   = adapter.Adapters.Validator
 	)
 
@@ -39,20 +39,13 @@ func (h *userHandler) googleRegister(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	if req.IDToken == "" && req.RegistrationToken == "" {
-		errResp := errmsg.NewCustomErrors(400).
-			SetMessage("Google registration session is invalid or expired").
-			SetErrorCode("google_registration_session_invalid")
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error(errResp))
-	}
-
-	result, err := h.core.GoogleRegister(ctx, mapper.GoogleRegisterReqToCore(ctx, *req))
+	result, err := h.core.GoogleRegisterInit(ctx, mapper.GoogleRegisterInitReqToCore(ctx, *req))
 	if err != nil {
-		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, req.Log()).Msg("Google register service error")
+		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, req.Log()).Msg("Google register init service error")
 		code, errs := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	resp := mapper.GoogleRegisterResultToResp(*result)
-	return c.Status(fiber.StatusCreated).JSON(response.Success(resp, "Google registration successful"))
+	resp := mapper.GoogleRegisterInitResultToResp(*result)
+	return c.Status(fiber.StatusOK).JSON(response.Success(resp, "Google registration session created"))
 }

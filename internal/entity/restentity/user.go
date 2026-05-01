@@ -26,8 +26,28 @@ func (r *GoogleLoginReq) Log() map[string]interface{} {
 	return map[string]interface{}{}
 }
 
+type GoogleRegisterInitReq struct {
+	IDToken string `json:"id_token" validate:"required"`
+	Nonce   string `json:"nonce" validate:"omitempty"`
+}
+
+func (r *GoogleRegisterInitReq) Log() map[string]interface{} {
+	return map[string]interface{}{
+		"id_token_present": r.IDToken != "",
+		"nonce_present":    r.Nonce != "",
+	}
+}
+
+type GoogleRegisterInitResp struct {
+	RegistrationToken string  `json:"registration_token"`
+	Email             string  `json:"email"`
+	DisplayName       string  `json:"display_name"`
+	PictureURL        *string `json:"picture_url,omitempty"`
+}
+
 type GoogleRegisterReq struct {
-	IDToken            string `json:"id_token" validate:"required"`
+	IDToken            string `json:"id_token" validate:"omitempty"`
+	RegistrationToken  string `json:"registration_token" validate:"omitempty"`
 	Nonce              string `json:"nonce" validate:"omitempty"`
 	TenantName         string `json:"tenant_name" validate:"required"`
 	TenantCode         string `json:"tenant_code" validate:"required"`
@@ -42,6 +62,7 @@ func (r *GoogleRegisterReq) Log() map[string]interface{} {
 		"confirm_tenant_setup": r.ConfirmTenantSetup,
 		"language":             r.Language,
 		"id_token_present":     r.IDToken != "",
+		"registration_token":   r.RegistrationToken != "",
 		"nonce_present":        r.Nonce != "",
 	}
 }

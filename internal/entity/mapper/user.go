@@ -104,6 +104,7 @@ func GoogleRegisterReqToCore(ctx context.Context, req restentity.GoogleRegisterR
 	}
 	return coreentity.GoogleRegisterInput{
 		IDToken:            req.IDToken,
+		RegistrationToken:  req.RegistrationToken,
 		Nonce:              req.Nonce,
 		TenantName:         req.TenantName,
 		TenantCode:         req.TenantCode,
@@ -120,11 +121,33 @@ func GoogleLoginReqToCore(ctx context.Context, req restentity.GoogleLoginReq) co
 	}
 }
 
+func GoogleRegisterInitReqToCore(
+	ctx context.Context,
+	req restentity.GoogleRegisterInitReq,
+) coreentity.GoogleRegisterInitInput {
+	_ = common.GetUserContext(ctx)
+	return coreentity.GoogleRegisterInitInput{
+		IDToken: req.IDToken,
+		Nonce:   req.Nonce,
+	}
+}
+
 func GoogleRegisterResultToResp(result coreentity.GoogleRegisterResult) restentity.GoogleRegisterResp {
 	return restentity.GoogleRegisterResp{
 		AccessToken:  result.AccessToken,
 		RefreshToken: result.RefreshToken,
 		TenantCode:   result.TenantCode,
+	}
+}
+
+func GoogleRegisterInitResultToResp(
+	result coreentity.GoogleRegisterInitResult,
+) restentity.GoogleRegisterInitResp {
+	return restentity.GoogleRegisterInitResp{
+		RegistrationToken: result.RegistrationToken,
+		Email:             result.Email,
+		DisplayName:       result.DisplayName,
+		PictureURL:        result.PictureURL,
 	}
 }
 

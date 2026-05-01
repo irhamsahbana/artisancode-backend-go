@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"codebase-app/internal/infrastructure"
+	"encoding/json"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,7 +34,7 @@ func WithAccessLog(logger zerolog.Logger) fiber.Handler {
 			Str("user_agent", c.Get("User-Agent")).
 			Dur("duration", time.Since(start)). // duration in ms
 			Str("request_id", requestId).
-			Any("body", string(c.Body()))
+			Any("body", redactAccessLogBody(c.Body()))
 
 		if spanCtx.HasTraceID() {
 			event = event.
@@ -43,5 +44,52 @@ func WithAccessLog(logger zerolog.Logger) fiber.Handler {
 
 		event.Msg("access log")
 		return nil
+	}
+}
+
+var redactedAccessLogKeys = map[string]struct{}{
+	"password":           {},
+	"token":              {},
+	"id_token":           {},
+	"access_token":       {},
+	"refresh_token":      {},
+	"registration_token": {},
+	"authorization":      {},
+	"authorization_code": {},
+}
+
+func redactAccessLogBody(body []byte) any {
+	if len(body) == 0 {
+		return ""
+	}
+
+	var payload any
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return string(body)
+	}
+
+	return redactAccessLogValue(payload)
+}
+
+func redactAccessLogValue(value any) any {
+	switch typed := value.(type) {
+	case map[string]any:
+		redacted := make(map[string]any, len(typed))
+		for key, item := range typed {
+			if _, sensitive := redactedAccessLogKeys[key]; sensitive {
+				redacted[key] = "[redacted]"
+				continue
+			}
+			redacted[key] = redactAccessLogValue(item)
+		}
+		return redacted
+	case []any:
+		redacted := make([]any, 0, len(typed))
+		for _, item := range typed {
+			redacted = append(redacted, redactAccessLogValue(item))
+		}
+		return redacted
+	default:
+		return value
 	}
 }
