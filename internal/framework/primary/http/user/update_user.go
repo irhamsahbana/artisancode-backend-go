@@ -42,7 +42,7 @@ func (h *userHandler) updateUser(c *fiber.Ctx) error {
 
 	data := mapper.UserFromRestUpdateToCore(ctx, *req)
 	if err := h.core.UpdateUser(ctx, data); err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Failed to update user")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg(errmsg.MessageFailedToUpdateUser)
 		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}

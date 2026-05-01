@@ -22,6 +22,6 @@ func (c *internalInvoiceCore) ExecuteInvoiceAction(
 	case coreentity.ActionCreateCustomPaymentAttempt:
 		return c.createManualAttempt(ctx, input)
 	default:
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Unsupported invoice action")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageUnsupportedInvoiceAction)
 	}
 }

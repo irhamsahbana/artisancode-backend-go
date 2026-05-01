@@ -29,7 +29,7 @@ func (h *userHandler) limitForgotPassword(c *fiber.Ctx, email, tenantCode string
 	if !allowed {
 		c.Set("Retry-After", fmt.Sprintf("%.0f", retryAfter.Seconds()))
 		return c.Status(fiber.StatusTooManyRequests).JSON(
-			response.Error(errmsg.NewCustomErrors(429).SetMessage("Too many password reset requests. Please wait before trying again")),
+			response.Error(errmsg.NewCustomErrors(429).SetMessage(errmsg.MessageTooManyPasswordResetRequestsPleaseWaitBeforeTryingAgain)),
 		)
 	}
 
@@ -41,6 +41,6 @@ func (h *userHandler) limitForgotPassword(c *fiber.Ctx, email, tenantCode string
 
 	c.Set("Retry-After", fmt.Sprintf("%.0f", retryAfter.Seconds()))
 	return c.Status(fiber.StatusTooManyRequests).JSON(
-		response.Error(errmsg.NewCustomErrors(429).SetMessage("Too many password reset requests. Please wait before trying again")),
+		response.Error(errmsg.NewCustomErrors(429).SetMessage(errmsg.MessageTooManyPasswordResetRequestsPleaseWaitBeforeTryingAgain)),
 	)
 }

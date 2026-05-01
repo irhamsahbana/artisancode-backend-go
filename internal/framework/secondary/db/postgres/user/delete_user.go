@@ -35,7 +35,7 @@ func (r *userRepo) DeleteUser(ctx context.Context, filter coreentity.UserDeleteF
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("User not found when deleting")
-		return errmsg.NewCustomErrors(404).SetMessage("User not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageUserNotFound)
 	}
 
 	return nil

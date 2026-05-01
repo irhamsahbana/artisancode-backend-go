@@ -28,7 +28,7 @@ func (r *rbacRepo) GetRoleWithPermissions(ctx context.Context, roleID, tenantID 
 		payload := map[string]string{"role_id": roleID, "tenant_id": tenantID}
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Role not found with permissions")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Role not found")
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageRoleNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get role with permissions")
 		return nil, err

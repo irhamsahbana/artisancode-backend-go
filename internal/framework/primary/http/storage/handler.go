@@ -52,8 +52,8 @@ func (h *storageHandler) uploadFile(c *fiber.Ctx) error {
 	if err != nil {
 		if errors.Is(err, fasthttp.ErrMissingFile) {
 			message := errmsg.NewCustomErrors(http.StatusBadRequest).
-				Add("file", "file is required").
-				SetMessage("file is required")
+				Add("file", errmsg.MessageFileIsRequired).
+				SetMessage(errmsg.MessageFileIsRequired)
 			return c.Status(message.Code).JSON(response.Error(message))
 		}
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse form file")

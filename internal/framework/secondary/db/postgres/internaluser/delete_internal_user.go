@@ -25,7 +25,7 @@ func (r *internalUserRepo) DeleteInternalUser(ctx context.Context, filter coreen
 	}
 	if affected, _ := result.RowsAffected(); affected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Internal user not found when deleting")
-		return errmsg.NewCustomErrors(404).SetMessage("Internal user not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageInternalUserNotFound)
 	}
 	return nil
 }

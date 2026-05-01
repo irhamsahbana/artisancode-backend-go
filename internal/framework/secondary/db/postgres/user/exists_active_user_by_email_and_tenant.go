@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"codebase-app/pkg/errmsg"
 	"context"
 	"database/sql"
 
@@ -25,7 +26,7 @@ func (r *userRepo) ExistsActiveUserByEmailAndTenant(ctx context.Context, email, 
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 				"email":     email,
 				"tenant_id": tenantID,
-			}).Msg("User not found")
+			}).Msg(errmsg.MessageUserNotFound)
 			return false, nil
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{

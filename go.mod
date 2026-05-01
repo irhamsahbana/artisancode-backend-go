@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	github.com/ThreeDotsLabs/watermill v1.5.1
 	github.com/ThreeDotsLabs/watermill-sql/v4 v4.1.3
+	github.com/BurntSushi/toml v1.6.0
 	github.com/aws/aws-sdk-go-v2/config v1.27.16
 	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.0.5
 	github.com/go-co-op/gocron/v2 v2.16.4
@@ -17,6 +18,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/lib/pq v1.10.9
+	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/openai/openai-go/v3 v3.5.0
 	github.com/prometheus/client_golang v1.23.0
@@ -114,7 +116,6 @@ require (
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
-	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.27.0
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.2 // indirect

@@ -53,7 +53,7 @@ func (c *orgUnitCore) UpdateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 		return err
 	}
 	if existing.Category == "company" {
-		return errmsg.NewCustomErrors(400).SetMessage("Company can only be updated from company details")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCompanyCanOnlyBeUpdatedFromCompanyDetails)
 	}
 
 	return c.repo.UpdateOrgUnit(ctx, data)

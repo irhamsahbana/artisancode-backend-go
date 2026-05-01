@@ -21,14 +21,14 @@ func (c *employeeCore) CreateEmployee(ctx context.Context, data coreentity.Emplo
 			"join_date":          data.JoinDate,
 			"join_date_timezone": data.JoinDateTimezone,
 		}).Msg("Invalid join date payload")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid join date or join date timezone")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidJoinDateOrJoinDateTimezone)
 	}
 	if data.ShiftID == nil || *data.ShiftID == "" {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 			"employee_no": data.EmployeeNo,
 			"tenant_id":   data.TenantID,
 		}).Msg("Work shift is required when creating employee")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Work shift is required")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageWorkShiftIsRequired)
 	}
 
 	// Validate unique employee_no per tenant
@@ -41,7 +41,7 @@ func (c *employeeCore) CreateEmployee(ctx context.Context, data coreentity.Emplo
 			"employee_no": data.EmployeeNo,
 			"tenant_id":   data.TenantID,
 		}).Msg("Employee number already exists")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Employee number already exists in this tenant")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmployeeNumberAlreadyExistsInThisTenant)
 	}
 
 	// Keep employee creation independent from login access.

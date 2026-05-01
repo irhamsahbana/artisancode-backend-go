@@ -39,7 +39,7 @@ func (r *employeeRepo) AssignUser(ctx context.Context, tenantID, employeeID, use
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Employee not found when assigning user")
-		return errmsg.NewCustomErrors(404).SetMessage("Employee not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageEmployeeNotFound)
 	}
 
 	return nil

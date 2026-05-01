@@ -33,8 +33,8 @@ func (r *orgUnitRepo) GetOrgUnit(ctx context.Context, filter coreentity.OrgUnit)
 	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Org unit not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Org unit not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageOrgUnitNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageOrgUnitNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get org unit")
 		return nil, err

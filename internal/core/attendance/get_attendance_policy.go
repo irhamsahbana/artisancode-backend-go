@@ -20,7 +20,7 @@ func (c *attendanceCore) GetAttendancePolicy(
 		return nil, err
 	}
 	if employee.ShiftID == nil || *employee.ShiftID == "" {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Work shift is required")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageWorkShiftIsRequired)
 	}
 
 	shift, err := c.repo.GetWorkShift(ctx, coreentity.WorkShift{

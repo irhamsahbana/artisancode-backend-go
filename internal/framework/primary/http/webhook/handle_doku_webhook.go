@@ -6,6 +6,7 @@ import (
 	"codebase-app/internal/entity/mapper"
 	"codebase-app/internal/entity/restentity"
 	"codebase-app/internal/infrastructure/tracing"
+	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 	"encoding/json"
 	"errors"
@@ -61,5 +62,5 @@ func (h *webhookHandler) handleDOKUWebhook(c *fiber.Ctx) error {
 		return c.Status(status).JSON(response.Error(err))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.Success(result, "Webhook processed"))
+	return c.Status(fiber.StatusOK).JSON(response.Success(result, errmsg.MessageWebhookProcessed))
 }

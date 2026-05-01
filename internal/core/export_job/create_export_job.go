@@ -17,15 +17,15 @@ func (c *exportJobCore) CreateExportJob(
 	defer span.End()
 
 	if !data.UserCtx.HasRole("owner") && !data.UserCtx.HasRole("admin") {
-		return nil, errmsg.NewCustomErrors(403).SetMessage("You are not allowed to export attendance reports")
+		return nil, errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageYouAreNotAllowedToExportAttendanceReports)
 	}
 
 	if data.ResourceType == "" || data.ProcessorKey == "" {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Export job resource metadata is required")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageExportJobResourceMetadataIsRequired)
 	}
 
 	if c.bus == nil {
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Export job message bus is not configured")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageExportJobMessageBusIsNotConfigured)
 	}
 
 	var item *coreentity.ExportJob

@@ -72,7 +72,7 @@ func (c *internalClientCore) UpdateInternalClientOwnerPermissions(
 func (c *internalClientCore) authorizeRead(userCtx common.UserContext) error {
 	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) &&
 		!userCtx.HasRole(coreentity.InternalUserRoleOperator) {
-		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to view internal clients")
+		return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageYouAreNotAuthorizedToViewInternalClients)
 	}
 
 	return nil
@@ -81,7 +81,7 @@ func (c *internalClientCore) authorizeRead(userCtx common.UserContext) error {
 func (c *internalClientCore) authorizeManage(userCtx common.UserContext) error {
 	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) &&
 		!userCtx.HasRole(coreentity.InternalUserRoleOperator) {
-		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to manage internal client permissions")
+		return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageYouAreNotAuthorizedToManageInternalClientPermissions)
 	}
 
 	return nil

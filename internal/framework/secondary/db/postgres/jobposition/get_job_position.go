@@ -30,8 +30,8 @@ func (r *jobPositionRepo) GetJobPosition(
 	err := r.db.GetContext(ctx, data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Job position not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Job position not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageJobPositionNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageJobPositionNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get job position")
 		return nil, err

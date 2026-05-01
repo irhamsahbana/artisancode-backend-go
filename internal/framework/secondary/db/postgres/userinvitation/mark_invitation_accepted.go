@@ -37,7 +37,7 @@ func (r *userInvitationRepo) MarkInvitationAccepted(ctx context.Context, invitat
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, invitationID).Msg("Invitation not found when marking accepted")
-		return errmsg.NewCustomErrors(404).SetMessage("Invitation not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageInvitationNotFound)
 	}
 
 	return nil

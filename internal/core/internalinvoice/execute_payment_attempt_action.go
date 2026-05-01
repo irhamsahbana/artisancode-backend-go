@@ -19,7 +19,7 @@ func (c *internalInvoiceCore) ExecutePaymentAttemptAction(
 	defer span.End()
 
 	if input.Action != coreentity.ActionRetryPayment {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Unsupported payment attempt action")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageUnsupportedPaymentAttemptAction)
 	}
 	attempt, err := c.invoiceRepo.GetPaymentAttempt(ctx, input.UserCtx.TenantID, input.ID)
 	if err != nil {
@@ -28,7 +28,7 @@ func (c *internalInvoiceCore) ExecutePaymentAttemptAction(
 	if attempt.Status != coreentity.PaymentAttemptStatusFailed &&
 		attempt.Status != coreentity.PaymentAttemptStatusExpired &&
 		attempt.Status != coreentity.PaymentAttemptStatusCancelled {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Payment attempt cannot be retried")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessagePaymentAttemptCannotBeRetried)
 	}
 	return c.ExecuteInvoiceAction(ctx, coreentity.InternalInvoiceActionInput{
 		UserCtx: input.UserCtx, ID: attempt.InternalInvoiceID, Action: actionForProvider(input.Provider, attempt.Provider),

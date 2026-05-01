@@ -25,16 +25,16 @@ func (c *userCore) Login(ctx context.Context, user coreentity.User) (*coreentity
 	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password))
 	if err != nil {
 		tracing.RecordError(span, err)
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{"email": user.Email}).Msg("Invalid credentials")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid credentials")
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{"email": user.Email}).Msg(errmsg.MessageInvalidCredentials)
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidCredentials)
 	}
 
 	if foundUser.EmailVerifiedAt == nil {
 		log.Ctx(ctx).
 			Warn().
 			Any(common.LogKeyPayload, map[string]string{"email": user.Email}).
-			Msg("Email is not verified")
-		return nil, errmsg.NewCustomErrors(403).SetMessage("Email is not verified")
+			Msg(errmsg.MessageEmailIsNotVerified)
+		return nil, errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageEmailIsNotVerified)
 	}
 
 	return c.issueAuthTokens(ctx, *foundUser)

@@ -64,8 +64,8 @@ func (r *storageRepo) GetFile(ctx context.Context, filter coreentity.FileFilter)
 		query += " AND object_key = ?"
 		args = append(args, filter.Filename)
 	default:
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("File filter is required")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("File filter is required")
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageFileFilterIsRequired)
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageFileFilterIsRequired)
 	}
 
 	if filter.Folder != "" {
@@ -79,8 +79,8 @@ func (r *storageRepo) GetFile(ctx context.Context, filter coreentity.FileFilter)
 	err := exec.GetContext(ctx, &data, exec.Rebind(query), args...)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("File not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("File not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageFileNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageFileNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get storage file")
 		return nil, err

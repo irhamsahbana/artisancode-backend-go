@@ -40,7 +40,7 @@ func (h *userInvitationHandler) resendInvitation(c *fiber.Ctx) error {
 		ID:      req.ID,
 	})
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Failed to resend invitation")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg(errmsg.MessageFailedToResendInvitation)
 		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}

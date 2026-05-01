@@ -24,7 +24,7 @@ func (c *internalOrderCore) CreateOrder(
 		tenantID = strings.TrimSpace(input.TenantID)
 	}
 	if tenantID == "" {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Tenant is required")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageTenantIsRequired)
 	}
 	currency := strings.ToUpper(strings.TrimSpace(input.CurrencyCode))
 	pricingSnapshot, amount, err := c.orderRepo.GetPricingSnapshot(

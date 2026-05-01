@@ -38,7 +38,7 @@ func (h *userHandler) createUser(c *fiber.Ctx) error {
 	data := mapper.UserFromRestCreateToCore(ctx, *req)
 	created, err := h.core.CreateUser(ctx, data)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Failed to create user")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg(errmsg.MessageFailedToCreateUser)
 		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}

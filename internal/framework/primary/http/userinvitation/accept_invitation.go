@@ -40,7 +40,7 @@ func (h *userInvitationHandler) acceptInvitation(c *fiber.Ctx) error {
 		FullName: req.FullName,
 	})
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to accept invitation")
+		log.Ctx(ctx).Error().Err(err).Msg(errmsg.MessageFailedToAcceptInvitation)
 		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}

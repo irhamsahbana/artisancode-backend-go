@@ -43,7 +43,7 @@ func (r *internalUserRepo) FindActiveInternalUserByEmail(
 	if err := r.db.GetContext(ctx, &row, r.db.Rebind(query), email); err != nil {
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, email).Msg("Internal user not found by email")
-			return nil, errmsg.NewCustomErrors(400).SetMessage("User not found")
+			return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageUserNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, email).Msg("Failed to find internal user by email")
 		return nil, err

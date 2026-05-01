@@ -30,8 +30,8 @@ func (c *userInvitationCore) trySendInvitationEmail(
 	}
 
 	if c.bus == nil {
-		log.Ctx(ctx).Warn().Str("invitation_id", item.ID).Msg("Invitation email bus is not configured")
-		return false, errmsg.NewCustomErrors(500).SetMessage("Invitation email bus is not configured")
+		log.Ctx(ctx).Warn().Str("invitation_id", item.ID).Msg(errmsg.MessageInvitationEmailBusIsNotConfigured)
+		return false, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageInvitationEmailBusIsNotConfigured)
 	}
 
 	preferredLanguage, err := c.userRepo.GetTenantPreferredLanguage(ctx, item.TenantID)

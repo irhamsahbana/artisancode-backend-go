@@ -45,5 +45,5 @@ func (h *userHandler) register(c *fiber.Ctx) error {
 	}
 
 	resp := mapper.RegisterResultToRegisterResp(*result)
-	return c.Status(fiber.StatusOK).JSON(response.Success(resp, "Please verify your email to continue"))
+	return c.Status(fiber.StatusOK).JSON(response.Success(resp, errmsg.MessagePleaseVerifyYourEmailToContinue))
 }

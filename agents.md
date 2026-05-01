@@ -149,6 +149,8 @@ internal/framework/primary/http/attendance/
 - Do not parse `Accept-Language` inside feature modules.
 - The HTTP app already installs `WithRequestLanguage()` and `LocalizeJSONResponse()`.
 - Use `pkg/errmsg` so `message` and `errors` are translated automatically.
+- Use stable `errmsg.Message...` constants in `SetMessage(...)` / `response.Success(...)`, not raw strings or user-facing English sentences.
+- Add new user-facing message codes to both `pkg/errmsg/locales/id.toml` and `pkg/errmsg/locales/en.toml`.
 
 ### Current Public/Protected Bootstrap Notes
 

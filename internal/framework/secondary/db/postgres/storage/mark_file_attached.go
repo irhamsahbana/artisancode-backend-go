@@ -53,7 +53,7 @@ func (r *storageRepo) MarkFileAttached(ctx context.Context, tenantID, id string)
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("File not found when marking attached")
-		return errmsg.NewCustomErrors(404).SetMessage("File not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageFileNotFound)
 	}
 
 	return nil

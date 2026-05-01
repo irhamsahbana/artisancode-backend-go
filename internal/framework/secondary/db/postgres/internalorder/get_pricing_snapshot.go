@@ -73,8 +73,8 @@ func (r *internalOrderRepo) GetPricingSnapshot(
 			"currency_code": currencyCode,
 		}
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Active product pricing not found")
-			return nil, "", errmsg.NewCustomErrors(404).SetMessage("Active product pricing not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg(errmsg.MessageActiveProductPricingNotFound)
+			return nil, "", errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageActiveProductPricingNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get pricing snapshot")
 		return nil, "", err

@@ -59,7 +59,7 @@ func (r *internalQuotationRepo) GetQuotation(
 	if err := r.exec(ctx).GetContext(ctx, &item, r.exec(ctx).Rebind(query), id, tenantID); err != nil {
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Quotation not found when retrieving")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Quotation not found")
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageQuotationNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to retrieve quotation")
 		return nil, err

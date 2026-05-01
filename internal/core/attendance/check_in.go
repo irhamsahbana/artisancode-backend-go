@@ -33,7 +33,7 @@ func (c *attendanceCore) createAttendanceLog(
 	eventTime, err := resolveAttendanceTime(data.LoggedAt)
 	if err != nil {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Invalid attendance timestamp")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid logged_at format")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidLoggedAtFormat)
 	}
 
 	attendanceDate := eventTime.Format("2006-01-02")
@@ -48,7 +48,7 @@ func (c *attendanceCore) createAttendanceLog(
 				"employee_id": employee.ID,
 				"tenant_id":   data.TenantID,
 			}).Msg("Employee does not have a work shift")
-			return errmsg.NewCustomErrors(400).SetMessage("Work shift is required")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageWorkShiftIsRequired)
 		}
 
 		shift, err := c.repo.GetWorkShift(txCtx, coreentity.WorkShift{
@@ -70,9 +70,9 @@ func (c *attendanceCore) createAttendanceLog(
 			return err
 		}
 		if exists {
-			message := "Check in already recorded for today"
+			message := errmsg.MessageCheckInAlreadyRecordedForToday
 			if attendanceType == common.AttendanceTypeCheckOut {
-				message = "Check out already recorded for today"
+				message = errmsg.MessageCheckOutAlreadyRecordedForToday
 			}
 			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, data).Msg(message)
 			return errmsg.NewCustomErrors(400).SetMessage(message)
@@ -94,7 +94,7 @@ func (c *attendanceCore) createAttendanceLog(
 					Warn().
 					Any(common.LogKeyPayload, data).
 					Msg("Check out attempted without a corresponding check in")
-				return errmsg.NewCustomErrors(400).SetMessage("Check in must be recorded before check out")
+				return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCheckInMustBeRecordedBeforeCheckOut)
 			}
 		}
 
@@ -108,15 +108,15 @@ func (c *attendanceCore) createAttendanceLog(
 				Err(err).
 				Any(common.LogKeyPayload, data).
 				Msg("Failed to get selfie file for attendance log")
-			return errmsg.NewCustomErrors(400).SetMessage("Selfie file not found")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageSelfieFileNotFound)
 		}
 		if file.Folder != common.S3FolderAttendanceFace {
 			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, data).Msg("Invalid selfie file folder")
-			return errmsg.NewCustomErrors(400).SetMessage("Invalid selfie file")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidSelfieFile)
 		}
 		if file.Status != common.FileStatusPending {
 			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, data).Msg("Selfie file is no longer pending")
-			return errmsg.NewCustomErrors(400).SetMessage("Selfie file is no longer available")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageSelfieFileIsNoLongerAvailable)
 		}
 
 		item, err = c.repo.CreateAttendanceLog(txCtx, coreentity.AttendanceLog{

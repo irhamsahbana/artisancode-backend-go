@@ -40,7 +40,7 @@ func (r *userInvitationRepo) RevokeInvitation(ctx context.Context, tenantID, inv
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Invitation not found when revoking")
-		return errmsg.NewCustomErrors(404).SetMessage("Invitation not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageInvitationNotFound)
 	}
 
 	return nil

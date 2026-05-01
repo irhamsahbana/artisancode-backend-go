@@ -47,5 +47,5 @@ func (h *userHandler) googleRegisterInit(c *fiber.Ctx) error {
 	}
 
 	resp := mapper.GoogleRegisterInitResultToResp(*result)
-	return c.Status(fiber.StatusOK).JSON(response.Success(resp, "Google registration session created"))
+	return c.Status(fiber.StatusOK).JSON(response.Success(resp, errmsg.MessageGoogleRegistrationSessionCreated))
 }

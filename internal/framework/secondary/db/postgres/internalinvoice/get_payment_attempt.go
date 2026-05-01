@@ -29,8 +29,8 @@ func (r *internalInvoiceRepo) GetPaymentAttempt(
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 			"tenant_id": tenantID,
 			"id":        id,
-		}).Msg("Payment attempt not found")
-		return nil, errmsg.NewCustomErrors(404).SetMessage("Payment attempt not found")
+		}).Msg(errmsg.MessagePaymentAttemptNotFound)
+		return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessagePaymentAttemptNotFound)
 	}
 	return &items[0], nil
 }

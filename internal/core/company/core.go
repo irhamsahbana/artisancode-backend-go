@@ -44,5 +44,5 @@ func (c *companyCore) DeleteCompany(ctx context.Context, filter coreentity.Compa
 	ctx, span := tracing.StartSpan(ctx, "internal:core:company:core:DeleteCompany")
 	defer span.End()
 
-	return errmsg.NewCustomErrors(403).SetMessage("Company cannot be deleted")
+	return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageCompanyCannotBeDeleted)
 }

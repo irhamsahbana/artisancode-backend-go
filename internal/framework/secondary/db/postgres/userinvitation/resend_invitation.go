@@ -35,7 +35,7 @@ func (r *userInvitationRepo) ResendInvitation(ctx context.Context, data coreenti
 		data.TenantID,
 	)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to resend invitation")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg(errmsg.MessageFailedToResendInvitation)
 		return err
 	}
 
@@ -46,7 +46,7 @@ func (r *userInvitationRepo) ResendInvitation(ctx context.Context, data coreenti
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("Invitation not found when resending")
-		return errmsg.NewCustomErrors(404).SetMessage("Invitation not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageInvitationNotFound)
 	}
 
 	return nil

@@ -72,8 +72,8 @@ func (r *exportJobRepo) GetExportJob(
 	err := exec.GetContext(ctx, &data, exec.Rebind(query), filter.TenantID, filter.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Export job not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Export job not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageExportJobNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageExportJobNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get export job")
 		return nil, err

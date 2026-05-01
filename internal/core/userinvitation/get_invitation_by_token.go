@@ -25,13 +25,13 @@ func (c *userInvitationCore) GetInvitationByToken(
 
 func validateAcceptableInvitation(item *coreentity.UserInvitation) (*coreentity.UserInvitation, error) {
 	if item.Status == coreentity.UserInvitationStatusAccepted {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Invitation has already been accepted")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvitationHasAlreadyBeenAccepted)
 	}
 	if item.Status == coreentity.UserInvitationStatusRevoked {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Invitation has been revoked")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvitationHasBeenRevoked)
 	}
 	if isExpiredInvitation(item) {
-		return nil, errmsg.NewCustomErrors(410).SetMessage("Invitation has expired")
+		return nil, errmsg.NewCustomErrors(410).SetMessage(errmsg.MessageInvitationHasExpired)
 	}
 
 	return item, nil

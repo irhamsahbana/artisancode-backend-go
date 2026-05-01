@@ -33,8 +33,8 @@ func (r *userRepo) GetRoleByName(ctx context.Context, roleName, tenantID string)
 	if err != nil {
 		payload := map[string]string{"roleName": roleName, "tenantID": tenantID}
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Role not found")
-			return nil, errmsg.NewCustomErrors(400).SetMessage("Role not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg(errmsg.MessageRoleNotFound)
+			return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageRoleNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get role")
 		return nil, err

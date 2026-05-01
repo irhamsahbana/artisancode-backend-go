@@ -34,7 +34,7 @@ func (c *internalInvoiceCore) CreatePaymentReceipt(
 		}
 		if receipt.AmountReceived.LessThan(invoice.AmountOutstanding) &&
 			receipt.Status == coreentity.PaymentReceiptStatusAccepted {
-			return errmsg.NewCustomErrors(400).SetMessage("Payment amount does not match invoice outstanding amount")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessagePaymentAmountDoesNotMatchInvoiceOutstandingAmount)
 		}
 		created, err := c.invoiceRepo.CreatePaymentReceipt(txCtx, receipt)
 		if err != nil {

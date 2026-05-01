@@ -57,8 +57,8 @@ func (r *employeeRepo) GetEmployee(ctx context.Context, filter coreentity.Employ
 	err := exec.GetContext(ctx, &data, exec.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Employee not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Employee not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageEmployeeNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageEmployeeNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get employee")
 		return nil, err

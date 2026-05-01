@@ -24,15 +24,15 @@ func (c *userInvitationCore) ResendInvitation(
 		return nil, err
 	}
 	if item.Status == coreentity.UserInvitationStatusAccepted {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Accepted invitation cannot be resent")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageAcceptedInvitationCannotBeResent)
 	}
 	if item.Status == coreentity.UserInvitationStatusRevoked {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Revoked invitation cannot be resent")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageRevokedInvitationCannotBeResent)
 	}
 
 	rawToken, tokenHash, err := generateInvitationToken()
 	if err != nil {
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to resend invitation")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToResendInvitation)
 	}
 
 	item.TokenHash = tokenHash

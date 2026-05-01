@@ -33,7 +33,7 @@ func (c *internalQuotationCore) executeConvertQuotationAction(
 				Str("quotation_id", input.ID).
 				Str("current_status", string(quote.Status)).
 				Msg("Invalid quotation status for conversion")
-			return errmsg.NewCustomErrors(400).SetMessage("Only approved quotation can be converted")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageOnlyApprovedQuotationCanBeConverted)
 		}
 		order, err := c.orderRepo.CreateOrder(txCtx, coreentity.InternalOrder{
 			TenantID:                 quote.TenantID,

@@ -44,5 +44,5 @@ func (h *userHandler) googleLogin(c *fiber.Ctx) error {
 	}
 
 	resp := mapper.AuthTokensToLoginResp(*tokens)
-	return c.Status(fiber.StatusOK).JSON(response.Success(resp, "Google login successful"))
+	return c.Status(fiber.StatusOK).JSON(response.Success(resp, errmsg.MessageGoogleLoginSuccessful))
 }

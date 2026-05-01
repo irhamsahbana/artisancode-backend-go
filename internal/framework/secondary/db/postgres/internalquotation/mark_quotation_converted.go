@@ -46,7 +46,7 @@ func (r *internalQuotationRepo) MarkQuotationConverted(
 	}
 	if affected, _ := result.RowsAffected(); affected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Quotation not found when marking converted")
-		return nil, errmsg.NewCustomErrors(404).SetMessage("Quotation not found")
+		return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageQuotationNotFound)
 	}
 	return r.GetQuotation(ctx, tenantID, quotationID)
 }

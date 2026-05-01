@@ -46,8 +46,8 @@ func (r *internalInvoiceRepo) getInvoiceByWhere(
 	if err := r.exec(ctx).GetContext(ctx, &item, r.exec(ctx).Rebind(query), value, tenantID); err != nil {
 		payload := map[string]string{"tenant_id": tenantID, "where": where, "value": value}
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Invoice not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Invoice not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg(errmsg.MessageInvoiceNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageInvoiceNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get invoice")
 		return nil, err

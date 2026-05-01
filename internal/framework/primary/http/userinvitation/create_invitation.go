@@ -42,7 +42,7 @@ func (h *userInvitationHandler) createInvitation(c *fiber.Ctx) error {
 		EmployeeID: req.EmployeeID,
 	})
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg("Failed to create invitation")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, req).Msg(errmsg.MessageFailedToCreateInvitation)
 		code, errors := errmsg.Errors[error](ctx, err)
 		return c.Status(code).JSON(response.Error(errors))
 	}

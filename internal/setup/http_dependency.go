@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"codebase-app/pkg/errmsg"
 	"time"
 
 	"codebase-app/internal/adapter"
@@ -318,6 +319,6 @@ func HttpDependencies() {
 			Str("ua", ua).
 			Str("ip", ip).
 			Msg("route not found")
-		return c.Status(fiber.StatusNotFound).JSON(response.Error("Route not found"))
+		return c.Status(fiber.StatusNotFound).JSON(response.Error(errmsg.MessageRouteNotFound))
 	})
 }

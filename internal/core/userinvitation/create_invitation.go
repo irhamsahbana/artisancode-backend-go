@@ -21,7 +21,7 @@ func (c *userInvitationCore) CreateInvitation(
 	defer span.End()
 
 	if !data.UserCtx.HasRole("owner") && !data.UserCtx.HasRole("admin") {
-		return nil, errmsg.NewCustomErrors(403).SetMessage("You are not authorized to invite users")
+		return nil, errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageYouAreNotAuthorizedToInviteUsers)
 	}
 
 	data.Email = normalizeInvitationEmail(data.Email)
@@ -39,7 +39,7 @@ func (c *userInvitationCore) CreateInvitation(
 	rawToken, tokenHash, err := generateInvitationToken()
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to generate invitation token")
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to create invitation")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToCreateInvitation)
 	}
 
 	data.AcceptToken = rawToken
@@ -53,7 +53,7 @@ func (c *userInvitationCore) CreateInvitation(
 		}
 		if exists {
 			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, data).Msg("Active invitation already exists")
-			return errmsg.NewCustomErrors(400).SetMessage("An active invitation already exists")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageAnActiveInvitationAlreadyExists)
 		}
 
 		created, err = c.repo.CreateInvitation(txCtx, data)
@@ -78,21 +78,21 @@ func (c *userInvitationCore) CreateInvitation(
 
 func (c *userInvitationCore) validateInvitationTarget(ctx context.Context, data coreentity.UserInvitation) error {
 	if data.RoleCode != coreentity.UserInvitationRoleAdmin && data.RoleCode != coreentity.UserInvitationRoleEmployee {
-		return errmsg.NewCustomErrors(400).SetMessage("Invalid invitation role")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidInvitationRole)
 	}
 
 	if data.RoleCode == coreentity.UserInvitationRoleAdmin {
 		if !data.UserCtx.HasRole("owner") {
-			return errmsg.NewCustomErrors(403).SetMessage("Only owner can invite admin users")
+			return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageOnlyOwnerCanInviteAdminUsers)
 		}
 		if data.EmployeeID != nil {
-			return errmsg.NewCustomErrors(400).SetMessage("Employee ID is not allowed for admin invitations")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmployeeIdIsNotAllowedForAdminInvitations)
 		}
 	}
 
 	if data.RoleCode == coreentity.UserInvitationRoleEmployee {
 		if data.EmployeeID == nil || *data.EmployeeID == "" {
-			return errmsg.NewCustomErrors(400).SetMessage("Employee ID is required for employee invitations")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmployeeIdIsRequiredForEmployeeInvitations)
 		}
 
 		employee, err := c.employeeRepo.GetEmployee(ctx, coreentity.Employee{
@@ -103,10 +103,10 @@ func (c *userInvitationCore) validateInvitationTarget(ctx context.Context, data 
 			return err
 		}
 		if employee.UserID != nil {
-			return errmsg.NewCustomErrors(400).SetMessage("Employee already has an active user")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmployeeAlreadyHasAnActiveUser)
 		}
 		if normalizeInvitationEmail(employee.Email) != data.Email {
-			return errmsg.NewCustomErrors(400).SetMessage("Invitation email must match employee email")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvitationEmailMustMatchEmployeeEmail)
 		}
 	}
 
@@ -115,7 +115,7 @@ func (c *userInvitationCore) validateInvitationTarget(ctx context.Context, data 
 		return err
 	}
 	if existingUser != nil {
-		return errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmailIsAlreadyRegistered)
 	}
 
 	if _, err := c.userRepo.GetRoleByName(ctx, data.RoleCode, data.TenantID); err != nil {

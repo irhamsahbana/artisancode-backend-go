@@ -33,7 +33,7 @@ func (r *rbacRepo) DeleteRole(ctx context.Context, filter coreentity.RoleDeleteF
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Role not found when deleting")
-		return errmsg.NewCustomErrors(404).SetMessage("Role not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageRoleNotFound)
 	}
 	return nil
 }

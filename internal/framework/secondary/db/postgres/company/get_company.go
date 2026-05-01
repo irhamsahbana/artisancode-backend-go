@@ -36,8 +36,8 @@ func (r *companyRepo) GetCompany(ctx context.Context, filter coreentity.Company)
 	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Company not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Company not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageCompanyNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageCompanyNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get company")
 		return nil, err

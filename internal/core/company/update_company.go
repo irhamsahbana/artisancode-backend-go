@@ -21,7 +21,7 @@ func (c *companyCore) UpdateCompany(ctx context.Context, data coreentity.Company
 		return err
 	}
 	if existing == nil {
-		return errmsg.NewCustomErrors(404).SetMessage("Company not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageCompanyNotFound)
 	}
 
 	return c.repo.UpdateCompany(ctx, data)

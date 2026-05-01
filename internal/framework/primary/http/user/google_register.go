@@ -41,7 +41,7 @@ func (h *userHandler) googleRegister(c *fiber.Ctx) error {
 
 	if req.IDToken == "" && req.RegistrationToken == "" {
 		errResp := errmsg.NewCustomErrors(400).
-			SetMessage("Google registration session is invalid or expired").
+			SetMessage(errmsg.MessageGoogleRegistrationSessionIsInvalidOrExpired).
 			SetErrorCode("google_registration_session_invalid")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(errResp))
 	}
@@ -54,5 +54,5 @@ func (h *userHandler) googleRegister(c *fiber.Ctx) error {
 	}
 
 	resp := mapper.GoogleRegisterResultToResp(*result)
-	return c.Status(fiber.StatusCreated).JSON(response.Success(resp, "Google registration successful"))
+	return c.Status(fiber.StatusCreated).JSON(response.Success(resp, errmsg.MessageGoogleRegistrationSuccessful))
 }

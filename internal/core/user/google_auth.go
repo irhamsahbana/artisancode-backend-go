@@ -57,7 +57,7 @@ func (c *userCore) GoogleRegisterInit(
 	if err != nil {
 		tracing.RecordError(span, err)
 		log.Ctx(ctx).Warn().Err(err).Msg("Google register init token validation failed")
-		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid Google token")
+		return nil, errmsg.NewCustomErrors(401).SetMessage(errmsg.MessageInvalidGoogleToken)
 	}
 
 	registrationToken := uuid.NewString()
@@ -89,7 +89,7 @@ func (c *userCore) GoogleRegister(
 		log.Ctx(ctx).Warn().Msg("Google register rejected because tenant setup is not confirmed")
 		return nil, codedError(
 			400,
-			"Tenant setup confirmation is required",
+			errmsg.MessageTenantSetupConfirmationIsRequired,
 			errorCodeTenantSetupConfirmationRequired,
 		)
 	}
@@ -116,7 +116,7 @@ func (c *userCore) GoogleRegister(
 			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, map[string]string{
 				"tenant_code": tenantCode,
 			}).Msg("Tenant code already used")
-			return codedError(400, "Tenant code is already registered", errorCodeTenantCodeAlreadyUsed)
+			return codedError(400, errmsg.MessageTenantCodeIsAlreadyRegistered, errorCodeTenantCodeAlreadyUsed)
 		}
 
 		linkedIdentity, err := c.repo.FindAuthIdentityByProviderSubject(
@@ -133,7 +133,7 @@ func (c *userCore) GoogleRegister(
 			}).Msg("Google identity already linked")
 			return codedError(
 				400,
-				"Google identity is already linked",
+				errmsg.MessageGoogleIdentityIsAlreadyLinked,
 				errorCodeGoogleIdentityAlreadyLinked,
 			)
 		}
@@ -148,7 +148,7 @@ func (c *userCore) GoogleRegister(
 			}).Msg("Google register email already registered")
 			return codedError(
 				400,
-				"Google email is already registered",
+				errmsg.MessageGoogleEmailIsAlreadyRegistered,
 				errorCodeGoogleEmailAlreadyRegistered,
 			)
 		}
@@ -237,7 +237,7 @@ func (c *userCore) resolveGoogleRegisterIdentity(
 			log.Ctx(ctx).Warn().Msg("Google registration session is missing or expired")
 			return nil, codedError(
 				400,
-				"Google registration session is invalid or expired",
+				errmsg.MessageGoogleRegistrationSessionIsInvalidOrExpired,
 				errorCodeGoogleRegistrationSessionInvalid,
 			)
 		}
@@ -255,7 +255,7 @@ func (c *userCore) resolveGoogleRegisterIdentity(
 	identity, err := c.validateGoogleIDToken(ctx, input.IDToken, input.Nonce)
 	if err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Google register token validation failed")
-		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid Google token")
+		return nil, errmsg.NewCustomErrors(401).SetMessage(errmsg.MessageInvalidGoogleToken)
 	}
 
 	return identity, nil
@@ -272,7 +272,7 @@ func (c *userCore) GoogleLogin(
 	if err != nil {
 		tracing.RecordError(span, err)
 		log.Ctx(ctx).Warn().Err(err).Msg("Google login token validation failed")
-		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid Google token")
+		return nil, errmsg.NewCustomErrors(401).SetMessage(errmsg.MessageInvalidGoogleToken)
 	}
 
 	var user *coreentity.User
@@ -313,7 +313,7 @@ func (c *userCore) GoogleLogin(
 			}).Msg("Google account is not connected")
 			return codedError(
 				400,
-				"Google account is not connected to a Presense user",
+				errmsg.MessageGoogleAccountIsNotConnectedToAPresenseUser,
 				errorCodeGoogleAccountNotConnected,
 			)
 		case 1:
@@ -339,7 +339,7 @@ func (c *userCore) GoogleLogin(
 			}).Msg("Google email exists in multiple tenants")
 			return codedError(
 				400,
-				"This Google email exists in multiple tenants. Sign in with email and password first.",
+				errmsg.MessageThisGoogleEmailExistsInMultipleTenantsSignInWithEmailAndPasswordFirst,
 				errorCodeGoogleEmailAmbiguous,
 			)
 		}
@@ -376,10 +376,10 @@ func (c *userCore) validateGoogleIDToken(
 func normalizeAndValidateTenantCode(code string) (string, error) {
 	normalized := strings.ToUpper(strings.TrimSpace(code))
 	if !tenantCodePattern.MatchString(normalized) {
-		return "", codedError(400, "Tenant code is invalid", errorCodeTenantCodeInvalid)
+		return "", codedError(400, errmsg.MessageTenantCodeIsInvalid, errorCodeTenantCodeInvalid)
 	}
 	if _, ok := tenantCodeReserved[normalized]; ok {
-		return "", codedError(400, "Tenant code is reserved", errorCodeTenantCodeReserved)
+		return "", codedError(400, errmsg.MessageTenantCodeIsReserved, errorCodeTenantCodeReserved)
 	}
 	return normalized, nil
 }

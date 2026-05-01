@@ -21,14 +21,14 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 			"join_date":          data.JoinDate,
 			"join_date_timezone": data.JoinDateTimezone,
 		}).Msg("Invalid join date payload")
-		return errmsg.NewCustomErrors(400).SetMessage("Invalid join date or join date timezone")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidJoinDateOrJoinDateTimezone)
 	}
 	if data.ShiftID == nil || *data.ShiftID == "" {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 			"employee_id": data.ID,
 			"tenant_id":   data.TenantID,
 		}).Msg("Work shift is required when updating employee")
-		return errmsg.NewCustomErrors(400).SetMessage("Work shift is required")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageWorkShiftIsRequired)
 	}
 
 	existing, err := c.repo.GetEmployee(ctx, coreentity.Employee{
@@ -49,7 +49,7 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 			"employee_no": data.EmployeeNo,
 			"tenant_id":   data.TenantID,
 		}).Msg("Employee number already exists")
-		return errmsg.NewCustomErrors(400).SetMessage("Employee number already exists in this tenant")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmployeeNumberAlreadyExistsInThisTenant)
 	}
 
 	emailChanged := existing.Email != data.Email
@@ -62,7 +62,7 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 				"email": data.Email,
 			}).Msg("Email already registered")
-			return errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmailIsAlreadyRegistered)
 		}
 	}
 
@@ -83,8 +83,8 @@ func (c *employeeCore) UpdateEmployee(ctx context.Context, data coreentity.Emplo
 	if data.Password != "" && existing.UserID != nil {
 		hashedPassword, err := hashPassword(data.Password)
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Msg("Failed to hash password")
-			return errmsg.NewCustomErrors(500).SetMessage("Failed to update employee password")
+			log.Ctx(ctx).Error().Err(err).Msg(errmsg.MessageFailedToHashPassword)
+			return errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToUpdateEmployeePassword)
 		}
 
 		err = c.userRepo.UpdateUserPassword(ctx, *existing.UserID, data.TenantID, hashedPassword)

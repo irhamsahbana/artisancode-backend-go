@@ -57,8 +57,8 @@ func (r *userRepo) FindActiveUserByIDAndTenant(ctx context.Context, userID, tena
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 				"user_id":   userID,
 				"tenant_id": tenantID,
-			}).Msg("User not found")
-			return nil, errmsg.NewCustomErrors(400).SetMessage("User not found")
+			}).Msg(errmsg.MessageUserNotFound)
+			return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageUserNotFound)
 		}
 
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, map[string]string{

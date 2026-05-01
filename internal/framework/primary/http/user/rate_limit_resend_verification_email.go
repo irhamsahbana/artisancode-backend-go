@@ -29,7 +29,7 @@ func (h *userHandler) limitResendVerificationEmail(c *fiber.Ctx, email, tenantCo
 	if !allowed {
 		c.Set("Retry-After", fmt.Sprintf("%.0f", retryAfter.Seconds()))
 		return c.Status(fiber.StatusTooManyRequests).JSON(
-			response.Error(errmsg.NewCustomErrors(429).SetMessage("Too many verification email requests. Please wait before trying again")),
+			response.Error(errmsg.NewCustomErrors(429).SetMessage(errmsg.MessageTooManyVerificationEmailRequestsPleaseWaitBeforeTryingAgain)),
 		)
 	}
 
@@ -41,6 +41,6 @@ func (h *userHandler) limitResendVerificationEmail(c *fiber.Ctx, email, tenantCo
 
 	c.Set("Retry-After", fmt.Sprintf("%.0f", retryAfter.Seconds()))
 	return c.Status(fiber.StatusTooManyRequests).JSON(
-		response.Error(errmsg.NewCustomErrors(429).SetMessage("Too many verification email requests. Please wait before trying again")),
+		response.Error(errmsg.NewCustomErrors(429).SetMessage(errmsg.MessageTooManyVerificationEmailRequestsPleaseWaitBeforeTryingAgain)),
 	)
 }

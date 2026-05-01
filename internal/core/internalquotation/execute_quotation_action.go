@@ -29,7 +29,7 @@ func (c *internalQuotationCore) ExecuteQuotationAction(
 	case coreentity.ActionConvertQuotation:
 		return c.executeConvertQuotationAction(ctx, input)
 	default:
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, input).Msg("Unsupported quotation action")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Unsupported quotation action")
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, input).Msg(errmsg.MessageUnsupportedQuotationAction)
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageUnsupportedQuotationAction)
 	}
 }

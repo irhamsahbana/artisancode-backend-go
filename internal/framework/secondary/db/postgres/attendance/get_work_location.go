@@ -40,8 +40,8 @@ func (r *attendanceRepo) GetWorkLocation(
 	err := exec.GetContext(ctx, &data, exec.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Work location not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Work location not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageWorkLocationNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageWorkLocationNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get work location")
 		return nil, err

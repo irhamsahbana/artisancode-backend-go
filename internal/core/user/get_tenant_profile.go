@@ -18,7 +18,7 @@ func (c *userCore) GetTenantProfile(ctx context.Context) (*coreentity.TenantProf
 	userCtx := common.GetUserContext(ctx)
 	if userCtx.TenantID == "" {
 		log.Ctx(ctx).Warn().Msg("Tenant profile requested without tenant context")
-		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid credentials")
+		return nil, errmsg.NewCustomErrors(401).SetMessage(errmsg.MessageInvalidCredentials)
 	}
 
 	return c.repo.GetTenantProfile(ctx, userCtx.TenantID)

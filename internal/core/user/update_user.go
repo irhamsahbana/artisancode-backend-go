@@ -18,8 +18,8 @@ func (c *userCore) UpdateUser(ctx context.Context, data coreentity.User) error {
 	if data.Password != "" {
 		hashedPassword, err := hashPassword(data.Password)
 		if err != nil {
-			log.Ctx(ctx).Error().Err(err).Msg("Failed to hash password")
-			return errmsg.NewCustomErrors(500).SetMessage("Failed to update user")
+			log.Ctx(ctx).Error().Err(err).Msg(errmsg.MessageFailedToHashPassword)
+			return errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToUpdateUser)
 		}
 		data.Password = hashedPassword
 	}
@@ -39,7 +39,7 @@ func (c *userCore) UpdateUser(ctx context.Context, data coreentity.User) error {
 				"email":   data.Email,
 				"user_id": data.ID,
 			}).Msg("Email already registered")
-			return errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmailIsAlreadyRegistered)
 		}
 
 		return c.repo.UpdateUser(txCtx, data)

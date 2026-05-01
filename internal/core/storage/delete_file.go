@@ -21,7 +21,7 @@ func (c *storageCore) DeleteFile(ctx context.Context, req *coreentity.DeleteFile
 		return err
 	}
 	if file.Status != common.FileStatusPending {
-		return errmsg.NewCustomErrors(400).SetMessage("File can no longer be deleted")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageFileCanNoLongerBeDeleted)
 	}
 
 	err = c.s3.DeleteFile(ctx, &coreentity.DeleteFileReq{

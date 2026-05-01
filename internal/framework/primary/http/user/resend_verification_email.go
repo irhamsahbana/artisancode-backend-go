@@ -51,5 +51,5 @@ func (h *userHandler) resendVerificationEmail(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.Success(map[string]any{}, "Verification email has been resent"))
+	return c.Status(fiber.StatusOK).JSON(response.Success(map[string]any{}, errmsg.MessageVerificationEmailHasBeenResent))
 }

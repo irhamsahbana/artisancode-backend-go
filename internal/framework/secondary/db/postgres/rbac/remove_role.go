@@ -32,7 +32,7 @@ func (r *rbacRepo) RemoveRole(ctx context.Context, data coreentity.UserRole) err
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("User role not found when removing")
-		return errmsg.NewCustomErrors(404).SetMessage("User role not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageUserRoleNotFound)
 	}
 	return nil
 }

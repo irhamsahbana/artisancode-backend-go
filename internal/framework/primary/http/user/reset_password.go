@@ -44,5 +44,5 @@ func (h *userHandler) resetPassword(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.Success(map[string]any{}, "Password has been reset successfully"))
+	return c.Status(fiber.StatusOK).JSON(response.Success(map[string]any{}, errmsg.MessagePasswordHasBeenResetSuccessfully))
 }

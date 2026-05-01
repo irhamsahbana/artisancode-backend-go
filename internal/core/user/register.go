@@ -33,7 +33,7 @@ func (c *userCore) RegisterOwner(
 		}
 		if tenantExist {
 			log.Ctx(txCtx).Warn().Any(common.LogKeyPayload, payload).Msg("Tenant code already registered")
-			return errmsg.NewCustomErrors(400).SetMessage("Tenant code is already registered")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageTenantCodeIsAlreadyRegistered)
 		}
 
 		tenantID, _, err := c.createTenant(txCtx, tenant)

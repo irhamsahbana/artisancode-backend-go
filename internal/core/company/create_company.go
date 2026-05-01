@@ -24,8 +24,8 @@ func (c *companyCore) CreateCompany(ctx context.Context, data coreentity.Company
 	if exists {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 			"code": data.Code,
-		}).Msg("Company code already exists")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Company code already exists")
+		}).Msg(errmsg.MessageCompanyCodeAlreadyExists)
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCompanyCodeAlreadyExists)
 	}
 
 	// Validate config
@@ -38,29 +38,29 @@ func (c *companyCore) CreateCompany(ctx context.Context, data coreentity.Company
 
 func validateCompanyConfig(cfg coreentity.CompanyConfig) error {
 	if cfg.Timezone == "" {
-		return errmsg.NewCustomErrors(400).SetMessage("Timezone is required")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageTimezoneIsRequired)
 	}
 	if cfg.DateFormat == "" {
-		return errmsg.NewCustomErrors(400).SetMessage("Date format is required")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageDateFormatIsRequired)
 	}
 	if cfg.TimeFormat == "" {
-		return errmsg.NewCustomErrors(400).SetMessage("Time format is required")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageTimeFormatIsRequired)
 	}
 	if cfg.PreferredLanguage == "" {
-		return errmsg.NewCustomErrors(400).SetMessage("Preferred language is required")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessagePreferredLanguageIsRequired)
 	}
 	if len(cfg.SupportedLanguages) == 0 {
-		return errmsg.NewCustomErrors(400).SetMessage("Supported languages is required")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageSupportedLanguagesIsRequired)
 	}
 
 	allowedLanguages := []string{"id", "en"}
 	for _, language := range cfg.SupportedLanguages {
 		if !slices.Contains(allowedLanguages, language) {
-			return errmsg.NewCustomErrors(400).SetMessage("Supported languages contains unsupported language")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageSupportedLanguagesContainsUnsupportedLanguage)
 		}
 	}
 	if !slices.Contains(cfg.SupportedLanguages, cfg.PreferredLanguage) {
-		return errmsg.NewCustomErrors(400).SetMessage("Preferred language must exist in supported languages")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessagePreferredLanguageMustExistInSupportedLanguages)
 	}
 
 	return nil

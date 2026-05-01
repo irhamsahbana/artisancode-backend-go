@@ -34,7 +34,7 @@ func (r *userInvitationRepo) GetInvitationByID(
 		}
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Invitation not found by id")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Invitation not found")
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageInvitationNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get invitation by id")
 		return nil, err
@@ -64,7 +64,7 @@ func (r *userInvitationRepo) GetInvitationByTokenHash(
 		}
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("Invitation not found by token hash")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Invitation not found")
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageInvitationNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get invitation by token hash")
 		return nil, err

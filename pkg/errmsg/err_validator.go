@@ -1,7 +1,6 @@
 package errmsg
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -147,162 +146,109 @@ func errorValidationHandler[T any](lang Language, err error, payload *T) (int, m
 }
 
 func defaultValidationMessage(lang Language, field string, fieldInMsg string, tag string, param string) string {
+	data := map[string]string{
+		"Field":      field,
+		"FieldInMsg": fieldInMsg,
+		"Tag":        tag,
+		"Param":      param,
+	}
 	if param != "" {
-		if lang == LanguageEnglish {
-			return fmt.Sprintf("field validation for '%s' failed on the '%s' tag with param '%s'", field, tag, param)
-		}
-		return fmt.Sprintf("validasi untuk '%s' gagal pada tag '%s' dengan parameter '%s'", fieldInMsg, tag, param)
+		return TranslateTextWithData(lang, MessageValidationDefaultWithParam, data)
 	}
 
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("field validation for '%s' failed on the '%s' tag", field, tag)
-	}
-	return fmt.Sprintf("validasi untuk '%s' gagal pada tag '%s'", fieldInMsg, tag)
+	return TranslateTextWithData(lang, MessageValidationDefault, data)
 }
 
 func validationMessageRequired(lang Language, field string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s is required", field)
-	}
-	return fmt.Sprintf("%s wajib diisi", field)
+	return validationMessage(lang, MessageValidationRequired, field, nil)
 }
 
 func validationMessageEmail(lang Language, field string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s is not a valid email address", field)
-	}
-	return fmt.Sprintf("%s bukan alamat email yang valid", field)
+	return validationMessage(lang, MessageValidationEmail, field, nil)
 }
 
 func validationMessageEmailBlacklist(lang Language, value any) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("email %v is not allowed", value)
-	}
-	return fmt.Sprintf("email %v tidak diizinkan", value)
+	return TranslateTextWithData(lang, MessageValidationEmailBlacklist, map[string]any{
+		"Value": value,
+	})
 }
 
 func validationMessageStrongPassword(lang Language, field string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number", field)
-	}
-	return fmt.Sprintf("%s minimal 8 karakter dan harus mengandung setidaknya satu huruf besar, satu huruf kecil, dan satu angka", field)
+	return validationMessage(lang, MessageValidationStrongPassword, field, nil)
 }
 
 func validationMessageResourceNotExist(lang Language) string {
-	if lang == LanguageEnglish {
-		return "resource does not exist."
-	}
-	return "sumber data tidak ditemukan."
+	return TranslateText(lang, MessageValidationResourceNotExist)
 }
 
 func validationMessageDatetime(lang Language, field string, example string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s is not a valid datetime format (Ex: %s)", field, example)
-	}
-	return fmt.Sprintf("%s bukan format tanggal dan waktu yang valid (Contoh: %s)", field, example)
+	return validationMessage(lang, MessageValidationDatetime, field, map[string]string{
+		"Example": example,
+	})
 }
 
 func validationMessageSimpleInvalid(lang Language, field string, kind string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s is not a valid %s", field, kind)
-	}
-	return fmt.Sprintf("%s bukan %s yang valid", field, kind)
+	return validationMessage(lang, MessageValidationSimpleInvalid, field, map[string]string{
+		"Kind": kind,
+	})
 }
 
 func validationMessageSimpleFormat(lang Language, field string, format string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s is not a valid %s format", field, format)
-	}
-	return fmt.Sprintf("%s bukan format %s yang valid", field, format)
+	return validationMessage(lang, MessageValidationSimpleFormat, field, map[string]string{
+		"Format": format,
+	})
 }
 
 func validationMessageMinValue(lang Language, field string, param string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must be at least %s", field, param)
-	}
-	return fmt.Sprintf("%s harus minimal %s", field, param)
+	return validationMessageWithParam(lang, MessageValidationMinValue, field, param)
 }
 
 func validationMessageMinChars(lang Language, field string, param string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must be at least %s characters", field, param)
-	}
-	return fmt.Sprintf("%s harus minimal %s karakter", field, param)
+	return validationMessageWithParam(lang, MessageValidationMinChars, field, param)
 }
 
 func validationMessageMinItems(lang Language, field string, param string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must have at least %s items", field, param)
-	}
-	return fmt.Sprintf("%s harus minimal %s item", field, param)
+	return validationMessageWithParam(lang, MessageValidationMinItems, field, param)
 }
 
 func validationMessageMaxValue(lang Language, field string, param string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must not be greater than %s", field, param)
-	}
-	return fmt.Sprintf("%s harus tidak lebih dari %s", field, param)
+	return validationMessageWithParam(lang, MessageValidationMaxValue, field, param)
 }
 
 func validationMessageMaxChars(lang Language, field string, param string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must not be greater than %s characters", field, param)
-	}
-	return fmt.Sprintf("%s harus tidak lebih dari %s karakter", field, param)
+	return validationMessageWithParam(lang, MessageValidationMaxChars, field, param)
 }
 
 func validationMessageMaxItems(lang Language, field string, param string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must not have more than %s items", field, param)
-	}
-	return fmt.Sprintf("%s harus tidak lebih dari %s item", field, param)
+	return validationMessageWithParam(lang, MessageValidationMaxItems, field, param)
 }
 
 func validationMessageCompare(lang Language, field string, operator string, param string) string {
-	if lang == LanguageEnglish {
-		switch operator {
-		case "gt":
-			return fmt.Sprintf("%s must be greater than %s", field, param)
-		case "gte":
-			return fmt.Sprintf("%s must be greater than or equal to %s", field, param)
-		case "lt":
-			return fmt.Sprintf("%s must be less than %s", field, param)
-		default:
-			return fmt.Sprintf("%s must be less than or equal to %s", field, param)
-		}
-	}
-
+	code := MessageValidationCompareLte
 	switch operator {
 	case "gt":
-		return fmt.Sprintf("%s harus lebih dari %s", field, param)
+		code = MessageValidationCompareGt
 	case "gte":
-		return fmt.Sprintf("%s harus lebih dari atau sama dengan %s", field, param)
+		code = MessageValidationCompareGte
 	case "lt":
-		return fmt.Sprintf("%s harus kurang dari %s", field, param)
-	default:
-		return fmt.Sprintf("%s harus kurang dari atau sama dengan %s", field, param)
+		code = MessageValidationCompareLt
 	}
+
+	return validationMessageWithParam(lang, code, field, param)
 }
 
 func validationMessageNumeric(lang Language, field string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must be a number", field)
-	}
-	return fmt.Sprintf("%s harus angka", field)
+	return validationMessage(lang, MessageValidationNumeric, field, nil)
 }
 
 func validationMessageTimezone(lang Language, field string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must be a valid timezone (Ex: Asia/Jakarta)", field)
-	}
-	return fmt.Sprintf("%s harus zona waktu yang valid (Contoh: Asia/Jakarta)", field)
+	return validationMessage(lang, MessageValidationTimezone, field, nil)
 }
 
 func validationMessageEqualField(lang Language, field string, eqFieldName string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must be equal to %s", field, eqFieldName)
-	}
-	return fmt.Sprintf("%s harus sama dengan %s", field, eqFieldName)
+	return validationMessage(lang, MessageValidationEqfield, field, map[string]string{
+		"EqField": eqFieldName,
+	})
 }
 
 func validationMessageOneOf(lang Language, field string, param string) string {
@@ -316,15 +262,27 @@ func validationMessageOneOf(lang Language, field string, param string) string {
 		}
 	}
 	oneOfValuesStr := strings.Join(oneOfValues, ", ")
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s must be one of %s", field, oneOfValuesStr)
-	}
-	return fmt.Sprintf("%s harus salah satu dari %s", field, oneOfValuesStr)
+	return validationMessage(lang, MessageValidationOneof, field, map[string]string{
+		"Values": oneOfValuesStr,
+	})
 }
 
 func validationMessageUniqueInSlice(lang Language, field string) string {
-	if lang == LanguageEnglish {
-		return fmt.Sprintf("%s elements must be unique", field)
+	return validationMessage(lang, MessageValidationUniqueInSlice, field, nil)
+}
+
+func validationMessageWithParam(lang Language, code string, field string, param string) string {
+	return validationMessage(lang, code, field, map[string]string{
+		"Param": param,
+	})
+}
+
+func validationMessage(lang Language, code string, field string, data map[string]string) string {
+	templateData := make(map[string]string, len(data)+1)
+	templateData["Field"] = field
+	for key, value := range data {
+		templateData[key] = value
 	}
-	return fmt.Sprintf("elemen %s harus unik", field)
+
+	return TranslateTextWithData(lang, code, templateData)
 }

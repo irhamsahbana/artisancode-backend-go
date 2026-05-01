@@ -21,10 +21,10 @@ func (c *userInvitationCore) RevokeInvitation(ctx context.Context, data coreenti
 		return err
 	}
 	if item.Status == coreentity.UserInvitationStatusAccepted {
-		return errmsg.NewCustomErrors(400).SetMessage("Accepted invitation cannot be revoked")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageAcceptedInvitationCannotBeRevoked)
 	}
 	if item.Status == coreentity.UserInvitationStatusRevoked {
-		return errmsg.NewCustomErrors(400).SetMessage("Invitation is already revoked")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvitationIsAlreadyRevoked)
 	}
 
 	return c.repo.RevokeInvitation(ctx, data.UserCtx.TenantID, data.ID)
@@ -35,10 +35,10 @@ func (c *userInvitationCore) authorizeInvitationMutation(
 	userCtx common.UserContext,
 ) error {
 	if !userCtx.HasRole("owner") && !userCtx.HasRole("admin") {
-		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to manage invitations")
+		return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageYouAreNotAuthorizedToManageInvitations)
 	}
 	if item.RoleCode == coreentity.UserInvitationRoleAdmin && !userCtx.HasRole("owner") {
-		return errmsg.NewCustomErrors(403).SetMessage("Only owner can manage admin invitations")
+		return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageOnlyOwnerCanManageAdminInvitations)
 	}
 	return nil
 }

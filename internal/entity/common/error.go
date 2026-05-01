@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	ErrProductNotFound = errors.New("product not found")
+	ErrProductNotFound = errors.New(errmsg.MessageProductNotFound)
 )
 
 var (
-	ErrCustomProductNotFound = errmsg.NewCustomErrors(404).SetMessage("product not found")
+	ErrCustomProductNotFound = errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageProductNotFound)
 )

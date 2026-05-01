@@ -5,7 +5,7 @@ import "codebase-app/pkg/errmsg"
 type Response map[string]any
 
 func Success(data any, message string) Response {
-	msg := "Your request has been successfully processed"
+	msg := errmsg.MessageYourRequestHasBeenSuccessfullyProcessed
 	// msg := "Permintaan anda berhasil diproses"
 	if message != "" {
 		msg = message
@@ -30,7 +30,7 @@ func Error(errorMsg any) Response {
 		return Response{
 			"success": false,
 			"errors":  errorMsg,
-			"message": "Your request has been failed to process",
+			"message": errmsg.MessageYourRequestHasBeenFailedToProcess,
 			// "message": "Permintaan anda gagal diproses",
 		}
 	}
@@ -57,14 +57,14 @@ func Error(errorMsg any) Response {
 
 	return Response{
 		"success": false,
-		"message": "Your request has been failed to process",
+		"message": errmsg.MessageYourRequestHasBeenFailedToProcess,
 		// "message": "Permintaan anda gagal diproses",
 	}
 }
 
 func ErrorsWithMessage(errors map[string][]string, message string) Response {
 	if message == "" {
-		message = "Your request has been failed to process"
+		message = errmsg.MessageYourRequestHasBeenFailedToProcess
 		// message = "Permintaan anda gagal diproses"
 	}
 

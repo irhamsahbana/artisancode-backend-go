@@ -43,7 +43,7 @@ func (r *userRepo) GetTenantProfile(ctx context.Context, tenantID string) (*core
 				Warn().
 				Any(common.LogKeyPayload, map[string]string{"tenant_id": tenantID}).
 				Msg("Tenant profile not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Tenant not found")
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageTenantNotFound)
 		}
 		log.Ctx(ctx).
 			Error().

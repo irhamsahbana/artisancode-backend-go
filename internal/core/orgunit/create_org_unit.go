@@ -34,7 +34,7 @@ func (c *orgUnitCore) CreateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 			"tenant_id": data.TenantID,
 			"code":      data.Code,
 		}).Msg("Org unit code already exists")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Organization unit code already exists")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageOrganizationUnitCodeAlreadyExists)
 	}
 
 	// 2. Validate parent exists and check category hierarchy
@@ -53,7 +53,7 @@ func (c *orgUnitCore) CreateOrgUnit(ctx context.Context, data coreentity.OrgUnit
 				"parent_category": parent.Category,
 				"child_category":  data.Category,
 			}).Msg("Invalid category hierarchy")
-			return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid category for the selected parent")
+			return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidCategoryForTheSelectedParent)
 		}
 	}
 

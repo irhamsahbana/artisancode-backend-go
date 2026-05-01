@@ -22,7 +22,7 @@ func (h *orgUnitHandler) getOrgUnitTree(c *fiber.Ctx) error {
 	)
 
 	if !userCtx.CanAccessCompany(companyID) {
-		return c.Status(fiber.StatusForbidden).JSON(response.Error("You don't have access to this company"))
+		return c.Status(fiber.StatusForbidden).JSON(response.Error(errmsg.MessageYouDontHaveAccessToThisCompany))
 	}
 
 	tree, err := h.core.GetOrgUnitTree(ctx, userCtx.TenantID, companyID)

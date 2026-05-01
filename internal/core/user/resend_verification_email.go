@@ -18,7 +18,7 @@ func (c *userCore) ResendVerificationEmail(ctx context.Context, user coreentity.
 	}
 
 	if foundUser.EmailVerifiedAt != nil {
-		return errmsg.NewCustomErrors(400).SetMessage("Email is already verified")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmailIsAlreadyVerified)
 	}
 
 	foundUser.PreferredLanguage, err = c.repo.GetTenantPreferredLanguage(ctx, foundUser.TenantID)

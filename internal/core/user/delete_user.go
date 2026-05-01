@@ -13,7 +13,7 @@ func (c *userCore) DeleteUser(ctx context.Context, filter coreentity.UserDeleteF
 	defer span.End()
 
 	if filter.UserCtx.UserID == filter.ID {
-		return errmsg.NewCustomErrors(400).SetMessage("You cannot delete your own account")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageYouCannotDeleteYourOwnAccount)
 	}
 
 	return c.repo.DeleteUser(ctx, filter)

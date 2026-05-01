@@ -38,8 +38,8 @@ func (r *workShiftRepo) GetWorkShift(ctx context.Context, filter coreentity.Work
 	err := r.db.GetContext(ctx, &data, r.db.Rebind(query), filter.ID, filter.TenantID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Work shift not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Work shift not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageWorkShiftNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageWorkShiftNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get work shift")
 		return nil, err

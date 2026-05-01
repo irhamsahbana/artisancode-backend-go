@@ -115,7 +115,7 @@ func (c *userCore) enqueueVerificationEmail(
 	userName, email, tenantName, verificationLink, preferredLanguage string,
 ) error {
 	if c.bus == nil {
-		return errmsg.NewCustomErrors(500).SetMessage("Email message bus is not configured")
+		return errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageEmailMessageBusIsNotConfigured)
 	}
 
 	return c.bus.PublishJSON(ctx, common.MessageTopicEmailVerification, coreentity.QueuedEmailMessage{
@@ -132,7 +132,7 @@ func (c *userCore) enqueuePasswordResetEmail(
 	userName, email, tenantName, resetLink, preferredLanguage string,
 ) error {
 	if c.bus == nil {
-		return errmsg.NewCustomErrors(500).SetMessage("Email message bus is not configured")
+		return errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageEmailMessageBusIsNotConfigured)
 	}
 
 	return c.bus.PublishJSON(ctx, common.MessageTopicEmailForgotPassword, coreentity.QueuedEmailMessage{

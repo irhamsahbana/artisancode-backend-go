@@ -14,7 +14,7 @@ func (c *userCore) ForgotPassword(ctx context.Context, user coreentity.User) err
 
 	foundUser, err := c.repo.FindActiveUserByEmailAndTenant(ctx, user.Email, user.TenantCode)
 	if err != nil {
-		if customErr, ok := err.(*errmsg.CustomError); ok && customErr.Msg == "User not found" {
+		if customErr, ok := err.(*errmsg.CustomError); ok && customErr.Msg == errmsg.MessageUserNotFound {
 			return nil
 		}
 		return err

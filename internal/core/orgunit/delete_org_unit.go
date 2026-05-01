@@ -20,7 +20,7 @@ func (c *orgUnitCore) DeleteOrgUnit(ctx context.Context, filter coreentity.OrgUn
 		return err
 	}
 	if existing.Category == "company" {
-		return errmsg.NewCustomErrors(403).SetMessage("Company cannot be deleted")
+		return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageCompanyCannotBeDeleted)
 	}
 
 	return c.repo.DeleteOrgUnit(ctx, filter)

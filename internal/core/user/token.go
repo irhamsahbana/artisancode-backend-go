@@ -42,7 +42,7 @@ func (c *userCore) issueAuthTokens(ctx context.Context, user coreentity.User) (*
 				"tenant_id": user.TenantID,
 			}).
 			Msg("Failed to generate auth token")
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to generate token")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToGenerateToken)
 	}
 
 	refreshToken := uuid.New().String()

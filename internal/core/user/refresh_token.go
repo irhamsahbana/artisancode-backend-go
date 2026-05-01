@@ -23,8 +23,8 @@ func (c *userCore) RefreshToken(ctx context.Context, user coreentity.User) (*cor
 	if !found {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 			"refreshToken": user.RefreshToken,
-		}).Msg("Invalid or expired refresh token")
-		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid or expired refresh token")
+		}).Msg(errmsg.MessageInvalidOrExpiredRefreshToken)
+		return nil, errmsg.NewCustomErrors(401).SetMessage(errmsg.MessageInvalidOrExpiredRefreshToken)
 	}
 
 	foundUser, err := c.repo.FindActiveUserByIDAndTenant(ctx, tokenData.UserID, tokenData.TenantID)
@@ -55,7 +55,7 @@ func (c *userCore) RefreshToken(ctx context.Context, user coreentity.User) (*cor
 
 	newToken, err := jwthandler.GenerateTokenString(payload)
 	if err != nil {
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to generate token")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToGenerateToken)
 	}
 
 	return &coreentity.AuthTokens{

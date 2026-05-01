@@ -23,8 +23,8 @@ func (c *workLocationCore) CreateWorkLocation(
 		return nil, err
 	}
 	if exists {
-		log.Ctx(ctx).Warn().Any("name", data.Name).Msg("Work location name already exists")
-		return nil, errmsg.NewCustomErrors(409).SetMessage("Work location name already exists")
+		log.Ctx(ctx).Warn().Any("name", data.Name).Msg(errmsg.MessageWorkLocationNameAlreadyExists)
+		return nil, errmsg.NewCustomErrors(409).SetMessage(errmsg.MessageWorkLocationNameAlreadyExists)
 	}
 
 	// Validate org_unit_id exists if provided
@@ -34,8 +34,8 @@ func (c *workLocationCore) CreateWorkLocation(
 			ID:       *data.OrgUnitID,
 		})
 		if err != nil {
-			log.Ctx(ctx).Warn().Str("org_unit_id", *data.OrgUnitID).Msg("Org unit not found")
-			return nil, errmsg.NewCustomErrors(400).SetMessage("Organization unit not found")
+			log.Ctx(ctx).Warn().Str("org_unit_id", *data.OrgUnitID).Msg(errmsg.MessageOrgUnitNotFound)
+			return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageOrganizationUnitNotFound)
 		}
 	}
 

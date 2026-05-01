@@ -67,14 +67,14 @@ func (r *userRepo) GetValidUserActionToken(
 		if err == sql.ErrNoRows {
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 				"purpose": purpose,
-			}).Msg("User action token not found")
+			}).Msg(errmsg.MessageUserActionTokenNotFound)
 			switch purpose {
 			case coreentity.UserActionTokenPurposeEmailVerification:
-				return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid or expired email verification token")
+				return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidOrExpiredEmailVerificationToken)
 			case coreentity.UserActionTokenPurposePasswordReset:
-				return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid or expired password reset token")
+				return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidOrExpiredPasswordResetToken)
 			default:
-				return nil, errmsg.NewCustomErrors(400).SetMessage("User action token not found")
+				return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageUserActionTokenNotFound)
 			}
 		}
 

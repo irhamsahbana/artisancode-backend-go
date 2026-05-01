@@ -36,9 +36,9 @@ func (r *userRepo) GetUserRolesByUserID(ctx context.Context, userID string) ([]s
 	}
 
 	if len(roles) == 0 {
-		err = errmsg.NewCustomErrors(400).SetMessage("User has no roles")
+		err = errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageUserHasNoRoles)
 		tracing.RecordError(span, err)
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("User has no roles")
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg(errmsg.MessageUserHasNoRoles)
 		return nil, err
 	}
 

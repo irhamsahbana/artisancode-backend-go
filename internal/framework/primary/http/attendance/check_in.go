@@ -64,5 +64,5 @@ func (h *attendanceHandler) handleAttendanceAction(c *fiber.Ctx, actionType stri
 		return c.Status(code).JSON(response.Error(errors))
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(response.Success(item, "Attendance recorded successfully"))
+	return c.Status(fiber.StatusCreated).JSON(response.Success(item, errmsg.MessageAttendanceRecordedSuccessfully))
 }

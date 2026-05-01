@@ -49,7 +49,7 @@ func (r *userRepo) UpdateUser(ctx context.Context, data coreentity.User) error {
 	exec := r.executor(ctx)
 	result, err := exec.ExecContext(ctx, exec.Rebind(query), args...)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg("Failed to update user")
+		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, data).Msg(errmsg.MessageFailedToUpdateUser)
 		return err
 	}
 
@@ -60,7 +60,7 @@ func (r *userRepo) UpdateUser(ctx context.Context, data coreentity.User) error {
 	}
 	if rowsAffected == 0 {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, data).Msg("User not found when updating")
-		return errmsg.NewCustomErrors(404).SetMessage("User not found")
+		return errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageUserNotFound)
 	}
 
 	if err := r.replaceUserRoles(ctx, exec, data.ID, data.RoleIDs); err != nil {

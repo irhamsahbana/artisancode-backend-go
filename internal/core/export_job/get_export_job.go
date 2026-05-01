@@ -17,7 +17,7 @@ func (c *exportJobCore) GetExportJob(
 	defer span.End()
 
 	if !filter.UserCtx.HasRole("owner") && !filter.UserCtx.HasRole("admin") {
-		return nil, errmsg.NewCustomErrors(403).SetMessage("You are not allowed to access export jobs")
+		return nil, errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageYouAreNotAllowedToAccessExportJobs)
 	}
 
 	item, err := c.repo.GetExportJob(ctx, filter)

@@ -51,5 +51,5 @@ func (h *userHandler) forgotPassword(c *fiber.Ctx) error {
 		return c.Status(code).JSON(response.Error(errs))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.Success(map[string]any{}, "If the email is registered, a password reset link has been sent"))
+	return c.Status(fiber.StatusOK).JSON(response.Success(map[string]any{}, errmsg.MessageIfTheEmailIsRegisteredAPasswordResetLinkHasBeenSent))
 }

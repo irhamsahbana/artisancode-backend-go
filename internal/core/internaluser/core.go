@@ -50,7 +50,7 @@ func (c *internalUserCore) Login(ctx context.Context, user coreentity.InternalUs
 	}
 
 	if foundUser.Status != coreentity.InternalUserStatusActive {
-		return nil, errmsg.NewCustomErrors(403).SetMessage("Internal user is not active")
+		return nil, errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageInternalUserIsNotActive)
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(user.Password)); err != nil {
@@ -58,7 +58,7 @@ func (c *internalUserCore) Login(ctx context.Context, user coreentity.InternalUs
 			Warn().
 			Any(common.LogKeyPayload, map[string]string{"email": user.Email}).
 			Msg("Invalid internal credentials")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Invalid credentials")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidCredentials)
 	}
 
 	tokenExp := time.Now().UTC().Add(24 * time.Hour)
@@ -69,7 +69,7 @@ func (c *internalUserCore) Login(ctx context.Context, user coreentity.InternalUs
 		TokenExpiration: tokenExp,
 	})
 	if err != nil {
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to generate token")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToGenerateToken)
 	}
 
 	refreshToken := uuid.New().String()
@@ -96,7 +96,7 @@ func (c *internalUserCore) RefreshToken(
 
 	tokenData, found := c.tokenCache.GetRefreshToken(user.RefreshToken)
 	if !found {
-		return nil, errmsg.NewCustomErrors(401).SetMessage("Invalid refresh token")
+		return nil, errmsg.NewCustomErrors(401).SetMessage(errmsg.MessageInvalidRefreshToken)
 	}
 
 	foundUser, err := c.repo.GetInternalUser(ctx, coreentity.InternalUserFilter{ID: tokenData.UserID})
@@ -105,7 +105,7 @@ func (c *internalUserCore) RefreshToken(
 	}
 
 	if foundUser.Status != coreentity.InternalUserStatusActive {
-		return nil, errmsg.NewCustomErrors(403).SetMessage("Internal user is not active")
+		return nil, errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageInternalUserIsNotActive)
 	}
 
 	token, err := jwthandler.GenerateInternalUserTokenString(jwthandler.InternalUserClaimsPayload{
@@ -115,7 +115,7 @@ func (c *internalUserCore) RefreshToken(
 		TokenExpiration: time.Now().UTC().Add(24 * time.Hour),
 	})
 	if err != nil {
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to generate token")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToGenerateToken)
 	}
 
 	newRefreshToken := uuid.New().String()
@@ -178,12 +178,12 @@ func (c *internalUserCore) CreateInternalUser(
 		return nil, err
 	}
 	if exists {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Internal user email already exists")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalUserEmailAlreadyExists)
 	}
 
 	hashedPassword, err := hashInternalPassword(data.Password)
 	if err != nil {
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to hash password")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToHashPassword)
 	}
 	data.Password = hashedPassword
 
@@ -207,13 +207,13 @@ func (c *internalUserCore) UpdateInternalUser(ctx context.Context, data coreenti
 		return err
 	}
 	if exists {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal user email already exists")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalUserEmailAlreadyExists)
 	}
 
 	if data.Password != "" {
 		hashedPassword, err := hashInternalPassword(data.Password)
 		if err != nil {
-			return errmsg.NewCustomErrors(500).SetMessage("Failed to hash password")
+			return errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToHashPassword)
 		}
 		data.Password = hashedPassword
 	}
@@ -234,7 +234,7 @@ func (c *internalUserCore) DeleteInternalUser(ctx context.Context, filter coreen
 
 func (c *internalUserCore) authorizeManage(userCtx common.UserContext) error {
 	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) {
-		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to manage internal users")
+		return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageYouAreNotAuthorizedToManageInternalUsers)
 	}
 	return nil
 }
@@ -246,15 +246,15 @@ func (c *internalUserCore) normalizeAndValidate(data *coreentity.InternalUser, p
 	data.Status = strings.TrimSpace(data.Status)
 
 	if data.RoleCode != coreentity.InternalUserRoleSuperAdmin && data.RoleCode != coreentity.InternalUserRoleOperator {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal user role is invalid")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalUserRoleIsInvalid)
 	}
 	if data.Status != coreentity.InternalUserStatusInvited &&
 		data.Status != coreentity.InternalUserStatusActive &&
 		data.Status != coreentity.InternalUserStatusInactive {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal user status is invalid")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalUserStatusIsInvalid)
 	}
 	if passwordRequired && strings.TrimSpace(data.Password) == "" {
-		return errmsg.NewCustomErrors(400).SetMessage("Password is required")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessagePasswordIsRequired)
 	}
 
 	return nil

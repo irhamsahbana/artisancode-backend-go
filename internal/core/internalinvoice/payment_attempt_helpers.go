@@ -19,14 +19,14 @@ func (c *internalInvoiceCore) createDOKUAttempt(
 	defer span.End()
 
 	if c.doku == nil {
-		return nil, errmsg.NewCustomErrors(500).SetMessage("DOKU client is not configured")
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageDokuClientIsNotConfigured)
 	}
 	invoice, err := c.invoiceRepo.GetInvoice(ctx, input.UserCtx.TenantID, input.ID)
 	if err != nil {
 		return nil, err
 	}
 	if invoice.Status != coreentity.InvoiceStatusOpen && invoice.Status != coreentity.InvoiceStatusPartiallyPaid {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Invoice is not payable")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvoiceIsNotPayable)
 	}
 	attempt, err := c.invoiceRepo.CreatePaymentAttempt(ctx, coreentity.InternalPaymentAttempt{
 		InternalInvoiceID: invoice.ID, Provider: coreentity.PaymentProviderDOKU, PaymentMethodType: "gateway",
@@ -67,7 +67,7 @@ func (c *internalInvoiceCore) createManualAttempt(
 		return nil, err
 	}
 	if invoice.Status != coreentity.InvoiceStatusOpen && invoice.Status != coreentity.InvoiceStatusPartiallyPaid {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Invoice is not payable")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvoiceIsNotPayable)
 	}
 	provider := input.Provider
 	if provider == "" {

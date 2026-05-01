@@ -12,7 +12,9 @@ Main building blocks:
   - Stores it in request context using `errmsg.ContextWithLanguage(...)`.
 - `pkg/errmsg/i18n.go`
   - Defines supported languages.
-  - Contains translation catalog and language helpers.
+  - Loads the embedded go-i18n bundle.
+- `pkg/errmsg/locales/*.toml`
+  - Contains message-code based translations.
 - `pkg/errmsg/errors.go`
   - Central entry point for localized error mapping.
 - `internal/middleware/localize_json_response.go`
@@ -44,13 +46,14 @@ That means headers such as `en-US` and `id-ID` are already handled.
 
 For business errors:
 
-1. Return `errmsg.NewCustomErrors(code).SetMessage("Exact message key")`.
-2. Add the same exact message key to `pkg/errmsg/i18n.go` when bilingual output is required.
+1. Add the message code to `pkg/errmsg/locales/id.toml` and `pkg/errmsg/locales/en.toml`.
+2. Regenerate/add the matching constant in `pkg/errmsg/message_code.go`.
+3. Return `errmsg.NewCustomErrors(code).SetMessage(errmsg.MessageSomeCode)`.
 
 For validation errors:
 
 - Use validator tags and `errmsg.Errors(ctx, err, req)`.
-- Validation messages are already generated in `pkg/errmsg/err_validator.go` for both languages.
+- Validation messages use `pkg/errmsg/err_validator.go` plus message templates in `pkg/errmsg/locales/id.toml` and `pkg/errmsg/locales/en.toml`.
 
 For database and framework errors:
 
@@ -62,8 +65,9 @@ For database and framework errors:
 - Do not read `Accept-Language` directly in feature handlers.
 - Do not branch feature logic by language unless behavior truly differs.
 - Do not return ad-hoc localized JSON shapes outside the shared response pattern.
-- Prefer English message keys in code, then map them in `pkg/errmsg/i18n.go`.
-- If a custom message is user-facing and reused, register it in the catalog instead of duplicating string literals.
+- Use stable message-code constants in code, not raw strings or user-facing English sentences.
+- If a custom message is user-facing and reused, register it in both locale files instead of duplicating string literals.
+- `pkg/errmsg/message_code_test.go` checks locale parity and verifies constants exist in every supported locale.
 
 ## Company Language Config
 
@@ -81,4 +85,4 @@ If localization looks broken:
 1. verify client sends `Accept-Language`
 2. verify route is behind `WithRequestLanguage()`
 3. verify response uses `errmsg`
-4. verify custom message exists in `pkg/errmsg/i18n.go`
+4. verify custom message code exists in `pkg/errmsg/locales/id.toml` and `pkg/errmsg/locales/en.toml`

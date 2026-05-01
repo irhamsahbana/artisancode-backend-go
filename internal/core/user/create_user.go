@@ -23,13 +23,13 @@ func (c *userCore) CreateUser(ctx context.Context, data coreentity.User) (*coree
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 			"email": data.Email,
 		}).Msg("Email already registered")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmailIsAlreadyRegistered)
 	}
 
 	hashedPassword, err := hashPassword(data.Password)
 	if err != nil {
-		log.Ctx(ctx).Error().Err(err).Msg("Failed to hash password")
-		return nil, errmsg.NewCustomErrors(500).SetMessage("Failed to create user")
+		log.Ctx(ctx).Error().Err(err).Msg(errmsg.MessageFailedToHashPassword)
+		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToCreateUser)
 	}
 
 	data.Password = hashedPassword

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"codebase-app/pkg/errmsg"
 	"context"
 	"database/sql"
 	"time"
@@ -61,7 +62,7 @@ func (r *userRepo) FindActiveUserByEmailAndTenantID(
 			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 				"email":     email,
 				"tenant_id": tenantID,
-			}).Msg("User not found")
+			}).Msg(errmsg.MessageUserNotFound)
 			return nil, nil
 		}
 

@@ -26,8 +26,8 @@ func (c *internalQuotationCore) executeApproveQuotationAction(
 		return nil, err
 	}
 	if quote.Status != coreentity.QuotationStatusDraft && quote.Status != coreentity.QuotationStatusSent {
-		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, input).Msg("Quotation cannot be approved from current status")
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Quotation cannot be approved from current status")
+		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, input).Msg(errmsg.MessageQuotationCannotBeApprovedFromCurrentStatus)
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageQuotationCannotBeApprovedFromCurrentStatus)
 	}
 	approved, err := c.quotationRepo.ApproveQuotation(ctx, input.UserCtx.TenantID, input.ID)
 	if err != nil {

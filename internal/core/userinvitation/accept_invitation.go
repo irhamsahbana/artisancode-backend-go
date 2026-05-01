@@ -37,7 +37,7 @@ func (c *userInvitationCore) AcceptInvitation(
 			return err
 		}
 		if existingUser != nil {
-			return errmsg.NewCustomErrors(400).SetMessage("Email is already registered")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmailIsAlreadyRegistered)
 		}
 
 		role, err := c.userRepo.GetRoleByName(txCtx, item.RoleCode, item.TenantID)
@@ -96,7 +96,7 @@ func (c *userInvitationCore) buildAcceptedUser(
 	passwordHash, err := hashInvitationPassword(data.Password)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to hash invitation password")
-		return coreentity.User{}, errmsg.NewCustomErrors(500).SetMessage("Failed to accept invitation")
+		return coreentity.User{}, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToAcceptInvitation)
 	}
 
 	user := coreentity.User{
@@ -116,7 +116,7 @@ func (c *userInvitationCore) buildAcceptedUser(
 			return coreentity.User{}, err
 		}
 		if employee.UserID != nil {
-			return coreentity.User{}, errmsg.NewCustomErrors(400).SetMessage("Employee already has an active user")
+			return coreentity.User{}, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEmployeeAlreadyHasAnActiveUser)
 		}
 
 		user.Name = employee.FullName
@@ -126,7 +126,7 @@ func (c *userInvitationCore) buildAcceptedUser(
 
 	fullName := strings.TrimSpace(data.FullName)
 	if fullName == "" {
-		return coreentity.User{}, errmsg.NewCustomErrors(400).SetMessage("Full name is required")
+		return coreentity.User{}, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageFullNameIsRequired)
 	}
 
 	user.Name = fullName

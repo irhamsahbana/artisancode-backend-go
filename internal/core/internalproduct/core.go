@@ -75,7 +75,7 @@ func (c *internalProductCore) CreateInternalProduct(
 		return nil, err
 	}
 	if exists {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Internal product code already exists")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalProductCodeAlreadyExists)
 	}
 
 	return c.repo.CreateInternalProduct(ctx, data)
@@ -98,7 +98,7 @@ func (c *internalProductCore) UpdateInternalProduct(ctx context.Context, data co
 		return err
 	}
 	if exists {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal product code already exists")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalProductCodeAlreadyExists)
 	}
 
 	return c.repo.UpdateInternalProduct(ctx, data)
@@ -162,7 +162,7 @@ func (c *internalProductCore) CreateInternalProductPricing(
 		return nil, err
 	}
 	if exists {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Internal product pricing code already exists")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalProductPricingCodeAlreadyExists)
 	}
 
 	return c.repo.CreateInternalProductPricing(ctx, data)
@@ -192,7 +192,7 @@ func (c *internalProductCore) UpdateInternalProductPricing(
 		return err
 	}
 	if exists {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal product pricing code already exists")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalProductPricingCodeAlreadyExists)
 	}
 
 	return c.repo.UpdateInternalProductPricing(ctx, data)
@@ -257,7 +257,7 @@ func (c *internalProductCore) CreateInternalProductPrice(
 		return nil, err
 	}
 	if overlap {
-		return nil, errmsg.NewCustomErrors(400).SetMessage("Price period overlaps with an existing active price")
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessagePricePeriodOverlapsWithAnExistingActivePrice)
 	}
 
 	return c.repo.CreateInternalProductPrice(ctx, data)
@@ -295,7 +295,7 @@ func (c *internalProductCore) UpdateInternalProductPrice(
 		return err
 	}
 	if overlap {
-		return errmsg.NewCustomErrors(400).SetMessage("Price period overlaps with an existing active price")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessagePricePeriodOverlapsWithAnExistingActivePrice)
 	}
 
 	return c.repo.UpdateInternalProductPrice(ctx, data)
@@ -318,7 +318,7 @@ func (c *internalProductCore) DeleteInternalProductPrice(
 func (c *internalProductCore) authorizeWrite(userCtx common.UserContext) error {
 	if !userCtx.HasRole(coreentity.InternalUserRoleSuperAdmin) &&
 		!userCtx.HasRole(coreentity.InternalUserRoleOperator) {
-		return errmsg.NewCustomErrors(403).SetMessage("You are not authorized to manage internal products")
+		return errmsg.NewCustomErrors(403).SetMessage(errmsg.MessageYouAreNotAuthorizedToManageInternalProducts)
 	}
 
 	return nil
@@ -334,13 +334,13 @@ func (c *internalProductCore) normalizeAndValidateProduct(ctx context.Context, d
 	}
 
 	if !internalCodePattern.MatchString(data.Code) {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal product code format is invalid")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalProductCodeFormatIsInvalid)
 	}
 	if data.Status != coreentity.InternalProductStatusDraft &&
 		data.Status != coreentity.InternalProductStatusActive &&
 		data.Status != coreentity.InternalProductStatusInactive &&
 		data.Status != coreentity.InternalProductStatusArchived {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal product status is invalid")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalProductStatusIsInvalid)
 	}
 
 	return nil
@@ -359,13 +359,13 @@ func (c *internalProductCore) normalizeAndValidatePricing(
 	}
 
 	if !internalCodePattern.MatchString(data.Code) {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal product pricing code format is invalid")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalProductPricingCodeFormatIsInvalid)
 	}
 	if data.Status != coreentity.InternalProductStatusDraft &&
 		data.Status != coreentity.InternalProductStatusActive &&
 		data.Status != coreentity.InternalProductStatusInactive &&
 		data.Status != coreentity.InternalProductStatusArchived {
-		return errmsg.NewCustomErrors(400).SetMessage("Internal product pricing status is invalid")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalProductPricingStatusIsInvalid)
 	}
 
 	return nil
@@ -389,27 +389,27 @@ func (c *internalProductCore) normalizeAndValidatePrice(
 	}
 
 	if !internalCurrencyPattern.MatchString(data.CurrencyCode) {
-		return errmsg.NewCustomErrors(400).SetMessage("Currency code format is invalid")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyCodeFormatIsInvalid)
 	}
 
 	if !data.Amount.IsPositive() {
-		return errmsg.NewCustomErrors(400).SetMessage("Amount must be positive")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageAmountMustBePositive)
 	}
 
 	startTime, err := time.Parse(time.RFC3339, data.StartedAt)
 	if err != nil {
 		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, data.StartedAt).Msg("Invalid started_at")
-		return errmsg.NewCustomErrors(400).SetMessage("started_at must use RFC3339 format")
+		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageStartedAtMustUseRfc3339Format)
 	}
 
 	if data.EndedAt != nil {
 		endTime, err := time.Parse(time.RFC3339, *data.EndedAt)
 		if err != nil {
 			log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, data.EndedAt).Msg("Invalid ended_at")
-			return errmsg.NewCustomErrors(400).SetMessage("ended_at must use RFC3339 format")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEndedAtMustUseRfc3339Format)
 		}
 		if !endTime.After(startTime) {
-			return errmsg.NewCustomErrors(400).SetMessage("ended_at must be later than started_at")
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageEndedAtMustBeLaterThanStartedAt)
 		}
 	}
 

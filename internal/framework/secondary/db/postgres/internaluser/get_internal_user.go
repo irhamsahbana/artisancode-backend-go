@@ -38,8 +38,8 @@ func (r *internalUserRepo) GetInternalUser(
 
 	if err := r.db.GetContext(ctx, &row, r.db.Rebind(query), filter.ID); err != nil {
 		if err == sql.ErrNoRows {
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg("Internal user not found")
-			return nil, errmsg.NewCustomErrors(404).SetMessage("Internal user not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, filter).Msg(errmsg.MessageInternalUserNotFound)
+			return nil, errmsg.NewCustomErrors(404).SetMessage(errmsg.MessageInternalUserNotFound)
 		}
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, filter).Msg("Failed to get internal user")
 		return nil, err

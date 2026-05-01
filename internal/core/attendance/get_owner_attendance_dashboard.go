@@ -23,7 +23,7 @@ func (c *attendanceCore) GetOwnerAttendanceDashboard(
 	if !filter.UserCtx.HasRole("owner") && !filter.UserCtx.HasRole("admin") {
 		return nil, errmsg.NewCustomErrors(
 			fiber.StatusForbidden,
-			errmsg.WithMessage("You are not allowed to access this resource"),
+			errmsg.WithMessage(errmsg.MessageYouAreNotAllowedToAccessThisResource),
 		)
 	}
 

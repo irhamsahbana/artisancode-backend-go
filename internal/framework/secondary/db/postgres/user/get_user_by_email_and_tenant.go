@@ -58,8 +58,8 @@ func (r *userRepo) GetUserByEmailAndTenant(ctx context.Context, email, tenantCod
 	if err != nil {
 		if err == sql.ErrNoRows {
 			tracing.RecordError(span, err)
-			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg("User not found")
-			return nil, errmsg.NewCustomErrors(400).SetMessage("User not found")
+			log.Ctx(ctx).Warn().Any(common.LogKeyPayload, payload).Msg(errmsg.MessageUserNotFound)
+			return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageUserNotFound)
 		}
 		tracing.RecordError(span, err)
 		log.Ctx(ctx).Error().Err(err).Any(common.LogKeyPayload, payload).Msg("Failed to get user details")
