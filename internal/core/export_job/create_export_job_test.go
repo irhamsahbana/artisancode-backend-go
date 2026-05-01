@@ -34,7 +34,7 @@ func TestCreateExportJob(t *testing.T) {
 		ResourceType:  "attendance",
 		ResourceLabel: "Attendance Report",
 		ProcessorKey:  "attendance_logs",
-		Format:        coreentity.ExportJobFormatCSV,
+		Format:        coreentity.ExportJobFormatXLSX,
 		ParamsJSON:    `{"language":"en"}`,
 	}
 	createdJob := &coreentity.ExportJob{
@@ -43,7 +43,7 @@ func TestCreateExportJob(t *testing.T) {
 		RequestedBy:  "user-1",
 		ResourceType: "attendance",
 		ProcessorKey: "attendance_logs",
-		Format:       coreentity.ExportJobFormatCSV,
+		Format:       coreentity.ExportJobFormatXLSX,
 		Status:       coreentity.ExportJobStatusPending,
 	}
 
@@ -87,7 +87,7 @@ func TestCreateExportJob(t *testing.T) {
 				RequestedBy:  "user-2",
 				ResourceType: "attendance",
 				ProcessorKey: "attendance_logs",
-				Format:       coreentity.ExportJobFormatCSV,
+				Format:       coreentity.ExportJobFormatXLSX,
 			},
 			wantError: true,
 		},
@@ -97,7 +97,7 @@ func TestCreateExportJob(t *testing.T) {
 				UserCtx:     ownerCtx,
 				TenantID:    "tenant-1",
 				RequestedBy: "user-1",
-				Format:      coreentity.ExportJobFormatCSV,
+				Format:      coreentity.ExportJobFormatXLSX,
 			},
 			wantError: true,
 		},
@@ -180,7 +180,7 @@ func TestCreateExportJobMissingMessageBus(t *testing.T) {
 		RequestedBy:  "user-1",
 		ResourceType: "attendance",
 		ProcessorKey: "attendance_logs",
-		Format:       coreentity.ExportJobFormatCSV,
+		Format:       coreentity.ExportJobFormatXLSX,
 	})
 
 	require.Error(t, err)

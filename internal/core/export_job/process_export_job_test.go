@@ -45,7 +45,7 @@ func TestExportJobCore_ProcessExportJob(t *testing.T) {
 						TenantID:     "tenant-1",
 						RequestedBy:  "user-1",
 						ProcessorKey: "attendance_logs",
-						Format:       coreentity.ExportJobFormatCSV,
+						Format:       coreentity.ExportJobFormatXLSX,
 						Status:       coreentity.ExportJobStatusPending,
 						ParamsJSON:   `{"language":"en"}`,
 					}, nil)
@@ -70,16 +70,16 @@ func TestExportJobCore_ProcessExportJob(t *testing.T) {
 							file.CreatedBy == "user-1" &&
 							file.OriginalFilename != nil &&
 							file.ContentType != nil &&
-							*file.ContentType == "text/csv"
+							*file.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 					})).
 					Return(&coreentity.File{ID: "file-1"}, nil)
 				s3.EXPECT().
 					UploadBytes(mock.Anything, mock.MatchedBy(func(req *coreentity.UploadBytesReq) bool {
 						return req != nil &&
-							req.ContentType == "text/csv" &&
+							req.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
 							len(req.Body) > 0
 					})).
-					Return(&coreentity.UploadFileResp{Filename: "private/report.csv"}, nil)
+					Return(&coreentity.UploadFileResp{Filename: "private/report.xlsx"}, nil)
 				storageRepo.EXPECT().
 					CreateFileLink(mock.Anything, coreentity.CreateStorageFileLinkReq{
 						TenantID:      "tenant-1",

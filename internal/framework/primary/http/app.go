@@ -9,8 +9,13 @@ import (
 )
 
 type App struct {
-	bus      integrationPorts.MessagePublisher
-	shutdown func() error
+	bus               integrationPorts.MessagePublisher
+	shutdown          func() error
+	buildFn           func(appName string, appVersion string, appEnvironment string) (*fiber.App, error)
+	serveFn           func(app *fiber.App, port string) error
+	waitForShutdownFn func(ctx context.Context) error
+	listenFn          func(app *fiber.App, addr string) error
+	localIPv4sFn      func() []string
 }
 
 type AppConfig struct {
@@ -19,10 +24,19 @@ type AppConfig struct {
 }
 
 func NewApp(cfg AppConfig) *App {
-	return &App{
+	app := &App{
 		bus:      cfg.Bus,
 		shutdown: cfg.Shutdown,
 	}
+	app.buildFn = app.build
+	app.serveFn = app.serve
+	app.waitForShutdownFn = app.waitForShutdown
+	app.listenFn = func(app *fiber.App, addr string) error {
+		return app.Listen(addr)
+	}
+	app.localIPv4sFn = getLocalIPv4s
+
+	return app
 }
 
 func (a *App) Run(
@@ -32,28 +46,35 @@ func (a *App) Run(
 	appEnvironment string,
 	port string,
 ) error {
-	app, err := a.build(ctx, appName, appVersion, appEnvironment)
+	app, err := a.buildFn(appName, appVersion, appEnvironment)
 	if err != nil {
 		return err
 	}
 
-	go a.serve(app, port)
+	serveErrCh := make(chan error, 1)
+	go func() {
+		serveErrCh <- a.serveFn(app, port)
+	}()
 
-	err = a.waitForShutdown(ctx)
-	if err != nil {
+	shutdownErrCh := make(chan error, 1)
+	go func() {
+		shutdownErrCh <- a.waitForShutdownFn(ctx)
+	}()
+
+	select {
+	case err := <-serveErrCh:
+		return err
+	case err := <-shutdownErrCh:
 		return err
 	}
-
-	return err
 }
 
-func (a *App) serve(app *fiber.App, port string) {
+func (a *App) serve(app *fiber.App, port string) error {
 	log.Info().Msgf("Server is running on port %s", port)
 	log.Info().Msgf("Connect via: http://localhost:%s", port)
-	for _, ip := range getLocalIPv4s() {
+	for _, ip := range a.localIPv4sFn() {
 		log.Info().Msgf("Connect via: http://%s:%s", ip, port)
 	}
-	if err := app.Listen(":" + port); err != nil {
-		log.Fatal().Msgf("Error while starting server: %v", err)
-	}
+
+	return a.listenFn(app, ":"+port)
 }

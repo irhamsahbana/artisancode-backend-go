@@ -7,14 +7,12 @@ import (
 	"codebase-app/internal/middleware"
 	"codebase-app/internal/setup"
 	"codebase-app/pkg/validator"
-	"context"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
-func (a *App) build(ctx context.Context, appName string, appVersion string, appEnvironment string) (*fiber.App, error) {
-	app := fiber.New()
+var syncHTTPAdapters = func(app *fiber.App) {
 	adapter.Adapters.Sync(
 		adapter.WithRestServer(app),
 		adapter.WithPostgres(),
@@ -25,6 +23,13 @@ func (a *App) build(ctx context.Context, appName string, appVersion string, appE
 		adapter.WithEmailSender(),
 		adapter.WithStorage(),
 	)
+}
+
+var registerHTTPDependencies = setup.HttpDependencies
+
+func (a *App) build(appName string, appVersion string, appEnvironment string) (*fiber.App, error) {
+	app := fiber.New()
+	syncHTTPAdapters(app)
 
 	metrics := infraMetrics.New(appName, appVersion, appEnvironment)
 
@@ -40,7 +45,7 @@ func (a *App) build(ctx context.Context, appName string, appVersion string, appE
 
 	app.Get("/metrics", metrics.Handler())
 
-	setup.HttpDependencies()
+	registerHTTPDependencies()
 
 	return app, nil
 }
