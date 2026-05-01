@@ -25,7 +25,7 @@ func Auth(c *fiber.Ctx) error {
 
 	AccessToken = strings.TrimPrefix(AccessToken, "Bearer ")
 
-	claims, err := jwthandler.ParseTokenString(AccessToken)
+	claims, err := jwthandler.ParseTokenString(c.UserContext(), AccessToken)
 	if err != nil {
 		log.Error().Err(err).Msg("Error while parsing token")
 		return c.Status(fiber.StatusUnauthorized).JSON(unauthorizedResponse)

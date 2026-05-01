@@ -19,7 +19,7 @@ func (c *userCore) issueAuthTokens(ctx context.Context, user coreentity.User) (*
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:token:issueAuthTokens")
 	defer span.End()
 
-	tokenExp := time.Now().UTC().Add(time.Hour * 24)
+	tokenExp := time.Now().UTC().Add(time.Minute * 15)
 	payload := jwthandler.CostumClaimsPayload{
 		UserID:          user.ID,
 		TenantID:        user.TenantID,
@@ -31,7 +31,7 @@ func (c *userCore) issueAuthTokens(ctx context.Context, user coreentity.User) (*
 		TokenExpiration: tokenExp,
 	}
 
-	token, err := jwthandler.GenerateTokenString(payload)
+	token, err := jwthandler.GenerateTokenString(ctx, payload)
 	if err != nil {
 		tracing.RecordError(span, err)
 		log.Ctx(ctx).
@@ -50,7 +50,7 @@ func (c *userCore) issueAuthTokens(ctx context.Context, user coreentity.User) (*
 		UserID:   user.ID,
 		TenantID: user.TenantID,
 	}
-	c.tokenCache.SetRefreshToken(refreshToken, refreshTokenData, time.Hour*24*7)
+	c.tokenCache.SetRefreshToken(ctx, refreshToken, refreshTokenData, time.Hour*24*7)
 
 	return &coreentity.AuthTokens{
 		AccessToken:  token,

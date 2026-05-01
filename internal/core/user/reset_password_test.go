@@ -27,11 +27,11 @@ func TestUserCore_ResetPassword(t *testing.T) {
 		{
 			name: "success updates password marks token used and clears refresh tokens",
 			setup: func(repo *dbMocks.UserRepository, tx *dbMocks.Transactor, cache *tokencache.TokenCache) {
-				cache.SetRefreshToken("reset-user-token", tokencache.RefreshTokenData{
+				cache.SetRefreshToken(ctx, "reset-user-token", tokencache.RefreshTokenData{
 					UserID:   "user-1",
 					TenantID: "tenant-1",
 				}, time.Hour)
-				cache.SetRefreshToken("other-user-token", tokencache.RefreshTokenData{
+				cache.SetRefreshToken(ctx, "other-user-token", tokencache.RefreshTokenData{
 					UserID:   "user-2",
 					TenantID: "tenant-2",
 				}, time.Hour)
@@ -67,10 +67,10 @@ func TestUserCore_ResetPassword(t *testing.T) {
 					Return(nil)
 			},
 			assertPost: func(t *testing.T, cache *tokencache.TokenCache) {
-				_, found := cache.GetRefreshToken("reset-user-token")
+				_, found := cache.GetRefreshToken(ctx, "reset-user-token")
 				require.False(t, found)
 
-				other, found := cache.GetRefreshToken("other-user-token")
+				other, found := cache.GetRefreshToken(ctx, "other-user-token")
 				require.True(t, found)
 				require.Equal(t, "user-2", other.UserID)
 			},
@@ -78,7 +78,7 @@ func TestUserCore_ResetPassword(t *testing.T) {
 		{
 			name: "returns dependency error when token lookup fails",
 			setup: func(repo *dbMocks.UserRepository, tx *dbMocks.Transactor, cache *tokencache.TokenCache) {
-				cache.SetRefreshToken("reset-user-token", tokencache.RefreshTokenData{
+				cache.SetRefreshToken(ctx, "reset-user-token", tokencache.RefreshTokenData{
 					UserID:   "user-1",
 					TenantID: "tenant-1",
 				}, time.Hour)
@@ -98,14 +98,14 @@ func TestUserCore_ResetPassword(t *testing.T) {
 			},
 			wantErr: errors.New("token lookup failed"),
 			assertPost: func(t *testing.T, cache *tokencache.TokenCache) {
-				_, found := cache.GetRefreshToken("reset-user-token")
+				_, found := cache.GetRefreshToken(ctx, "reset-user-token")
 				require.True(t, found)
 			},
 		},
 		{
 			name: "returns transaction error and keeps refresh tokens when commit fails",
 			setup: func(repo *dbMocks.UserRepository, tx *dbMocks.Transactor, cache *tokencache.TokenCache) {
-				cache.SetRefreshToken("reset-user-token", tokencache.RefreshTokenData{
+				cache.SetRefreshToken(ctx, "reset-user-token", tokencache.RefreshTokenData{
 					UserID:   "user-1",
 					TenantID: "tenant-1",
 				}, time.Hour)
@@ -143,7 +143,7 @@ func TestUserCore_ResetPassword(t *testing.T) {
 			},
 			wantErr: errors.New("commit failed"),
 			assertPost: func(t *testing.T, cache *tokencache.TokenCache) {
-				_, found := cache.GetRefreshToken("reset-user-token")
+				_, found := cache.GetRefreshToken(ctx, "reset-user-token")
 				require.True(t, found)
 			},
 		},

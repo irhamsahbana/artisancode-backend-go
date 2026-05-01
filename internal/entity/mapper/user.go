@@ -52,6 +52,14 @@ func RefreshTokenReqToCore(ctx context.Context, req restentity.RefreshTokenReq) 
 	}
 }
 
+func LogoutReqToCore(ctx context.Context, req restentity.LogoutReq) coreentity.User {
+	uc := common.GetUserContext(ctx)
+	return coreentity.User{
+		UserCtx:      uc,
+		RefreshToken: req.RefreshToken,
+	}
+}
+
 func VerifyEmailReqToCore(ctx context.Context, req restentity.VerifyEmailReq) coreentity.UserActionToken {
 	_ = common.GetUserContext(ctx)
 	return coreentity.UserActionToken{

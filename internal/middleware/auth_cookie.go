@@ -19,7 +19,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 		})
 	}
 
-	claims, err := jwthandler.ParseTokenString(cookie)
+	claims, err := jwthandler.ParseTokenString(c.UserContext(), cookie)
 	if err != nil {
 		log.Error().Err(err).Msg("Error while parsing token")
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

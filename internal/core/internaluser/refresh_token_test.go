@@ -25,7 +25,7 @@ func TestRefreshToken(t *testing.T) {
 		{
 			name: "rotates valid refresh token",
 			setup: func(cache *tokencache.TokenCache, repo *dbMocks.InternalUserRepository) {
-				cache.SetRefreshToken("refresh-1", tokencache.RefreshTokenData{UserID: "user-1"}, time.Hour)
+				cache.SetRefreshToken(ctx, "refresh-1", tokencache.RefreshTokenData{UserID: "user-1"}, time.Hour)
 				repo.EXPECT().
 					GetInternalUser(mock.Anything, coreentity.InternalUserFilter{ID: "user-1"}).
 					Return(&coreentity.InternalUser{
@@ -43,7 +43,7 @@ func TestRefreshToken(t *testing.T) {
 		{
 			name: "returns repository error",
 			setup: func(cache *tokencache.TokenCache, repo *dbMocks.InternalUserRepository) {
-				cache.SetRefreshToken("refresh-1", tokencache.RefreshTokenData{UserID: "user-1"}, time.Hour)
+				cache.SetRefreshToken(ctx, "refresh-1", tokencache.RefreshTokenData{UserID: "user-1"}, time.Hour)
 				repo.EXPECT().
 					GetInternalUser(mock.Anything, coreentity.InternalUserFilter{ID: "user-1"}).
 					Return(nil, errors.New("repo failed"))
@@ -53,7 +53,7 @@ func TestRefreshToken(t *testing.T) {
 		{
 			name: "rejects inactive internal user",
 			setup: func(cache *tokencache.TokenCache, repo *dbMocks.InternalUserRepository) {
-				cache.SetRefreshToken("refresh-1", tokencache.RefreshTokenData{UserID: "user-1"}, time.Hour)
+				cache.SetRefreshToken(ctx, "refresh-1", tokencache.RefreshTokenData{UserID: "user-1"}, time.Hour)
 				repo.EXPECT().
 					GetInternalUser(mock.Anything, coreentity.InternalUserFilter{ID: "user-1"}).
 					Return(&coreentity.InternalUser{
@@ -85,8 +85,8 @@ func TestRefreshToken(t *testing.T) {
 			require.NotEmpty(t, got.AccessToken)
 			require.NotEmpty(t, got.RefreshToken)
 			require.NotEqual(t, "refresh-1", got.RefreshToken)
-			_, oldFound := cache.GetRefreshToken("refresh-1")
-			_, newFound := cache.GetRefreshToken(got.RefreshToken)
+			_, oldFound := cache.GetRefreshToken(ctx, "refresh-1")
+			_, newFound := cache.GetRefreshToken(ctx, got.RefreshToken)
 			require.False(t, oldFound)
 			require.True(t, newFound)
 		})

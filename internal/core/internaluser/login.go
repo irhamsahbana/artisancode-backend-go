@@ -40,8 +40,8 @@ func (c *internalUserCore) Login(ctx context.Context, user coreentity.InternalUs
 		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvalidCredentials)
 	}
 
-	tokenExp := time.Now().UTC().Add(24 * time.Hour)
-	token, err := jwthandler.GenerateInternalUserTokenString(jwthandler.InternalUserClaimsPayload{
+	tokenExp := time.Now().UTC().Add(15 * time.Minute)
+	token, err := jwthandler.GenerateInternalUserTokenString(ctx, jwthandler.InternalUserClaimsPayload{
 		UserID:          foundUser.ID,
 		UserName:        foundUser.FullName,
 		Roles:           []string{foundUser.RoleCode},
@@ -52,7 +52,7 @@ func (c *internalUserCore) Login(ctx context.Context, user coreentity.InternalUs
 	}
 
 	refreshToken := uuid.New().String()
-	c.tokenCache.SetRefreshToken(refreshToken, tokencache.RefreshTokenData{
+	c.tokenCache.SetRefreshToken(ctx, refreshToken, tokencache.RefreshTokenData{
 		UserID: foundUser.ID,
 	}, 7*24*time.Hour)
 

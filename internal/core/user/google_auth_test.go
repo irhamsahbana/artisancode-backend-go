@@ -116,7 +116,7 @@ func TestUserCore_GoogleRegister(t *testing.T) {
 		repo := dbMocks.NewUserRepository(t)
 		tx := dbMocks.NewTransactor(t)
 		cache := tokencache.NewTokenCache(time.Hour, time.Minute)
-		cache.SetGoogleRegistration("reg-token", tokencache.GoogleRegistrationData{
+		cache.SetGoogleRegistration(ctx, "reg-token", tokencache.GoogleRegistrationData{
 			Subject:       identity.Subject,
 			Email:         identity.Email,
 			EmailVerified: identity.EmailVerified,
@@ -165,7 +165,7 @@ func TestUserCore_GoogleRegister(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotEmpty(t, got.AccessToken)
-		require.False(t, hasGoogleRegistration(cache, "reg-token"))
+		require.False(t, hasGoogleRegistration(ctx, cache, "reg-token"))
 	})
 
 	t.Run("rejects invalid registration token", func(t *testing.T) {
@@ -215,7 +215,7 @@ func TestUserCore_GoogleRegisterInit(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, got.RegistrationToken)
 	require.Equal(t, "owner@example.com", got.Email)
-	require.True(t, hasGoogleRegistration(cache, got.RegistrationToken))
+	require.True(t, hasGoogleRegistration(ctx, cache, got.RegistrationToken))
 }
 
 func TestUserCore_GoogleLogin(t *testing.T) {
@@ -311,7 +311,7 @@ func TestUserCore_GoogleLogin(t *testing.T) {
 	})
 }
 
-func hasGoogleRegistration(cache *tokencache.TokenCache, token string) bool {
-	_, found := cache.GetGoogleRegistration(token)
+func hasGoogleRegistration(ctx context.Context, cache *tokencache.TokenCache, token string) bool {
+	_, found := cache.GetGoogleRegistration(ctx, token)
 	return found
 }

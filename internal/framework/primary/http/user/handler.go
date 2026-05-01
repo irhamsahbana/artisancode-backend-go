@@ -36,6 +36,7 @@ func (h *userHandler) Register(router fiber.Router) {
 	router.Post("/forgot-password", h.forgotPassword)
 	router.Post("/reset-password", h.resetPassword)
 	router.Post("/refresh-token", h.refreshToken)
+	router.Post("/logout", h.logout)
 	router.Get("/", middleware.Auth, h.getUsers)
 	router.Get("/:id", middleware.Auth, h.getUser)
 	router.Post("/", middleware.Auth, h.createUser)

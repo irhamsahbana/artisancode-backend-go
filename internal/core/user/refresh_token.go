@@ -19,7 +19,7 @@ func (c *userCore) RefreshToken(ctx context.Context, user coreentity.User) (*cor
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:refresh_token:RefreshToken")
 	defer span.End()
 
-	tokenData, found := c.tokenCache.GetRefreshToken(user.RefreshToken)
+	tokenData, found := c.tokenCache.GetRefreshToken(ctx, user.RefreshToken)
 	if !found {
 		log.Ctx(ctx).Warn().Any(common.LogKeyPayload, map[string]string{
 			"refreshToken": user.RefreshToken,
@@ -32,16 +32,16 @@ func (c *userCore) RefreshToken(ctx context.Context, user coreentity.User) (*cor
 		return nil, err
 	}
 
-	c.tokenCache.DeleteRefreshToken(user.RefreshToken)
+	c.tokenCache.DeleteRefreshToken(ctx, user.RefreshToken)
 
 	newRefreshToken := uuid.New().String()
 	newRefreshTokenData := tokencache.RefreshTokenData{
 		UserID:   foundUser.ID,
 		TenantID: foundUser.TenantID,
 	}
-	c.tokenCache.SetRefreshToken(newRefreshToken, newRefreshTokenData, time.Hour*24*7)
+	c.tokenCache.SetRefreshToken(ctx, newRefreshToken, newRefreshTokenData, time.Hour*24*7)
 
-	tokenExp := time.Now().UTC().Add(time.Hour * 24)
+	tokenExp := time.Now().UTC().Add(time.Minute * 15)
 	payload := jwthandler.CostumClaimsPayload{
 		UserID:          foundUser.ID,
 		TenantID:        foundUser.TenantID,
@@ -53,7 +53,7 @@ func (c *userCore) RefreshToken(ctx context.Context, user coreentity.User) (*cor
 		TokenExpiration: tokenExp,
 	}
 
-	newToken, err := jwthandler.GenerateTokenString(payload)
+	newToken, err := jwthandler.GenerateTokenString(ctx, payload)
 	if err != nil {
 		return nil, errmsg.NewCustomErrors(500).SetMessage(errmsg.MessageFailedToGenerateToken)
 	}

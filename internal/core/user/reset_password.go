@@ -42,7 +42,7 @@ func (c *userCore) ResetPassword(ctx context.Context, token coreentity.UserActio
 	}
 
 	if resetUserID != "" {
-		c.tokenCache.DeleteUserRefreshTokens(resetUserID)
+		c.tokenCache.DeleteUserRefreshTokens(ctx, resetUserID)
 	}
 	return nil
 }

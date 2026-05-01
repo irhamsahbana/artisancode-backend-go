@@ -22,6 +22,7 @@ func NewInternalUserHandler(cfg Config) *internalUserHandler {
 func (h *internalUserHandler) Register(router fiber.Router) {
 	router.Post("/login", h.login)
 	router.Post("/refresh-token", h.refreshToken)
+	router.Post("/logout", h.logout)
 
 	router.Get("/", middleware.InternalAuth, h.getInternalUsers)
 	router.Get("/:id", middleware.InternalAuth, h.getInternalUser)

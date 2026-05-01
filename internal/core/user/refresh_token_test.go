@@ -20,7 +20,7 @@ func TestUserCore_RefreshToken(t *testing.T) {
 	t.Run("success rotates refresh token and returns new access token", func(t *testing.T) {
 		repo := dbMocks.NewUserRepository(t)
 		cache := tokencache.NewTokenCache(time.Hour, time.Minute)
-		cache.SetRefreshToken("old-refresh-token", tokencache.RefreshTokenData{
+		cache.SetRefreshToken(ctx, "old-refresh-token", tokencache.RefreshTokenData{
 			UserID:   "user-1",
 			TenantID: "tenant-1",
 		}, time.Hour)
@@ -51,10 +51,10 @@ func TestUserCore_RefreshToken(t *testing.T) {
 		require.NotEmpty(t, got.RefreshToken)
 		require.NotEqual(t, "old-refresh-token", got.RefreshToken)
 
-		_, oldFound := cache.GetRefreshToken("old-refresh-token")
+		_, oldFound := cache.GetRefreshToken(ctx, "old-refresh-token")
 		require.False(t, oldFound)
 
-		newData, newFound := cache.GetRefreshToken(got.RefreshToken)
+		newData, newFound := cache.GetRefreshToken(ctx, got.RefreshToken)
 		require.True(t, newFound)
 		require.Equal(t, "user-1", newData.UserID)
 		require.Equal(t, "tenant-1", newData.TenantID)
@@ -80,7 +80,7 @@ func TestUserCore_RefreshToken(t *testing.T) {
 	t.Run("returns repository error", func(t *testing.T) {
 		repo := dbMocks.NewUserRepository(t)
 		cache := tokencache.NewTokenCache(time.Hour, time.Minute)
-		cache.SetRefreshToken("valid-refresh-token", tokencache.RefreshTokenData{
+		cache.SetRefreshToken(ctx, "valid-refresh-token", tokencache.RefreshTokenData{
 			UserID:   "user-1",
 			TenantID: "tenant-1",
 		}, time.Hour)
@@ -101,7 +101,7 @@ func TestUserCore_RefreshToken(t *testing.T) {
 		require.Nil(t, got)
 		require.Error(t, err)
 
-		_, found := cache.GetRefreshToken("valid-refresh-token")
+		_, found := cache.GetRefreshToken(ctx, "valid-refresh-token")
 		require.True(t, found)
 	})
 }

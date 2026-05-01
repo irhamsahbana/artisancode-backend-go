@@ -515,7 +515,7 @@ func signStorageURL(basePath string, expires int64, secret string) string {
 func mustGenerateAuthToken(t *testing.T) string {
 	t.Helper()
 
-	token, err := jwthandler.GenerateTokenString(jwthandler.CostumClaimsPayload{
+	token, err := jwthandler.GenerateTokenString(context.Background(), jwthandler.CostumClaimsPayload{
 		UserID:          "user-1",
 		UserName:        "User One",
 		TenantID:        "tenant-1",

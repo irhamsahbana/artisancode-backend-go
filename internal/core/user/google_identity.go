@@ -22,7 +22,7 @@ func (c *userCore) resolveGoogleRegisterIdentity(
 	defer span.End()
 
 	if strings.TrimSpace(input.RegistrationToken) != "" {
-		cachedIdentity, found := c.tokenCache.GetGoogleRegistration(input.RegistrationToken)
+		cachedIdentity, found := c.tokenCache.GetGoogleRegistration(ctx, input.RegistrationToken)
 		if !found {
 			log.Ctx(ctx).Warn().Msg("Google registration session is missing or expired")
 			return nil, codedError(

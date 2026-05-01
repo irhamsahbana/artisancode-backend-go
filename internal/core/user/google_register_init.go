@@ -30,7 +30,7 @@ func (c *userCore) GoogleRegisterInit(
 	}
 
 	registrationToken := uuid.NewString()
-	c.tokenCache.SetGoogleRegistration(registrationToken, tokencache.GoogleRegistrationData{
+	c.tokenCache.SetGoogleRegistration(ctx, registrationToken, tokencache.GoogleRegistrationData{
 		Subject:       identity.Subject,
 		Email:         identity.Email,
 		EmailVerified: identity.EmailVerified,

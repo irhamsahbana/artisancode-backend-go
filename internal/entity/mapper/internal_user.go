@@ -25,6 +25,14 @@ func InternalUserRefreshTokenReqToCore(ctx context.Context, req restentity.Inter
 	}
 }
 
+func InternalUserLogoutReqToCore(ctx context.Context, req restentity.InternalUserLogoutReq) coreentity.InternalUser {
+	uc := common.GetUserContext(ctx)
+	return coreentity.InternalUser{
+		UserCtx:      uc,
+		RefreshToken: req.RefreshToken,
+	}
+}
+
 func AuthTokensToInternalUserLoginResp(tokens coreentity.AuthTokens) restentity.InternalUserLoginResp {
 	return restentity.InternalUserLoginResp{
 		AccessToken:  tokens.AccessToken,

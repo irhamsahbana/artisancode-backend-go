@@ -77,6 +77,10 @@ type RefreshTokenReq struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
+type LogoutReq struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 type RegisterReq struct {
 	Name       string `json:"name" validate:"required,min=3"`
 	UserName   string `json:"username" validate:"required,min=3"`

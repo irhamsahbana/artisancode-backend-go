@@ -16,6 +16,10 @@ type InternalUserRefreshTokenReq struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
+type InternalUserLogoutReq struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 type InternalUserResource struct {
 	ID          string  `json:"id"`
 	FullName    string  `json:"full_name"`

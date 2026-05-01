@@ -122,7 +122,7 @@ func TestLogin(t *testing.T) {
 			require.NoError(t, err)
 			require.NotEmpty(t, got.AccessToken)
 			require.NotEmpty(t, got.RefreshToken)
-			_, found := cache.GetRefreshToken(got.RefreshToken)
+			_, found := cache.GetRefreshToken(ctx, got.RefreshToken)
 			require.True(t, found)
 		})
 	}

@@ -59,7 +59,7 @@ func (c *userCore) GoogleRegister(
 	}
 
 	if strings.TrimSpace(input.RegistrationToken) != "" {
-		c.tokenCache.DeleteGoogleRegistration(input.RegistrationToken)
+		c.tokenCache.DeleteGoogleRegistration(ctx, input.RegistrationToken)
 	}
 
 	return result, nil
