@@ -41,7 +41,7 @@ Do not document `internal/module/<module>` as the primary backend pattern when y
 
 ## Shell And Commands
 
-- Before using Serena symbolic tools or Serena memories for backend work, activate the Serena project at `/Users/codebeast/Documents/src/artisancode/artisancode-backend-go`. Do not operate Serena on the umbrella workspace for backend tasks.
+- Before using Serena symbolic tools or Serena memories for backend work, activate the Serena project at `artisancode-backend-go/`. Do not operate Serena on the umbrella workspace for backend tasks.
 - Prefer the existing `Makefile` as the main command surface when a target exists.
 - `Taskfile.yml` is present, but `make` is the clearer documented entry point for routine backend work in this repo.
 - Common commands:
@@ -66,7 +66,7 @@ Do not document `internal/module/<module>` as the primary backend pattern when y
   - `make test-storage-upload`
   - `make cleanup-storage-orphans`
   - `make cleanup-message-queue`
-- Serena startup sequence for backend tasks is: activate project `/Users/codebeast/Documents/src/artisancode/artisancode-backend-go`, check onboarding/memory availability, read relevant memories, then begin symbol navigation or edits.
+- Serena startup sequence for backend tasks is: activate project `artisancode-backend-go/`, check onboarding/memory availability, read relevant memories, then begin symbol navigation or edits.
 
 ## Quick Rules
 
