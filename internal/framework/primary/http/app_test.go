@@ -31,7 +31,6 @@ func TestAppRunReturnsBuildError(t *testing.T) {
 
 func TestAppRunReturnsServeErrorBeforeShutdown(t *testing.T) {
 	wantErr := errors.New("listen failed")
-	waitStarted := make(chan struct{})
 	app := NewApp(AppConfig{})
 	app.buildFn = func(appName string, appVersion string, appEnvironment string) (*fiber.App, error) {
 		return fiber.New(), nil
@@ -40,43 +39,60 @@ func TestAppRunReturnsServeErrorBeforeShutdown(t *testing.T) {
 		return wantErr
 	}
 	app.waitForShutdownFn = func(ctx context.Context) error {
-		close(waitStarted)
-		<-ctx.Done()
+		t.Fatal("waitForShutdown should not be called when serve fails first")
 		return nil
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	err := app.Run(ctx, "app", "v1", "test", "3000")
-	cancel()
+	err := app.Run(context.Background(), "app", "v1", "test", "3000")
 
 	require.ErrorIs(t, err, wantErr)
-	<-waitStarted
 }
 
 func TestAppRunReturnsShutdownError(t *testing.T) {
 	wantErr := errors.New("shutdown failed")
-	serveStarted := make(chan struct{})
 	releaseServe := make(chan struct{})
 	app := NewApp(AppConfig{})
 	app.buildFn = func(appName string, appVersion string, appEnvironment string) (*fiber.App, error) {
 		return fiber.New(), nil
 	}
 	app.serveFn = func(app *fiber.App, port string) error {
-		close(serveStarted)
 		<-releaseServe
 		return nil
 	}
 	app.waitForShutdownFn = func(ctx context.Context) error {
+		close(releaseServe)
 		return wantErr
 	}
 
-	err := app.Run(context.Background(), "app", "v1", "test", "3000")
-	close(releaseServe)
+	ctx, cancel := context.WithCancel(context.Background())
+	go cancel()
+
+	err := app.Run(ctx, "app", "v1", "test", "3000")
 
 	require.ErrorIs(t, err, wantErr)
-	<-serveStarted
+}
+
+func TestAppRunReturnsNilOnGracefulShutdown(t *testing.T) {
+	releaseServe := make(chan struct{})
+	app := NewApp(AppConfig{})
+	app.buildFn = func(appName string, appVersion string, appEnvironment string) (*fiber.App, error) {
+		return fiber.New(), nil
+	}
+	app.serveFn = func(app *fiber.App, port string) error {
+		<-releaseServe
+		return nil
+	}
+	app.waitForShutdownFn = func(ctx context.Context) error {
+		close(releaseServe)
+		return nil
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	go cancel()
+
+	err := app.Run(ctx, "app", "v1", "test", "3000")
+
+	require.NoError(t, err)
 }
 
 func TestAppServeUsesConfiguredPort(t *testing.T) {

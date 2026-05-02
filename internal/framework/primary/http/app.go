@@ -3,6 +3,10 @@ package http
 import (
 	integrationPorts "codebase-app/internal/ports/integration"
 	"context"
+	"os"
+	"os/signal"
+	"runtime"
+	"syscall"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -46,6 +50,9 @@ func (a *App) Run(
 	appEnvironment string,
 	port string,
 ) error {
+	ctx, stopSignals := signalContext(ctx)
+	defer stopSignals()
+
 	app, err := a.buildFn(appName, appVersion, appEnvironment)
 	if err != nil {
 		return err
@@ -56,17 +63,36 @@ func (a *App) Run(
 		serveErrCh <- a.serveFn(app, port)
 	}()
 
-	shutdownErrCh := make(chan error, 1)
-	go func() {
-		shutdownErrCh <- a.waitForShutdownFn(ctx)
-	}()
-
 	select {
 	case err := <-serveErrCh:
-		return err
-	case err := <-shutdownErrCh:
-		return err
+		return normalizeServeError(ctx, err)
+	case <-ctx.Done():
+		if err := a.waitForShutdownFn(ctx); err != nil {
+			return err
+		}
+		return normalizeServeError(ctx, <-serveErrCh)
 	}
+}
+
+func signalContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	shutdownSignals := []os.Signal{os.Interrupt, syscall.SIGTERM, syscall.SIGINT}
+	if runtime.GOOS == "windows" {
+		shutdownSignals = []os.Signal{os.Interrupt}
+	}
+
+	return signal.NotifyContext(ctx, shutdownSignals...)
+}
+
+func normalizeServeError(ctx context.Context, err error) error {
+	if err == nil {
+		return nil
+	}
+
+	if ctx.Err() != nil {
+		return nil
+	}
+
+	return err
 }
 
 func (a *App) serve(app *fiber.App, port string) error {

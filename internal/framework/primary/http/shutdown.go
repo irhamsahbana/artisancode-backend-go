@@ -2,25 +2,12 @@ package http
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"runtime"
-	"syscall"
 
 	"github.com/rs/zerolog/log"
 )
 
 func (a *App) waitForShutdown(ctx context.Context) error {
-	quit := make(chan os.Signal, 1)
-
-	shutdownSignals := []os.Signal{os.Interrupt, syscall.SIGTERM, syscall.SIGINT}
-	if runtime.GOOS == "windows" {
-		shutdownSignals = []os.Signal{os.Interrupt}
-	}
-
-	signal.Notify(quit, shutdownSignals...)
-	<-quit
-	log.Ctx(ctx).Info().Msg("Server is shutting down ...")
+	log.Ctx(ctx).Info().Err(ctx.Err()).Msg("HTTP shutdown requested")
 
 	var err error
 	if a.shutdown != nil {
