@@ -9,6 +9,8 @@ id,helper__tenant_code,helper__role_name,helper__permission_name
 019d96e2-2ba7-7c11-8b0f-8e0c23ad51a9,BERUA,owner,user.write
 019d96e2-2c24-797d-bd57-69c1b66d41d9,BERUA,owner,rbac.manage
 019d96e2-2c76-7a8f-b143-9711805a6896,BERUA,owner,report.read
+019d96e2-2c90-7000-8000-000000000011,BERUA,owner,billing.read
+019d96e2-2c90-7000-8000-000000000012,BERUA,owner,billing.manage
 019d96e2-2d5d-7b79-896f-318bae4714a2,BERUA,admin,master.read
 019d96e2-2e10-7128-85a9-b6d99ac88e77,BERUA,admin,master.write
 019d96e2-2e83-7f07-b693-e799a0a52863,BERUA,admin,employee.read
@@ -18,6 +20,8 @@ id,helper__tenant_code,helper__role_name,helper__permission_name
 019d96e2-3010-756e-869a-5ea0dabe58aa,BERUA,admin,user.read
 019d96e2-307b-7c50-b909-48c751ccee59,BERUA,admin,user.write
 019d96e2-3118-7724-b1d6-eed7ed1effcb,BERUA,admin,report.read
+019d96e2-3118-7000-8000-000000000011,BERUA,admin,billing.read
+019d96e2-3118-7000-8000-000000000012,BERUA,admin,billing.manage
 019d96e2-3162-7b81-9620-2a7679d9288e,BERUA,manager,master.read
 019d96e2-31b3-7ae5-a911-801b6a066b25,BERUA,manager,employee.read
 019d96e2-320f-7334-8a26-4dd45a3f2750,BERUA,manager,attendance.read

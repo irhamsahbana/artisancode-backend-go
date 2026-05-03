@@ -9,3 +9,5 @@ id,name,description
 019d89ca-37ff-7664-ab2f-4bc211284045,user.write,Create/update/delete user data
 019d89ca-38a5-76d6-a5f5-e3bac56dd1b2,rbac.manage,Manage roles and permissions
 019d89ca-3943-7b52-9bbc-0f8ac827720f,report.read,Read reports
+019d89ca-3950-7000-8000-000000000011,billing.read,Read billing and subscription data
+019d89ca-3950-7000-8000-000000000012,billing.manage,Manage billing; checkout; and subscription actions

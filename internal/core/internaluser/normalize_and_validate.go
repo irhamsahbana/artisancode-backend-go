@@ -15,7 +15,10 @@ func (c *internalUserCore) normalizeAndValidate(data *coreentity.InternalUser, p
 	data.RoleCode = strings.TrimSpace(data.RoleCode)
 	data.Status = strings.TrimSpace(data.Status)
 
-	if data.RoleCode != coreentity.InternalUserRoleSuperAdmin && data.RoleCode != coreentity.InternalUserRoleOperator {
+	if data.RoleCode != coreentity.InternalUserRoleSuperAdmin &&
+		data.RoleCode != coreentity.InternalUserRoleOperator &&
+		data.RoleCode != coreentity.InternalUserRoleFinance &&
+		data.RoleCode != coreentity.InternalUserRoleOperations {
 		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInternalUserRoleIsInvalid)
 	}
 	if data.Status != coreentity.InternalUserStatusInvited &&

@@ -5,6 +5,8 @@ import "codebase-app/internal/entity/common"
 const (
 	InternalUserRoleSuperAdmin = "super_admin"
 	InternalUserRoleOperator   = "operator"
+	InternalUserRoleFinance    = "finance"
+	InternalUserRoleOperations = "operations"
 
 	InternalUserStatusInvited  = "invited"
 	InternalUserStatusActive   = "active"

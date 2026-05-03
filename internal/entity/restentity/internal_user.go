@@ -33,7 +33,7 @@ type InternalUserResource struct {
 
 type GetInternalUsersReq struct {
 	Q        string `query:"q" validate:"omitempty"`
-	RoleCode string `query:"role_code" validate:"omitempty,oneof=super_admin operator"`
+	RoleCode string `query:"role_code" validate:"omitempty,oneof=super_admin operator finance operations"`
 	Status   string `query:"status" validate:"omitempty,oneof=invited active inactive"`
 	types.MetaQuery
 }
@@ -59,7 +59,7 @@ type CreateInternalUserReq struct {
 	FullName string `json:"full_name" validate:"required,min=3,max=255"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8"`
-	RoleCode string `json:"role_code" validate:"required,oneof=super_admin operator"`
+	RoleCode string `json:"role_code" validate:"required,oneof=super_admin operator finance operations"`
 	Status   string `json:"status" validate:"required,oneof=invited active inactive"`
 }
 
@@ -72,7 +72,7 @@ type UpdateInternalUserReq struct {
 	FullName string `json:"full_name" validate:"required,min=3,max=255"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"omitempty,min=8"`
-	RoleCode string `json:"role_code" validate:"required,oneof=super_admin operator"`
+	RoleCode string `json:"role_code" validate:"required,oneof=super_admin operator finance operations"`
 	Status   string `json:"status" validate:"required,oneof=invited active inactive"`
 }
 

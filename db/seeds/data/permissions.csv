@@ -9,3 +9,5 @@ id,helper__tenant_code,name,description
 019d96e2-1100-7000-8000-000000000008,BERUA,user.write,Create/update/delete user data
 019d96e2-1100-7000-8000-000000000009,BERUA,rbac.manage,Manage roles and permissions
 019d96e2-1100-7000-8000-000000000010,BERUA,report.read,Read reports
+019d96e2-1100-7000-8000-000000000011,BERUA,billing.read,Read billing and subscription data
+019d96e2-1100-7000-8000-000000000012,BERUA,billing.manage,Manage billing; checkout; and subscription actions

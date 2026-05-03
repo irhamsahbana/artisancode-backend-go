@@ -9,6 +9,8 @@ owner,user.read
 owner,user.write
 owner,rbac.manage
 owner,report.read
+owner,billing.read
+owner,billing.manage
 admin,master.read
 admin,master.write
 admin,employee.read
@@ -18,6 +20,8 @@ admin,attendance.write
 admin,user.read
 admin,user.write
 admin,report.read
+admin,billing.read
+admin,billing.manage
 manager,master.read
 manager,employee.read
 manager,attendance.read
