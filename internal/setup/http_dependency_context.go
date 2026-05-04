@@ -49,12 +49,14 @@ type httpDependencies struct {
 	exportJobCore  corePorts.ExportJobCore
 	storageCore    corePorts.StorageCore
 
-	internalProductCore   corePorts.InternalProductCore
-	internalClientCore    corePorts.InternalClientCore
-	internalQuotationCore corePorts.InternalQuotationCore
-	internalOrderCore     corePorts.InternalOrderCore
-	internalInvoiceCore   corePorts.InternalInvoiceCore
-	internalUserCore      corePorts.InternalUserCore
+	internalProductCore       corePorts.InternalProductCore
+	internalCurrencyCore      corePorts.InternalCurrencyCore
+	internalClientCore        corePorts.InternalClientCore
+	internalQuotationCore     corePorts.InternalQuotationCore
+	internalOrderCore         corePorts.InternalOrderCore
+	internalInvoiceCore       corePorts.InternalInvoiceCore
+	internalTenantBillingCore corePorts.InternalTenantBillingCore
+	internalUserCore          corePorts.InternalUserCore
 
 	webhookCore corePorts.WebhookCore
 }

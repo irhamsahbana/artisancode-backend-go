@@ -26,6 +26,10 @@ func (s *httpRouteRegistrarSpy) registerInternalRoutes() {
 	s.calls = append(s.calls, "internal")
 }
 
+func (s *httpRouteRegistrarSpy) registerBillingRoutes() {
+	s.calls = append(s.calls, "billing")
+}
+
 func (s *httpRouteRegistrarSpy) registerUtilityRoutes() {
 	s.calls = append(s.calls, "utility")
 }
@@ -44,6 +48,7 @@ func TestRegisterHTTPRoutes(t *testing.T) {
 		"organization",
 		"attendance",
 		"internal",
+		"billing",
 		"utility",
 		"not_found",
 	}, registrar.calls)
@@ -72,6 +77,7 @@ func TestHttpDependencies(t *testing.T) {
 		"organization",
 		"attendance",
 		"internal",
+		"billing",
 		"utility",
 		"not_found",
 	}, registrar.calls)

@@ -1,0 +1,3 @@
+code,name,symbol,decimal_places,is_active,is_default,sort_order,metadata
+IDR,Indonesian Rupiah,Rp,0,true,true,1,{}
+USD,US Dollar,$,2,false,false,2,{}

@@ -33,6 +33,18 @@ func (c *internalProductCore) normalizeAndValidatePrice(
 		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyCodeFormatIsInvalid)
 	}
 
+	if c.currencyRepo != nil {
+		currency, err := c.currencyRepo.GetInternalCurrency(ctx, coreentity.InternalCurrencyFilter{
+			Code: data.CurrencyCode,
+		})
+		if err != nil {
+			return err
+		}
+		if !currency.IsActive {
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyIsNotActive)
+		}
+	}
+
 	if !data.Amount.IsPositive() {
 		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageAmountMustBePositive)
 	}

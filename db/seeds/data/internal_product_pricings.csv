@@ -1,3 +1,9 @@
 id,helper__product_code,code,name,description,status,metadata
-019dbbc5-aed6-7a77-aec9-b9e25235930e,CORE_HR,MONTHLY,Monthly Plan,Monthly billing for Core HR,active,{}
-019dbbc5-b055-7d32-b878-13bf67fe9c22,ATTENDANCE_PRO,ANNUAL,Annual Plan,Annual billing for Attendance Pro,active,{}
+019dee39-6223-7a39-8139-1bfeb267923b,CORE_HR,MONTHLY,Core HR Monthly,Monthly billing for Core HR base plan,active,"{""billing_interval"":""month"",""interval_count"":1,""is_default"":true}"
+019dee39-62f3-7311-91f7-7955e0a31306,CORE_HR,ANNUAL,Core HR Annual,Annual billing for Core HR base plan with discount,active,"{""billing_interval"":""year"",""interval_count"":1,""discount_note"":""around 2 months free""}"
+019dee39-6374-78dd-952f-09ea15c5d421,ATTENDANCE_PRO,MONTHLY,Attendance Pro Monthly,Monthly billing for Attendance Pro add-on,active,"{""billing_interval"":""month"",""interval_count"":1}"
+019dee39-6417-7c5f-b256-451dcd871e70,ATTENDANCE_PRO,ANNUAL,Attendance Pro Annual,Annual billing for Attendance Pro add-on,active,"{""billing_interval"":""year"",""interval_count"":1,""discount_note"":""annual add-on pricing""}"
+019dee39-64ac-757a-a7cd-74fe91e153de,PAYROLL_EXPORT,MONTHLY,Payroll Export Monthly,Monthly billing for Payroll Export add-on,active,"{""billing_interval"":""month"",""interval_count"":1}"
+019dee39-6542-78a6-9923-59ff804d2684,PAYROLL_EXPORT,ANNUAL,Payroll Export Annual,Annual billing for Payroll Export add-on,active,"{""billing_interval"":""year"",""interval_count"":1}"
+019dee39-65e5-7e40-afa1-d3aecc22d13b,EXTRA_EMPLOYEE_100,MONTHLY,Extra Employee 100 Monthly,Monthly billing for 100 extra employee seats,active,"{""billing_interval"":""month"",""interval_count"":1,""seat_pack"":100}"
+019dee39-6682-7697-8147-a75871b6fa19,EXTRA_EMPLOYEE_100,ANNUAL,Extra Employee 100 Annual,Annual billing for 100 extra employee seats,active,"{""billing_interval"":""year"",""interval_count"":1,""seat_pack"":100}"

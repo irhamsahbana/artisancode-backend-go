@@ -22,6 +22,7 @@ type InternalProductRepository interface {
 	ExistsInternalProductPricingByCode(ctx context.Context, internalProductID, code, excludeID string) (bool, error)
 
 	GetInternalProductPrices(ctx context.Context, filter coreentity.InternalProductPriceListFilter) ([]coreentity.InternalProductPrice, int, error)
+	GetInternalProductPrice(ctx context.Context, filter coreentity.InternalProductPriceFilter) (*coreentity.InternalProductPrice, error)
 	CreateInternalProductPrice(ctx context.Context, data coreentity.InternalProductPrice) (*coreentity.InternalProductPrice, error)
 	UpdateInternalProductPrice(ctx context.Context, data coreentity.InternalProductPrice) error
 	DeleteInternalProductPrice(ctx context.Context, filter coreentity.InternalProductPriceDeleteFilter) error

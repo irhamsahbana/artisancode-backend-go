@@ -84,6 +84,7 @@ func TestCreatePayment(t *testing.T) {
 	resp, err := dokuClient.CreatePayment(context.Background(), restentity.DokuCreatePaymentRequest{
 		InvoiceNumber: "INV-001",
 		Amount:        15000,
+		Currency:      "IDR",
 		CustomerEmail: "buyer@example.com",
 		CustomerName:  "Buyer Test",
 	})

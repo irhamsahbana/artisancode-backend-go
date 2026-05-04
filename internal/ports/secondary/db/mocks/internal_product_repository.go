@@ -697,6 +697,74 @@ func (_c *InternalProductRepository_GetInternalProduct_Call) RunAndReturn(run fu
 	return _c
 }
 
+// GetInternalProductPrice provides a mock function for the type InternalProductRepository
+func (_mock *InternalProductRepository) GetInternalProductPrice(ctx context.Context, filter coreentity.InternalProductPriceFilter) (*coreentity.InternalProductPrice, error) {
+	ret := _mock.Called(ctx, filter)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInternalProductPrice")
+	}
+
+	var r0 *coreentity.InternalProductPrice
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, coreentity.InternalProductPriceFilter) (*coreentity.InternalProductPrice, error)); ok {
+		return returnFunc(ctx, filter)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, coreentity.InternalProductPriceFilter) *coreentity.InternalProductPrice); ok {
+		r0 = returnFunc(ctx, filter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*coreentity.InternalProductPrice)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, coreentity.InternalProductPriceFilter) error); ok {
+		r1 = returnFunc(ctx, filter)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// InternalProductRepository_GetInternalProductPrice_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInternalProductPrice'
+type InternalProductRepository_GetInternalProductPrice_Call struct {
+	*mock.Call
+}
+
+// GetInternalProductPrice is a helper method to define mock.On call
+//   - ctx context.Context
+//   - filter coreentity.InternalProductPriceFilter
+func (_e *InternalProductRepository_Expecter) GetInternalProductPrice(ctx interface{}, filter interface{}) *InternalProductRepository_GetInternalProductPrice_Call {
+	return &InternalProductRepository_GetInternalProductPrice_Call{Call: _e.mock.On("GetInternalProductPrice", ctx, filter)}
+}
+
+func (_c *InternalProductRepository_GetInternalProductPrice_Call) Run(run func(ctx context.Context, filter coreentity.InternalProductPriceFilter)) *InternalProductRepository_GetInternalProductPrice_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 coreentity.InternalProductPriceFilter
+		if args[1] != nil {
+			arg1 = args[1].(coreentity.InternalProductPriceFilter)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *InternalProductRepository_GetInternalProductPrice_Call) Return(internalProductPrice *coreentity.InternalProductPrice, err error) *InternalProductRepository_GetInternalProductPrice_Call {
+	_c.Call.Return(internalProductPrice, err)
+	return _c
+}
+
+func (_c *InternalProductRepository_GetInternalProductPrice_Call) RunAndReturn(run func(ctx context.Context, filter coreentity.InternalProductPriceFilter) (*coreentity.InternalProductPrice, error)) *InternalProductRepository_GetInternalProductPrice_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetInternalProductPrices provides a mock function for the type InternalProductRepository
 func (_mock *InternalProductRepository) GetInternalProductPrices(ctx context.Context, filter coreentity.InternalProductPriceListFilter) ([]coreentity.InternalProductPrice, int, error) {
 	ret := _mock.Called(ctx, filter)

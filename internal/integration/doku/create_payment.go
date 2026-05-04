@@ -43,7 +43,7 @@ func (c *dokuClient) CreatePayment(ctx context.Context, req restentity.DokuCreat
 		Order: restentity.DokuCheckoutOrder{
 			Amount:        req.Amount,
 			InvoiceNumber: req.InvoiceNumber,
-			Currency:      defaultCurrency,
+			Currency:      req.Currency,
 			CallbackURL:   callbackURL,
 			AutoRedirect:  req.AutoRedirectOrDefault(),
 			LineItems:     req.LineItems,
@@ -109,6 +109,8 @@ func validateCreatePaymentRequest(req restentity.DokuCreatePaymentRequest) error
 		return errors.New("invoice number is required")
 	case req.Amount <= 0:
 		return errors.New("amount must be greater than zero")
+	case len(strings.TrimSpace(req.Currency)) != 3 || strings.ToUpper(strings.TrimSpace(req.Currency)) != strings.TrimSpace(req.Currency):
+		return errors.New("currency must be a 3-letter uppercase code")
 	case strings.TrimSpace(req.CustomerEmail) == "":
 		return errors.New("customer email is required")
 	case strings.TrimSpace(req.CustomerName) == "":

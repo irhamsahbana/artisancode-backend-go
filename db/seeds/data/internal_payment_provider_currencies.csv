@@ -1,0 +1,2 @@
+provider,currency_code,is_active,min_amount,max_amount,metadata
+doku,IDR,true,1000,,{}

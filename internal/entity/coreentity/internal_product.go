@@ -90,6 +90,10 @@ type InternalProductPriceListFilter struct {
 	Paginate                 int
 }
 
+type InternalProductPriceFilter struct {
+	ID string
+}
+
 type InternalProductPriceDeleteFilter struct {
 	ID string
 }

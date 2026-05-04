@@ -13,15 +13,20 @@ var (
 )
 
 type internalProductCore struct {
-	repo portsRepo.InternalProductRepository
+	repo         portsRepo.InternalProductRepository
+	currencyRepo portsRepo.InternalCurrencyRepository
 }
 
 type Config struct {
-	Repo portsRepo.InternalProductRepository
+	Repo         portsRepo.InternalProductRepository
+	CurrencyRepo portsRepo.InternalCurrencyRepository
 }
 
 var _ corePorts.InternalProductCore = &internalProductCore{}
 
 func NewInternalProductCore(cfg Config) *internalProductCore {
-	return &internalProductCore{repo: cfg.Repo}
+	return &internalProductCore{
+		repo:         cfg.Repo,
+		currencyRepo: cfg.CurrencyRepo,
+	}
 }

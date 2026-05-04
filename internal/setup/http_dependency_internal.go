@@ -2,22 +2,28 @@ package setup
 
 import (
 	internalClientCore "codebase-app/internal/core/internalclient"
+	internalCurrencyCore "codebase-app/internal/core/internalcurrency"
 	internalInvoiceCore "codebase-app/internal/core/internalinvoice"
 	internalOrderCore "codebase-app/internal/core/internalorder"
 	internalProductCore "codebase-app/internal/core/internalproduct"
 	internalQuotationCore "codebase-app/internal/core/internalquotation"
+	internalTenantBillingCore "codebase-app/internal/core/internaltenantbilling"
 	internalUserCore "codebase-app/internal/core/internaluser"
 	internalClientHandler "codebase-app/internal/framework/primary/http/internalclient"
+	internalCurrencyHandler "codebase-app/internal/framework/primary/http/internalcurrency"
 	internalInvoiceHandler "codebase-app/internal/framework/primary/http/internalinvoice"
 	internalOrderHandler "codebase-app/internal/framework/primary/http/internalorder"
 	internalProductHandler "codebase-app/internal/framework/primary/http/internalproduct"
 	internalQuotationHandler "codebase-app/internal/framework/primary/http/internalquotation"
+	internalTenantBillingHandler "codebase-app/internal/framework/primary/http/internaltenantbilling"
 	internalUserHandler "codebase-app/internal/framework/primary/http/internaluser"
 	internalClientRepo "codebase-app/internal/framework/secondary/db/postgres/internalclient"
+	internalCurrencyRepo "codebase-app/internal/framework/secondary/db/postgres/internalcurrency"
 	internalInvoiceRepo "codebase-app/internal/framework/secondary/db/postgres/internalinvoice"
 	internalOrderRepo "codebase-app/internal/framework/secondary/db/postgres/internalorder"
 	internalProductRepo "codebase-app/internal/framework/secondary/db/postgres/internalproduct"
 	internalQuotationRepo "codebase-app/internal/framework/secondary/db/postgres/internalquotation"
+	internalTenantBillingRepo "codebase-app/internal/framework/secondary/db/postgres/internaltenantbilling"
 	internalUserRepo "codebase-app/internal/framework/secondary/db/postgres/internaluser"
 	"codebase-app/internal/middleware"
 )
@@ -25,6 +31,11 @@ import (
 func buildInternalDependencies(deps *httpDependencies, ctx httpBootstrapContext) {
 	internalProductRepository := internalProductRepo.NewInternalProductRepository(
 		internalProductRepo.Config{
+			DB: ctx.db,
+		},
+	)
+	internalCurrencyRepository := internalCurrencyRepo.NewInternalCurrencyRepository(
+		internalCurrencyRepo.Config{
 			DB: ctx.db,
 		},
 	)
@@ -53,10 +64,21 @@ func buildInternalDependencies(deps *httpDependencies, ctx httpBootstrapContext)
 			DB: ctx.db,
 		},
 	)
+	internalTenantBillingRepository := internalTenantBillingRepo.NewInternalTenantBillingRepository(
+		internalTenantBillingRepo.Config{
+			DB: ctx.db,
+		},
+	)
 
 	deps.internalProductCore = internalProductCore.NewInternalProductCore(
 		internalProductCore.Config{
-			Repo: internalProductRepository,
+			Repo:         internalProductRepository,
+			CurrencyRepo: internalCurrencyRepository,
+		},
+	)
+	deps.internalCurrencyCore = internalCurrencyCore.NewInternalCurrencyCore(
+		internalCurrencyCore.Config{
+			Repo: internalCurrencyRepository,
 		},
 	)
 	deps.internalClientCore = internalClientCore.NewInternalClientCore(
@@ -88,6 +110,15 @@ func buildInternalDependencies(deps *httpDependencies, ctx httpBootstrapContext)
 			DOKU:          ctx.dokuClient,
 		},
 	)
+	deps.internalTenantBillingCore = internalTenantBillingCore.NewInternalTenantBillingCore(
+		internalTenantBillingCore.Config{
+			ProductRepo:  internalProductRepository,
+			CurrencyRepo: internalCurrencyRepository,
+			BillingRepo:  internalTenantBillingRepository,
+			Tx:           ctx.tx,
+			DOKU:         ctx.dokuClient,
+		},
+	)
 	deps.internalUserCore = internalUserCore.NewInternalUserCore(
 		internalUserCore.Config{
 			Repo:       internalUserRepository,
@@ -102,6 +133,11 @@ func (deps httpDependencies) registerInternalRoutes() {
 			Core: deps.internalProductCore,
 		},
 	).Register(deps.app.Group("/internal-products", middleware.InternalAuth))
+	internalCurrencyHandler.NewInternalCurrencyHandler(
+		internalCurrencyHandler.Config{
+			Core: deps.internalCurrencyCore,
+		},
+	).Register(deps.app.Group("/internal-currencies", middleware.InternalAuth))
 	internalClientHandler.NewInternalClientHandler(
 		internalClientHandler.Config{
 			Core: deps.internalClientCore,
@@ -129,4 +165,12 @@ func (deps httpDependencies) registerInternalRoutes() {
 	internalUserHandler.NewInternalUserHandler(internalUserHandler.Config{
 		Core: deps.internalUserCore,
 	}).Register(deps.app.Group("/internal-users"))
+}
+
+func (deps httpDependencies) registerBillingRoutes() {
+	internalTenantBillingHandler.NewInternalTenantBillingHandler(
+		internalTenantBillingHandler.Config{
+			Core: deps.internalTenantBillingCore,
+		},
+	).Register(deps.app.Group("/tenant-billing", middleware.Auth))
 }

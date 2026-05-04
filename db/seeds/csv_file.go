@@ -23,24 +23,26 @@ type csvSeedState struct {
 }
 
 var csvSeedFiles = map[string]string{
-	seedTableTenants:                   "tenants.csv",
-	seedTablePermissions:               "permissions.csv",
-	seedTableRoles:                     "roles.csv",
-	seedTableRolePerms:                 "role_permissions.csv",
-	seedTableInternalTemplateRoles:     "internal_template_roles.csv",
-	seedTableInternalTemplatePerms:     "internal_template_permissions.csv",
-	seedTableInternalTemplateRolePerms: "internal_template_role_permissions.csv",
-	seedTableOrgUnits:                  "org_units.csv",
-	seedTableUsers:                     "users.csv",
-	seedTableUserRoles:                 "user_roles.csv",
-	seedTableJobPositions:              "job_positions.csv",
-	seedTableWorkLocations:             "work_locations.csv",
-	seedTableWorkShifts:                "work_shifts.csv",
-	seedTableEmployees:                 "employees.csv",
-	seedTableInternalUsers:             "internal_users.csv",
-	seedTableInternalProducts:          "internal_products.csv",
-	seedTableInternalProductPricings:   "internal_product_pricings.csv",
-	seedTableInternalProductPrices:     "internal_product_prices.csv",
+	seedTableTenants:                    "tenants.csv",
+	seedTablePermissions:                "permissions.csv",
+	seedTableRoles:                      "roles.csv",
+	seedTableRolePerms:                  "role_permissions.csv",
+	seedTableInternalTemplateRoles:      "internal_template_roles.csv",
+	seedTableInternalTemplatePerms:      "internal_template_permissions.csv",
+	seedTableInternalTemplateRolePerms:  "internal_template_role_permissions.csv",
+	seedTableOrgUnits:                   "org_units.csv",
+	seedTableUsers:                      "users.csv",
+	seedTableUserRoles:                  "user_roles.csv",
+	seedTableJobPositions:               "job_positions.csv",
+	seedTableWorkLocations:              "work_locations.csv",
+	seedTableWorkShifts:                 "work_shifts.csv",
+	seedTableEmployees:                  "employees.csv",
+	seedTableInternalUsers:              "internal_users.csv",
+	seedTableInternalCurrencies:         "internal_currencies.csv",
+	seedTableInternalProviderCurrencies: "internal_payment_provider_currencies.csv",
+	seedTableInternalProducts:           "internal_products.csv",
+	seedTableInternalProductPricings:    "internal_product_pricings.csv",
+	seedTableInternalProductPrices:      "internal_product_prices.csv",
 }
 
 const helperColumnPrefix = "helper__"
@@ -250,6 +252,9 @@ func (s *csvSeedState) rebuildLookups() {
 	}
 	for _, row := range s.files[seedTableInternalUsers].rows {
 		register(seedTableInternalUsers, tenantLookupKey(row["email"]), row["id"])
+	}
+	for _, row := range s.files[seedTableInternalCurrencies].rows {
+		register(seedTableInternalCurrencies, row["code"], row["code"])
 	}
 	for _, row := range s.files[seedTableInternalProducts].rows {
 		register(seedTableInternalProducts, row["code"], row["id"])

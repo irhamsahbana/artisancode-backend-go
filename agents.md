@@ -66,6 +66,7 @@ Do not document `internal/module/<module>` as the primary backend pattern when y
   - `make test-storage-upload`
   - `make cleanup-storage-orphans`
   - `make cleanup-message-queue`
+- After local backend testing, stop any backend servers, consumers, schedulers, or app processes started for the task, especially `make dev` or `go run ./cmd/bin/main.go --port=3939`; verify the port is no longer listening when practical.
 - Serena startup sequence for backend tasks is: activate project `artisancode-backend-go/`, check onboarding/memory availability, read relevant memories, then begin symbol navigation or edits.
 
 ## Quick Rules

@@ -516,6 +516,166 @@ func (s *Seed) seedInternalUsers(tx *sqlx.Tx, state *csvSeedState) error {
 	return nil
 }
 
+func (s *Seed) seedInternalCurrencies(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalCurrencies]
+
+	defaultCode := ""
+	for _, row := range file.rows {
+		code, err := requiredCSVValue(row, "code")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies: %w", err)
+		}
+		isDefault, err := requiredBoolValue(row, "is_default")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies %s: %w", code, err)
+		}
+		if !isDefault {
+			continue
+		}
+		if defaultCode != "" {
+			return fmt.Errorf("seed internal_currencies: multiple default currencies defined: %s and %s", defaultCode, code)
+		}
+		defaultCode = code
+	}
+
+	if defaultCode != "" {
+		query := `
+			UPDATE internal_currencies
+			SET
+				is_default = FALSE,
+				updated_at = CURRENT_TIMESTAMP
+			WHERE deleted_at IS NULL
+				AND code <> ?
+				AND is_default = TRUE
+		`
+		if _, err := tx.Exec(tx.Rebind(query), defaultCode); err != nil {
+			return fmt.Errorf("seed internal_currencies: clear previous default: %w", err)
+		}
+	}
+
+	for _, row := range file.rows {
+		code, err := requiredCSVValue(row, "code")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies: %w", err)
+		}
+		name, err := requiredCSVValue(row, "name")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies %s: %w", code, err)
+		}
+		symbol, err := requiredCSVValue(row, "symbol")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies %s: %w", code, err)
+		}
+		decimalPlaces, err := requiredIntValue(row, "decimal_places")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies %s: %w", code, err)
+		}
+		isActive, err := requiredBoolValue(row, "is_active")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies %s: %w", code, err)
+		}
+		isDefault, err := requiredBoolValue(row, "is_default")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies %s: %w", code, err)
+		}
+		sortOrder, err := requiredIntValue(row, "sort_order")
+		if err != nil {
+			return fmt.Errorf("seed internal_currencies %s: %w", code, err)
+		}
+
+		query := `
+			INSERT INTO internal_currencies (
+				code,
+				name,
+				symbol,
+				decimal_places,
+				is_active,
+				is_default,
+				sort_order,
+				metadata
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+			ON CONFLICT (code) DO UPDATE SET
+				name = EXCLUDED.name,
+				symbol = EXCLUDED.symbol,
+				decimal_places = EXCLUDED.decimal_places,
+				is_active = EXCLUDED.is_active,
+				is_default = EXCLUDED.is_default,
+				sort_order = EXCLUDED.sort_order,
+				metadata = EXCLUDED.metadata,
+				updated_at = CURRENT_TIMESTAMP,
+				deleted_at = NULL
+		`
+		if _, err := tx.Exec(
+			tx.Rebind(query),
+			code,
+			name,
+			symbol,
+			decimalPlaces,
+			isActive,
+			isDefault,
+			sortOrder,
+			defaultJSON(row["metadata"]),
+		); err != nil {
+			return fmt.Errorf("seed internal_currencies %s: %w", code, err)
+		}
+	}
+
+	return nil
+}
+
+func (s *Seed) seedInternalPaymentProviderCurrencies(tx *sqlx.Tx, state *csvSeedState) error {
+	file := state.files[seedTableInternalProviderCurrencies]
+
+	for _, row := range file.rows {
+		provider, err := requiredCSVValue(row, "provider")
+		if err != nil {
+			return fmt.Errorf("seed internal_payment_provider_currencies: %w", err)
+		}
+		currencyCode, err := requiredCSVValue(row, "currency_code")
+		if err != nil {
+			return fmt.Errorf("seed internal_payment_provider_currencies %s: %w", provider, err)
+		}
+		if _, err := resolveID(state, seedTableInternalCurrencies, currencyCode, "internal currency"); err != nil {
+			return fmt.Errorf("seed internal_payment_provider_currencies %s/%s: %w", provider, currencyCode, err)
+		}
+		isActive, err := requiredBoolValue(row, "is_active")
+		if err != nil {
+			return fmt.Errorf("seed internal_payment_provider_currencies %s/%s: %w", provider, currencyCode, err)
+		}
+
+		query := `
+			INSERT INTO internal_payment_provider_currencies (
+				provider,
+				currency_code,
+				is_active,
+				min_amount,
+				max_amount,
+				metadata
+			) VALUES (?, ?, ?, ?, ?, ?)
+			ON CONFLICT (provider, currency_code) DO UPDATE SET
+				is_active = EXCLUDED.is_active,
+				min_amount = EXCLUDED.min_amount,
+				max_amount = EXCLUDED.max_amount,
+				metadata = EXCLUDED.metadata,
+				updated_at = CURRENT_TIMESTAMP,
+				deleted_at = NULL
+		`
+		if _, err := tx.Exec(
+			tx.Rebind(query),
+			provider,
+			currencyCode,
+			isActive,
+			nullableStringValue(row["min_amount"]),
+			nullableStringValue(row["max_amount"]),
+			defaultJSON(row["metadata"]),
+		); err != nil {
+			return fmt.Errorf("seed internal_payment_provider_currencies %s/%s: %w", provider, currencyCode, err)
+		}
+	}
+
+	return nil
+}
+
 func (s *Seed) seedInternalProducts(tx *sqlx.Tx, state *csvSeedState) error {
 	file := state.files[seedTableInternalProducts]
 	cfg := upsertConfig{

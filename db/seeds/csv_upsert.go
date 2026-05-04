@@ -201,6 +201,18 @@ func requiredIntValue(row map[string]string, column string) (int, error) {
 	return value, nil
 }
 
+func requiredBoolValue(row map[string]string, column string) (bool, error) {
+	raw, err := requiredCSVValue(row, column)
+	if err != nil {
+		return false, err
+	}
+	value, err := strconv.ParseBool(raw)
+	if err != nil {
+		return false, fmt.Errorf("parse %s as bool: %w", column, err)
+	}
+	return value, nil
+}
+
 func optionalFloatValue(row map[string]string, column string) (*float64, error) {
 	raw := strings.TrimSpace(row[column])
 	if raw == "" {

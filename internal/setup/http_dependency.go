@@ -5,6 +5,7 @@ type httpRouteRegistrar interface {
 	registerOrganizationRoutes()
 	registerAttendanceRoutes()
 	registerInternalRoutes()
+	registerBillingRoutes()
 	registerUtilityRoutes()
 	registerRouteNotFound()
 }
@@ -24,6 +25,7 @@ func registerHTTPRoutes(registrar httpRouteRegistrar) {
 	registrar.registerOrganizationRoutes()
 	registrar.registerAttendanceRoutes()
 	registrar.registerInternalRoutes()
+	registrar.registerBillingRoutes()
 	registrar.registerUtilityRoutes()
 	registrar.registerRouteNotFound()
 }

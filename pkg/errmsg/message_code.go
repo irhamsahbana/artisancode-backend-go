@@ -101,6 +101,14 @@ const (
 	MessageCompanyCanOnlyBeUpdatedFromCompanyDetails                             = "company_can_only_be_updated_from_company_details"
 	MessageCompanyCannotBeDeleted                                                = "company_cannot_be_deleted"
 	MessageCurrencyCodeFormatIsInvalid                                           = "currency_code_format_is_invalid"
+	MessageCurrencyCodeAlreadyExists                                             = "currency_code_already_exists"
+	MessageCurrencyIsNotActive                                                   = "currency_is_not_active"
+	MessageCurrencyNotFound                                                      = "currency_not_found"
+	MessageProviderCurrencyIsNotActive                                           = "provider_currency_is_not_active"
+	MessagePriceIsNotActive                                                      = "price_is_not_active"
+	MessageDefaultCurrencyCannotBeInactive                                       = "default_currency_cannot_be_inactive"
+	MessageDefaultCurrencyCannotBeDeleted                                        = "default_currency_cannot_be_deleted"
+	MessageCurrencyIsStillUsed                                                   = "currency_is_still_used"
 	MessageDokuClientIsNotConfigured                                             = "doku_client_is_not_configured"
 	MessageEmployeeIdIsNotAllowedForAdminInvitations                             = "employee_id_is_not_allowed_for_admin_invitations"
 	MessageEmployeeIdIsRequiredForEmployeeInvitations                            = "employee_id_is_required_for_employee_invitations"
@@ -294,6 +302,14 @@ var AllMessageCodes = []string{
 	MessageCompanyCanOnlyBeUpdatedFromCompanyDetails,
 	MessageCompanyCannotBeDeleted,
 	MessageCurrencyCodeFormatIsInvalid,
+	MessageCurrencyCodeAlreadyExists,
+	MessageCurrencyIsNotActive,
+	MessageCurrencyNotFound,
+	MessageProviderCurrencyIsNotActive,
+	MessagePriceIsNotActive,
+	MessageDefaultCurrencyCannotBeInactive,
+	MessageDefaultCurrencyCannotBeDeleted,
+	MessageCurrencyIsStillUsed,
 	MessageDokuClientIsNotConfigured,
 	MessageEmployeeIdIsNotAllowedForAdminInvitations,
 	MessageEmployeeIdIsRequiredForEmployeeInvitations,

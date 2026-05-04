@@ -18,6 +18,7 @@ type DokuLineItem struct {
 type DokuCreatePaymentRequest struct {
 	InvoiceNumber   string         `json:"invoice_number"`
 	Amount          int64          `json:"amount"`
+	Currency        string         `json:"currency"`
 	CustomerEmail   string         `json:"customer_email"`
 	CustomerName    string         `json:"customer_name"`
 	CustomerPhone   string         `json:"customer_phone,omitempty"`
@@ -35,6 +36,8 @@ func (r DokuCreatePaymentRequest) validate() error {
 		return errors.New("invoice number is required")
 	case r.Amount <= 0:
 		return errors.New("amount must be greater than zero")
+	case len(strings.TrimSpace(r.Currency)) != 3 || strings.ToUpper(strings.TrimSpace(r.Currency)) != strings.TrimSpace(r.Currency):
+		return errors.New("currency must be a 3-letter uppercase code")
 	case strings.TrimSpace(r.CustomerEmail) == "":
 		return errors.New("customer email is required")
 	case strings.TrimSpace(r.CustomerName) == "":

@@ -47,6 +47,22 @@ func TestEmployeeSeedGroupIncludesEmployees(t *testing.T) {
 	}
 }
 
+func TestInternalCatalogSeedsCurrenciesBeforePrices(t *testing.T) {
+	order := seedGroups["internal_catalog"]
+	if len(order) < 5 {
+		t.Fatalf("internal_catalog order is too short: %#v", order)
+	}
+	if order[0] != seedTableInternalCurrencies {
+		t.Fatalf("internal_catalog first table = %q, want %q", order[0], seedTableInternalCurrencies)
+	}
+	if order[1] != seedTableInternalProviderCurrencies {
+		t.Fatalf("internal_catalog second table = %q, want %q", order[1], seedTableInternalProviderCurrencies)
+	}
+	if order[len(order)-1] != seedTableInternalProductPrices {
+		t.Fatalf("internal_catalog last table = %q, want %q", order[len(order)-1], seedTableInternalProductPrices)
+	}
+}
+
 func TestResolveUserIDByEmail(t *testing.T) {
 	state := &csvSeedState{
 		ids: map[string]map[string]string{
@@ -226,4 +242,21 @@ func TestOwnerSeedHasEmailVerifiedAt(t *testing.T) {
 	}
 
 	t.Fatal("owner seed user beruang@beruang.com is missing")
+}
+
+func TestInternalProviderCurrencySeedsReferenceKnownCurrencies(t *testing.T) {
+	state, err := newCSVSeedState()
+	if err != nil {
+		t.Fatalf("newCSVSeedState returned error: %v", err)
+	}
+
+	for _, row := range state.files[seedTableInternalProviderCurrencies].rows {
+		currencyCode := strings.TrimSpace(row["currency_code"])
+		if currencyCode == "" {
+			t.Fatalf("provider currency row is missing currency_code: %#v", row)
+		}
+		if _, ok := state.lookupID(seedTableInternalCurrencies, currencyCode); !ok {
+			t.Fatalf("provider currency %q references unknown currency %q", row["provider"], currencyCode)
+		}
+	}
 }
