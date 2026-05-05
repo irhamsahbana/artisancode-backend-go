@@ -41,34 +41,3 @@ func mapInternalCurrencyDAO(
 
 	return item, nil
 }
-
-func mapInternalPaymentProviderCurrencyDAO(
-	provider string,
-	currencyCode string,
-	isActive bool,
-	minAmount *string,
-	maxAmount *string,
-	metadataRaw json.RawMessage,
-	createdAt string,
-	updatedAt *string,
-) (coreentity.InternalPaymentProviderCurrency, error) {
-	metadata, err := parseMetadata(context.Background(), metadataRaw)
-	if err != nil {
-		return coreentity.InternalPaymentProviderCurrency{}, err
-	}
-
-	item := coreentity.InternalPaymentProviderCurrency{
-		Provider:     provider,
-		CurrencyCode: currencyCode,
-		IsActive:     isActive,
-		MinAmount:    minAmount,
-		MaxAmount:    maxAmount,
-		Metadata:     metadata,
-		CreatedAt:    createdAt,
-	}
-	if updatedAt != nil {
-		item.UpdatedAt = *updatedAt
-	}
-
-	return item, nil
-}

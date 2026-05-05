@@ -216,16 +216,17 @@ type InternalBillingPaymentEvent struct {
 }
 
 type TenantBillingPlan struct {
-	ID           string
-	Name         string
-	Description  string
-	PricingID    string
-	BillingCycle string
-	Amount       string
-	Currency     string
-	Features     []string
-	Prices       []TenantBillingPlanPrice
-	AddOns       []TenantBillingAddOn
+	ID            string
+	Name          string
+	Description   string
+	PricingID     string
+	BillingCycle  string
+	Amount        string
+	Currency      string
+	Features      []string
+	Prices        []TenantBillingPlanPrice
+	AddOns        []TenantBillingAddOn
+	IsCurrentPlan bool
 }
 
 type TenantBillingPlanPrice struct {

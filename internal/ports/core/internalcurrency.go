@@ -27,17 +27,4 @@ type InternalCurrencyCore interface {
 		ctx context.Context,
 		filter coreentity.InternalCurrencyDeleteFilter,
 	) error
-
-	GetProviderCurrencies(
-		ctx context.Context,
-		filter coreentity.InternalPaymentProviderCurrencyListFilter,
-	) ([]coreentity.InternalPaymentProviderCurrency, int, error)
-	UpsertProviderCurrency(
-		ctx context.Context,
-		data coreentity.InternalPaymentProviderCurrency,
-	) error
-	DeleteProviderCurrency(
-		ctx context.Context,
-		filter coreentity.InternalPaymentProviderCurrencyFilter,
-	) error
 }

@@ -28,7 +28,7 @@ import (
 	"codebase-app/internal/middleware"
 )
 
-func buildInternalDependencies(deps *httpDependencies, ctx httpBootstrapContext) {
+func buildInternalDependencies(deps *httpDependencies, ctx *httpBootstrapContext) {
 	internalProductRepository := internalProductRepo.NewInternalProductRepository(
 		internalProductRepo.Config{
 			DB: ctx.db,
@@ -69,6 +69,7 @@ func buildInternalDependencies(deps *httpDependencies, ctx httpBootstrapContext)
 			DB: ctx.db,
 		},
 	)
+	ctx.internalTenantBillingRepo = internalTenantBillingRepository
 
 	deps.internalProductCore = internalProductCore.NewInternalProductCore(
 		internalProductCore.Config{
@@ -106,6 +107,7 @@ func buildInternalDependencies(deps *httpDependencies, ctx httpBootstrapContext)
 			InvoiceRepo:   internalInvoiceRepository,
 			OrderRepo:     internalOrderRepository,
 			QuotationRepo: internalQuotationRepository,
+			CurrencyRepo:  internalCurrencyRepository,
 			Tx:            ctx.tx,
 			DOKU:          ctx.dokuClient,
 		},

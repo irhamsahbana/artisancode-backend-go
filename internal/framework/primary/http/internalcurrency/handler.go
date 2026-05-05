@@ -19,10 +19,6 @@ func NewInternalCurrencyHandler(cfg Config) *internalCurrencyHandler {
 }
 
 func (h *internalCurrencyHandler) Register(router fiber.Router) {
-	router.Get("/providers/:provider", h.getProviderCurrencies)
-	router.Put("/providers/:provider/:currency_code", h.upsertProviderCurrency)
-	router.Delete("/providers/:provider/:currency_code", h.deleteProviderCurrency)
-
 	router.Get("/", h.getInternalCurrencies)
 	router.Get("/:code", h.getInternalCurrency)
 	router.Post("/", h.createInternalCurrency)

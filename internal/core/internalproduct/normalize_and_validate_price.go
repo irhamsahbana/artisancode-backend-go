@@ -33,6 +33,7 @@ func (c *internalProductCore) normalizeAndValidatePrice(
 		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyCodeFormatIsInvalid)
 	}
 
+	var currencyDecimalPlaces int
 	if c.currencyRepo != nil {
 		currency, err := c.currencyRepo.GetInternalCurrency(ctx, coreentity.InternalCurrencyFilter{
 			Code: data.CurrencyCode,
@@ -43,10 +44,22 @@ func (c *internalProductCore) normalizeAndValidatePrice(
 		if !currency.IsActive {
 			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyIsNotActive)
 		}
+		currencyDecimalPlaces = currency.DecimalPlaces
 	}
 
 	if !data.Amount.IsPositive() {
 		return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageAmountMustBePositive)
+	}
+
+	if currencyDecimalPlaces > 0 {
+		truncated := data.Amount.Truncate(int32(currencyDecimalPlaces))
+		if !data.Amount.Equal(truncated) {
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyAmountPrecisionIsInvalid)
+		}
+	} else {
+		if !data.Amount.Equal(data.Amount.Truncate(0)) {
+			return errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyAmountPrecisionIsInvalid)
+		}
 	}
 
 	startTime, err := time.Parse(time.RFC3339, data.StartedAt)

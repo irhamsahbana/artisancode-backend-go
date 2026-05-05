@@ -32,7 +32,7 @@ import (
 	"codebase-app/internal/middleware"
 )
 
-func buildPeopleDependencies(deps *httpDependencies, ctx httpBootstrapContext) {
+func buildPeopleDependencies(deps *httpDependencies, ctx *httpBootstrapContext) {
 	userRepository := userRepo.NewUserRepository(userRepo.Config{
 		DB: ctx.db,
 	})

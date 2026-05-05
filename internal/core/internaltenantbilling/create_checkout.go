@@ -49,19 +49,6 @@ func (c *internalTenantBillingCore) CreateCheckout(
 		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyIsNotActive)
 	}
 
-	isProviderCurrencyActive, err := c.currencyRepo.IsProviderCurrencyActive(
-		ctx,
-		"doku",
-		price.CurrencyCode,
-		price.Amount.String(),
-	)
-	if err != nil {
-		return nil, err
-	}
-	if !isProviderCurrencyActive {
-		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageProviderCurrencyIsNotActive)
-	}
-
 	currency, err := c.currencyRepo.GetInternalCurrency(ctx, coreentity.InternalCurrencyFilter{
 		Code: price.CurrencyCode,
 	})
@@ -69,7 +56,7 @@ func (c *internalTenantBillingCore) CreateCheckout(
 		return nil, err
 	}
 	if currency.DecimalPlaces == 0 && !price.Amount.Equal(price.Amount.Truncate(0)) {
-		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageProviderCurrencyIsNotActive)
+		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageCurrencyAmountPrecisionIsInvalid)
 	}
 
 	pricing, err := c.productRepo.GetInternalProductPricing(ctx, coreentity.InternalProductPricingFilter{
@@ -148,16 +135,23 @@ func (c *internalTenantBillingCore) CreateCheckout(
 		return nil, err
 	}
 
+	amount := decimal.RequireFromString(invoice.Amount)
+	multiplier := decimal.NewFromInt(1)
+	if currency.DecimalPlaces > 0 {
+		multiplier = decimal.NewFromInt(10).Pow(decimal.NewFromInt(int64(currency.DecimalPlaces)))
+	}
+	dokuAmount := amount.Mul(multiplier).Round(0).IntPart()
+
 	dokuResp, err := c.doku.CreatePayment(ctx, restentity.DokuCreatePaymentRequest{
 		InvoiceNumber: invoice.InvoiceNumber,
-		Amount:        decimal.RequireFromString(invoice.Amount).Round(0).IntPart(),
+		Amount:        dokuAmount,
 		Currency:      price.CurrencyCode,
 		CustomerName:  checkoutCustomerName(input.UserCtx),
 		CustomerEmail: checkoutCustomerEmail(input.UserCtx),
 		LineItems: []restentity.DokuLineItem{
 			{
 				Name:     buildCheckoutLineItemName(product.Name, pricing.Name),
-				Price:    decimal.RequireFromString(invoice.Amount).Round(0).IntPart(),
+				Price:    dokuAmount,
 				Quantity: 1,
 			},
 		},

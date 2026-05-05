@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"codebase-app/internal/entity/common"
 	"codebase-app/internal/entity/coreentity"
 	"codebase-app/internal/infrastructure/tracing"
 )
@@ -15,6 +16,17 @@ func (c *internalTenantBillingCore) GetPlans(ctx context.Context) ([]coreentity.
 
 	if c.productRepo == nil || c.currencyRepo == nil {
 		return []coreentity.TenantBillingPlan{}, nil
+	}
+
+	activeSubProductID := ""
+	if c.billingRepo != nil {
+		userCtx := common.GetUserContext(ctx)
+		if userCtx.TenantID != "" {
+			sub, err := c.billingRepo.GetActiveSubscription(ctx, userCtx.TenantID)
+			if err == nil && sub != nil {
+				activeSubProductID = sub.InternalProductID
+			}
+		}
 	}
 
 	products, _, err := c.productRepo.GetInternalProducts(ctx, coreentity.InternalProductListFilter{
@@ -38,10 +50,11 @@ func (c *internalTenantBillingCore) GetPlans(ctx context.Context) ([]coreentity.
 		}
 
 		plan := coreentity.TenantBillingPlan{
-			ID:          product.ID,
-			Name:        product.Name,
-			Description: product.Description,
-			Features:    stringSliceFromMetadata(product.Metadata, "features"),
+			ID:            product.ID,
+			Name:          product.Name,
+			Description:   product.Description,
+			Features:      stringSliceFromMetadata(product.Metadata, "features"),
+			IsCurrentPlan: product.ID == activeSubProductID,
 		}
 
 		for _, pricing := range pricings {

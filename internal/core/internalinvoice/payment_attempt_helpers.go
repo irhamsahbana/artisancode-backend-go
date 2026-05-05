@@ -28,6 +28,21 @@ func (c *internalInvoiceCore) createDOKUAttempt(
 	if invoice.Status != coreentity.InvoiceStatusOpen && invoice.Status != coreentity.InvoiceStatusPartiallyPaid {
 		return nil, errmsg.NewCustomErrors(400).SetMessage(errmsg.MessageInvoiceIsNotPayable)
 	}
+
+	currency, err := c.currencyRepo.GetInternalCurrency(ctx, coreentity.InternalCurrencyFilter{
+		Code: invoice.CurrencyCode,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	amount := invoice.AmountOutstanding
+	multiplier := decimal.NewFromInt(1)
+	if currency.DecimalPlaces > 0 {
+		multiplier = decimal.NewFromInt(10).Pow(decimal.NewFromInt(int64(currency.DecimalPlaces)))
+	}
+	dokuAmount := amount.Mul(multiplier).Round(0).IntPart()
+
 	attempt, err := c.invoiceRepo.CreatePaymentAttempt(ctx, coreentity.InternalPaymentAttempt{
 		InternalInvoiceID: invoice.ID, Provider: coreentity.PaymentProviderDOKU, PaymentMethodType: "gateway",
 		ProviderReference: invoice.InvoiceNumber, Status: coreentity.PaymentAttemptStatusInitiated,
@@ -37,7 +52,7 @@ func (c *internalInvoiceCore) createDOKUAttempt(
 		return nil, err
 	}
 	resp, err := c.doku.CreatePayment(ctx, restentity.DokuCreatePaymentRequest{
-		InvoiceNumber: invoice.InvoiceNumber, Amount: invoice.AmountOutstanding.Round(0).IntPart(),
+		InvoiceNumber: invoice.InvoiceNumber, Amount: dokuAmount,
 		CustomerName: input.CustomerName, CustomerEmail: input.CustomerEmail, CustomerPhone: input.CustomerPhone,
 		CallbackURL: input.CallbackURL,
 	})

@@ -31,27 +31,3 @@ type InternalCurrencyFilter struct {
 type InternalCurrencyDeleteFilter struct {
 	Code string
 }
-
-type InternalPaymentProviderCurrency struct {
-	UserCtx common.UserContext
-
-	Provider     string
-	CurrencyCode string
-	IsActive     bool
-	MinAmount    *string
-	MaxAmount    *string
-	Metadata     map[string]any
-	CreatedAt    string
-	UpdatedAt    string
-}
-
-type InternalPaymentProviderCurrencyListFilter struct {
-	Provider string
-	Page     int
-	Paginate int
-}
-
-type InternalPaymentProviderCurrencyFilter struct {
-	Provider     string
-	CurrencyCode string
-}

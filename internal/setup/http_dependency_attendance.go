@@ -13,7 +13,7 @@ import (
 	"codebase-app/internal/middleware"
 )
 
-func buildAttendanceDependencies(deps *httpDependencies, ctx httpBootstrapContext) {
+func buildAttendanceDependencies(deps *httpDependencies, ctx *httpBootstrapContext) {
 	attendanceRepository := attendanceRepo.NewAttendanceRepository(attendanceRepo.Config{
 		DB: ctx.db,
 	})

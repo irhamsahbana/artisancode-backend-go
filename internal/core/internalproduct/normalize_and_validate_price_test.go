@@ -125,6 +125,125 @@ func TestNormalizeAndValidatePrice(t *testing.T) {
 	}
 }
 
+func TestNormalizeAndValidatePriceDecimalPlaces(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name        string
+		input       coreentity.InternalProductPrice
+		wantCode    int
+		wantMessage string
+	}{
+		{
+			name: "accepts zero decimal places for IDR",
+			input: coreentity.InternalProductPrice{
+				CurrencyCode: "IDR",
+				Amount:       decimal.NewFromInt(150000),
+				StartedAt:    "2026-01-01T00:00:00Z",
+			},
+		},
+		{
+			name: "rejects decimals for zero decimal currency",
+			input: coreentity.InternalProductPrice{
+				CurrencyCode: "IDR",
+				Amount:       decimal.RequireFromString("150000.50"),
+				StartedAt:    "2026-01-01T00:00:00Z",
+			},
+			wantCode:    400,
+			wantMessage: errmsg.MessageCurrencyAmountPrecisionIsInvalid,
+		},
+		{
+			name: "accepts two decimal places for USD",
+			input: coreentity.InternalProductPrice{
+				CurrencyCode: "USD",
+				Amount:       decimal.RequireFromString("19.99"),
+				StartedAt:    "2026-01-01T00:00:00Z",
+			},
+		},
+		{
+			name: "rejects three decimal places for two decimal currency",
+			input: coreentity.InternalProductPrice{
+				CurrencyCode: "USD",
+				Amount:       decimal.RequireFromString("19.999"),
+				StartedAt:    "2026-01-01T00:00:00Z",
+			},
+			wantCode:    400,
+			wantMessage: errmsg.MessageCurrencyAmountPrecisionIsInvalid,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			core := NewInternalProductCore(Config{CurrencyRepo: currencyRepoStub{}})
+			input := tt.input
+
+			err := core.normalizeAndValidatePrice(ctx, &input)
+
+			if tt.wantMessage == "" {
+				require.NoError(t, err)
+				return
+			}
+
+			requireHelperError(t, err, tt.wantCode, tt.wantMessage)
+		})
+	}
+}
+
 func stringPtr(value string) *string {
 	return &value
+}
+
+type currencyRepoStub struct{}
+
+func (currencyRepoStub) GetInternalCurrencies(
+	ctx context.Context,
+	filter coreentity.InternalCurrencyListFilter,
+) ([]coreentity.InternalCurrency, int, error) {
+	return nil, 0, nil
+}
+
+func (currencyRepoStub) GetInternalCurrency(
+	ctx context.Context,
+	filter coreentity.InternalCurrencyFilter,
+) (*coreentity.InternalCurrency, error) {
+	decimalPlaces := 0
+	if filter.Code == "USD" || filter.Code == "EUR" || filter.Code == "SGD" {
+		decimalPlaces = 2
+	}
+	return &coreentity.InternalCurrency{
+		Code:          filter.Code,
+		Symbol:        filter.Code,
+		DecimalPlaces: decimalPlaces,
+		IsActive:      true,
+		IsDefault:     filter.Code == "IDR",
+	}, nil
+}
+
+func (currencyRepoStub) CreateInternalCurrency(
+	ctx context.Context,
+	data coreentity.InternalCurrency,
+) (*coreentity.InternalCurrency, error) {
+	return nil, nil
+}
+
+func (currencyRepoStub) UpdateInternalCurrency(
+	ctx context.Context,
+	data coreentity.InternalCurrency,
+) error {
+	return nil
+}
+
+func (currencyRepoStub) DeleteInternalCurrency(
+	ctx context.Context,
+	filter coreentity.InternalCurrencyDeleteFilter,
+) error {
+	return nil
+}
+
+func (currencyRepoStub) IsCurrencyActive(ctx context.Context, code string) (bool, error) {
+	return true, nil
+}
+
+func (currencyRepoStub) GetDefaultCurrency(ctx context.Context) (*coreentity.InternalCurrency, error) {
+	return &coreentity.InternalCurrency{Code: "IDR", IsActive: true, IsDefault: true}, nil
 }

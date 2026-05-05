@@ -19,15 +19,16 @@ import (
 )
 
 type httpBootstrapContext struct {
-	app                  *fiber.App
-	db                   *sqlx.DB
-	bus                  integrationPorts.MessagePublisher
-	tx                   repositoryPorts.Transactor
-	s3                   integrationPorts.StorageContract
-	tokenCache           tokencache.TokenCacheContract
-	authRateLimiter      ratelimit.AttemptLimiter
-	googleTokenValidator integrationPorts.GoogleIDTokenValidator
-	dokuClient           integrationPorts.DokuClient
+	app                       *fiber.App
+	db                        *sqlx.DB
+	bus                       integrationPorts.MessagePublisher
+	tx                        repositoryPorts.Transactor
+	s3                        integrationPorts.StorageContract
+	tokenCache                tokencache.TokenCacheContract
+	authRateLimiter           ratelimit.AttemptLimiter
+	googleTokenValidator      integrationPorts.GoogleIDTokenValidator
+	dokuClient                integrationPorts.DokuClient
+	internalTenantBillingRepo repositoryPorts.InternalTenantBillingRepository
 }
 
 type httpDependencies struct {
@@ -68,10 +69,10 @@ func newHTTPDependencies() httpDependencies {
 		authRateLimiter: ctx.authRateLimiter,
 	}
 
-	buildPeopleDependencies(&deps, ctx)
-	buildAttendanceDependencies(&deps, ctx)
-	buildInternalDependencies(&deps, ctx)
-	buildUtilityDependencies(&deps, ctx)
+	buildPeopleDependencies(&deps, &ctx)
+	buildAttendanceDependencies(&deps, &ctx)
+	buildInternalDependencies(&deps, &ctx)
+	buildUtilityDependencies(&deps, &ctx)
 
 	return deps
 }

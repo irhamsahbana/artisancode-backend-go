@@ -13,13 +13,3 @@ func mapperInternalCurrencyListFilter(req restentity.GetInternalCurrenciesReq) c
 		Paginate: req.Paginate,
 	}
 }
-
-func mapperInternalProviderCurrencyListFilter(
-	req restentity.GetInternalPaymentProviderCurrenciesReq,
-) coreentity.InternalPaymentProviderCurrencyListFilter {
-	return coreentity.InternalPaymentProviderCurrencyListFilter{
-		Provider: req.Provider,
-		Page:     req.Page,
-		Paginate: req.Paginate,
-	}
-}

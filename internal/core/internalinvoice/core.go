@@ -10,6 +10,7 @@ type internalInvoiceCore struct {
 	invoiceRepo   portsRepo.InternalInvoiceRepository
 	orderRepo     portsRepo.InternalOrderRepository
 	quotationRepo portsRepo.InternalQuotationRepository
+	currencyRepo  portsRepo.InternalCurrencyRepository
 	tx            portsRepo.Transactor
 	doku          dokuPorts.DokuClient
 }
@@ -18,6 +19,7 @@ type Config struct {
 	InvoiceRepo   portsRepo.InternalInvoiceRepository
 	OrderRepo     portsRepo.InternalOrderRepository
 	QuotationRepo portsRepo.InternalQuotationRepository
+	CurrencyRepo  portsRepo.InternalCurrencyRepository
 	Tx            portsRepo.Transactor
 	DOKU          dokuPorts.DokuClient
 }
@@ -29,6 +31,7 @@ func NewInternalInvoiceCore(cfg Config) corePorts.InternalInvoiceCore {
 		invoiceRepo:   cfg.InvoiceRepo,
 		orderRepo:     cfg.OrderRepo,
 		quotationRepo: cfg.QuotationRepo,
+		currencyRepo:  cfg.CurrencyRepo,
 		tx:            cfg.Tx,
 		doku:          cfg.DOKU,
 	}

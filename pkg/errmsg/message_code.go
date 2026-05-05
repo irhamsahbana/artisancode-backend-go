@@ -103,6 +103,7 @@ const (
 	MessageCurrencyCodeFormatIsInvalid                                           = "currency_code_format_is_invalid"
 	MessageCurrencyCodeAlreadyExists                                             = "currency_code_already_exists"
 	MessageCurrencyIsNotActive                                                   = "currency_is_not_active"
+	MessageCurrencyAmountPrecisionIsInvalid                                      = "currency_amount_precision_is_invalid"
 	MessageCurrencyNotFound                                                      = "currency_not_found"
 	MessageProviderCurrencyIsNotActive                                           = "provider_currency_is_not_active"
 	MessagePriceIsNotActive                                                      = "price_is_not_active"
@@ -304,6 +305,7 @@ var AllMessageCodes = []string{
 	MessageCurrencyCodeFormatIsInvalid,
 	MessageCurrencyCodeAlreadyExists,
 	MessageCurrencyIsNotActive,
+	MessageCurrencyAmountPrecisionIsInvalid,
 	MessageCurrencyNotFound,
 	MessageProviderCurrencyIsNotActive,
 	MessagePriceIsNotActive,

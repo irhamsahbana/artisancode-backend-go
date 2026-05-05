@@ -29,23 +29,4 @@ type InternalCurrencyRepository interface {
 	) error
 	IsCurrencyActive(ctx context.Context, code string) (bool, error)
 	GetDefaultCurrency(ctx context.Context) (*coreentity.InternalCurrency, error)
-
-	GetProviderCurrencies(
-		ctx context.Context,
-		filter coreentity.InternalPaymentProviderCurrencyListFilter,
-	) ([]coreentity.InternalPaymentProviderCurrency, int, error)
-	UpsertProviderCurrency(
-		ctx context.Context,
-		data coreentity.InternalPaymentProviderCurrency,
-	) error
-	DeleteProviderCurrency(
-		ctx context.Context,
-		filter coreentity.InternalPaymentProviderCurrencyFilter,
-	) error
-	IsProviderCurrencyActive(
-		ctx context.Context,
-		provider string,
-		currencyCode string,
-		amount string,
-	) (bool, error)
 }

@@ -9,7 +9,6 @@ import (
 
 var (
 	currencyCodePattern = regexp.MustCompile(`^[A-Z]{3}$`)
-	providerPattern     = regexp.MustCompile(`^[a-z0-9_-]+$`)
 )
 
 type internalCurrencyCore struct {

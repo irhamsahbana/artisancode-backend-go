@@ -60,6 +60,103 @@ func (billingRepoStub) UpdatePaymentAttemptGateway(
 	return &data, nil
 }
 
+func (billingRepoStub) GetSubscription(
+	ctx context.Context,
+	tenantID string,
+) (*coreentity.InternalTenantSubscription, error) {
+	return &coreentity.InternalTenantSubscription{
+		ID:     "sub-1",
+		Status: coreentity.InternalTenantSubscriptionStatusActive,
+	}, nil
+}
+
+func (billingRepoStub) GetLatestEntitlementSnapshot(
+	ctx context.Context,
+	tenantID string,
+) (*coreentity.InternalEntitlementSnapshot, error) {
+	return nil, nil
+}
+
+func (billingRepoStub) GetActiveSubscription(
+	ctx context.Context,
+	tenantID string,
+) (*coreentity.InternalTenantSubscription, error) {
+	return &coreentity.InternalTenantSubscription{
+		ID:                "sub-1",
+		Status:            coreentity.InternalTenantSubscriptionStatusActive,
+		InternalProductID: "product-1",
+	}, nil
+}
+
+func (billingRepoStub) UpsertSubscription(
+	ctx context.Context,
+	data coreentity.InternalTenantSubscription,
+) (*coreentity.InternalTenantSubscription, error) {
+	return &data, nil
+}
+
+func (billingRepoStub) CreateSubscriptionChange(
+	ctx context.Context,
+	data coreentity.InternalTenantSubscriptionChange,
+) error {
+	return nil
+}
+
+func (billingRepoStub) CreateEntitlementSnapshot(
+	ctx context.Context,
+	data coreentity.InternalEntitlementSnapshot,
+) error {
+	return nil
+}
+
+func (billingRepoStub) CreateLedgerEntry(
+	ctx context.Context,
+	data coreentity.InternalBillingLedgerEntry,
+) error {
+	return nil
+}
+
+func (billingRepoStub) UpdatePaymentAttemptStatus(
+	ctx context.Context,
+	id string,
+	status string,
+	metadata map[string]any,
+) error {
+	return nil
+}
+
+func (billingRepoStub) UpdateInvoiceStatus(
+	ctx context.Context,
+	id string,
+	status string,
+) error {
+	return nil
+}
+
+func (billingRepoStub) GetInvoiceByNumber(
+	ctx context.Context,
+	number string,
+) (*coreentity.InternalTenantInvoice, error) {
+	return &coreentity.InternalTenantInvoice{
+		ID:            "invoice-1",
+		InvoiceNumber: number,
+		Status:        coreentity.InvoiceStatusOpen,
+		TenantID:      "tenant-1",
+		Amount:        "999000",
+	}, nil
+}
+
+func (billingRepoStub) GetPaymentAttemptByProviderRef(
+	ctx context.Context,
+	providerReference string,
+) (*coreentity.InternalTenantPaymentAttempt, error) {
+	return &coreentity.InternalTenantPaymentAttempt{
+		ID:                "attempt-1",
+		Status:            coreentity.PaymentAttemptStatusPending,
+		ProviderReference: providerReference,
+	}, nil
+}
+
 func (currencyRepoStub) GetInternalCurrencies(
 	ctx context.Context,
 	filter coreentity.InternalCurrencyListFilter,
@@ -107,36 +204,6 @@ func (currencyRepoStub) IsCurrencyActive(ctx context.Context, code string) (bool
 
 func (currencyRepoStub) GetDefaultCurrency(ctx context.Context) (*coreentity.InternalCurrency, error) {
 	return &coreentity.InternalCurrency{Code: "IDR", IsActive: true, IsDefault: true}, nil
-}
-
-func (currencyRepoStub) GetProviderCurrencies(
-	ctx context.Context,
-	filter coreentity.InternalPaymentProviderCurrencyListFilter,
-) ([]coreentity.InternalPaymentProviderCurrency, int, error) {
-	return nil, 0, nil
-}
-
-func (currencyRepoStub) UpsertProviderCurrency(
-	ctx context.Context,
-	data coreentity.InternalPaymentProviderCurrency,
-) error {
-	return nil
-}
-
-func (currencyRepoStub) DeleteProviderCurrency(
-	ctx context.Context,
-	filter coreentity.InternalPaymentProviderCurrencyFilter,
-) error {
-	return nil
-}
-
-func (currencyRepoStub) IsProviderCurrencyActive(
-	ctx context.Context,
-	provider string,
-	currencyCode string,
-	amount string,
-) (bool, error) {
-	return true, nil
 }
 
 func TestCreateCheckoutIncludesDOKULineItemName(t *testing.T) {

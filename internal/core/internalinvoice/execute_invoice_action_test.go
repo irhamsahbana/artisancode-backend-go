@@ -22,6 +22,57 @@ func init() {
 	infraConfig.Envs.App.Name = "internalinvoice-core-test"
 }
 
+type currencyRepoStub struct{}
+
+func (currencyRepoStub) GetInternalCurrencies(
+	ctx context.Context,
+	filter coreentity.InternalCurrencyListFilter,
+) ([]coreentity.InternalCurrency, int, error) {
+	return nil, 0, nil
+}
+
+func (currencyRepoStub) GetInternalCurrency(
+	ctx context.Context,
+	filter coreentity.InternalCurrencyFilter,
+) (*coreentity.InternalCurrency, error) {
+	return &coreentity.InternalCurrency{
+		Code:          filter.Code,
+		Symbol:        "Rp",
+		DecimalPlaces: 0,
+		IsActive:      true,
+		IsDefault:     true,
+	}, nil
+}
+
+func (currencyRepoStub) CreateInternalCurrency(
+	ctx context.Context,
+	data coreentity.InternalCurrency,
+) (*coreentity.InternalCurrency, error) {
+	return nil, nil
+}
+
+func (currencyRepoStub) UpdateInternalCurrency(
+	ctx context.Context,
+	data coreentity.InternalCurrency,
+) error {
+	return nil
+}
+
+func (currencyRepoStub) DeleteInternalCurrency(
+	ctx context.Context,
+	filter coreentity.InternalCurrencyDeleteFilter,
+) error {
+	return nil
+}
+
+func (currencyRepoStub) IsCurrencyActive(ctx context.Context, code string) (bool, error) {
+	return true, nil
+}
+
+func (currencyRepoStub) GetDefaultCurrency(ctx context.Context) (*coreentity.InternalCurrency, error) {
+	return &coreentity.InternalCurrency{Code: "IDR", IsActive: true, IsDefault: true}, nil
+}
+
 func TestExecuteInvoiceAction(t *testing.T) {
 	ctx := context.Background()
 	input := coreentity.InternalInvoiceActionInput{
@@ -78,6 +129,7 @@ func TestExecuteInvoiceAction(t *testing.T) {
 						ID:                "invoice-1",
 						InvoiceNumber:     "INV-001",
 						Status:            coreentity.InvoiceStatusOpen,
+						CurrencyCode:      "IDR",
 						AmountOutstanding: decimal.NewFromInt(250000),
 					}, nil)
 				invoiceRepo.EXPECT().
@@ -156,6 +208,7 @@ func TestExecuteInvoiceAction(t *testing.T) {
 			cfg := Config{InvoiceRepo: invoiceRepo}
 			if tt.doku {
 				cfg.DOKU = doku
+				cfg.CurrencyRepo = currencyRepoStub{}
 			}
 			core := NewInternalInvoiceCore(cfg)
 

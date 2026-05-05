@@ -8,9 +8,10 @@ import (
 	"codebase-app/internal/middleware"
 )
 
-func buildUtilityDependencies(deps *httpDependencies, ctx httpBootstrapContext) {
+func buildUtilityDependencies(deps *httpDependencies, ctx *httpBootstrapContext) {
 	deps.webhookCore = webhookCore.NewWebhookCore(webhookCore.Config{
 		DOKUVerifier: ctx.dokuClient,
+		BillingRepo:  ctx.internalTenantBillingRepo,
 	})
 }
 

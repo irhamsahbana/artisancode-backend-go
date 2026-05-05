@@ -16,8 +16,6 @@ func InternalCurrencyFromCoreToRest(item coreentity.InternalCurrency) restentity
 		DecimalPlaces: item.DecimalPlaces,
 		IsActive:      item.IsActive,
 		IsDefault:     item.IsDefault,
-		SortOrder:     item.SortOrder,
-		Metadata:      item.Metadata,
 		CreatedAt:     item.CreatedAt,
 		UpdatedAt:     item.UpdatedAt,
 	}
@@ -35,8 +33,6 @@ func InternalCurrencyFromRestCreateToCore(
 		DecimalPlaces: req.DecimalPlaces,
 		IsActive:      req.IsActive,
 		IsDefault:     req.IsDefault,
-		SortOrder:     req.SortOrder,
-		Metadata:      req.Metadata,
 	}
 }
 
@@ -52,37 +48,5 @@ func InternalCurrencyFromRestUpdateToCore(
 		DecimalPlaces: req.DecimalPlaces,
 		IsActive:      req.IsActive,
 		IsDefault:     req.IsDefault,
-		SortOrder:     req.SortOrder,
-		Metadata:      req.Metadata,
-	}
-}
-
-func InternalPaymentProviderCurrencyFromCoreToRest(
-	item coreentity.InternalPaymentProviderCurrency,
-) restentity.InternalPaymentProviderCurrency {
-	return restentity.InternalPaymentProviderCurrency{
-		Provider:     item.Provider,
-		CurrencyCode: item.CurrencyCode,
-		IsActive:     item.IsActive,
-		MinAmount:    item.MinAmount,
-		MaxAmount:    item.MaxAmount,
-		Metadata:     item.Metadata,
-		CreatedAt:    item.CreatedAt,
-		UpdatedAt:    item.UpdatedAt,
-	}
-}
-
-func InternalPaymentProviderCurrencyFromRestUpsertToCore(
-	ctx context.Context,
-	req restentity.UpsertInternalPaymentProviderCurrencyReq,
-) coreentity.InternalPaymentProviderCurrency {
-	return coreentity.InternalPaymentProviderCurrency{
-		UserCtx:      common.GetUserContext(ctx),
-		Provider:     req.Provider,
-		CurrencyCode: req.CurrencyCode,
-		IsActive:     req.IsActive,
-		MinAmount:    req.MinAmount,
-		MaxAmount:    req.MaxAmount,
-		Metadata:     req.Metadata,
 	}
 }
