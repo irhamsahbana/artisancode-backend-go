@@ -22,7 +22,6 @@ If a task changes backend workflow, coding conventions, or agent behavior, updat
 - [Storage Upload Flow](./docs/flow/storage_upload_flow.md)
 - [User Invitation Flow](./docs/flow/user_invitation_flow.md)
 
-
 ## Backend Reality Check
 
 The active backend production architecture currently centers on these layers:
@@ -56,10 +55,12 @@ Do not document `internal/module/<module>` as the primary backend pattern when y
   - `make scheduler`
   - `go run ./cmd/bin/main.go cronjob --task=process-export-jobs --limit=100`
   - `make migrate cmd=up`
+  - `make restore file=<backup-file>`
   - `make create-migration name=create_users_table`
   - `make seed table=rbac`
 - There is no dedicated Make test target right now. Use direct `go test` commands for verification, starting with the touched package when possible and escalating to `go test ./...` for broader changes.
 - When port interfaces or mock-backed unit tests change, regenerate expecter mocks with `make mock` instead of invoking `mockery` ad hoc.
+- For local PostgreSQL restore from `./backups/`, use `make restore file=<backup-file>` instead of ad hoc `pg_restore`; it runs with `--clean`, so only use it when the task explicitly calls for rehydrating local data.
 - `Taskfile.yml` still exposes `task clear-data confirm=DELETE_ALL_DATA` for destructive local data resets. There is no Make wrapper for it; only use it when a task explicitly calls for wiping local application data.
 - When changing queued email templates or copy, render previews with `go run ./cmd/bin/main.go email-preview`.
 - When changing storage upload cleanup or message queue cleanup behavior, use the existing helpers:
@@ -178,9 +179,3 @@ internal/framework/primary/http/attendance/
   - `cleanup-processed-message-queue`
 
 If you add a new consumer or cron task, document it in `docs/module_integration.md` or the relevant domain document.
-
-## PRD Location
-
-- Store backend PRDs in `docs/PRD/`.
-- Keep PRD content in Indonesian.
-- Treat `docs/PRD/` as local/generated working documentation and do not reference it as mandatory committed engineering documentation.
