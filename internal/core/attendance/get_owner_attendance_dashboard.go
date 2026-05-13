@@ -7,7 +7,7 @@ import (
 	"codebase-app/internal/infrastructure/tracing"
 	"codebase-app/pkg/errmsg"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func (c *attendanceCore) GetOwnerAttendanceDashboard(

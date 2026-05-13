@@ -91,11 +91,16 @@ type Config struct {
 		ProcessingTimeoutSecs  int `env:"MESSAGE_BUS_PROCESSING_TIMEOUT_SECONDS" env-default:"300"`
 	}
 	Scheduler struct {
-		StorageCleanupSpec         string `env:"SCHEDULER_STORAGE_CLEANUP_SPEC" env-default:"*/30 * * * *"`
-		StorageCleanupLimit        int    `env:"SCHEDULER_STORAGE_CLEANUP_LIMIT" env-default:"100"`
-		MessageQueueCleanupSpec    string `env:"SCHEDULER_MESSAGE_QUEUE_CLEANUP_SPEC" env-default:"0 3 * * *"`
-		MessageQueueCleanupLimit   int    `env:"SCHEDULER_MESSAGE_QUEUE_CLEANUP_LIMIT" env-default:"500"`
-		MessageQueueRetentionHours int    `env:"SCHEDULER_MESSAGE_QUEUE_RETENTION_HOURS" env-default:"168"`
+		StorageCleanupSpec          string `env:"SCHEDULER_STORAGE_CLEANUP_SPEC" env-default:"*/30 * * * *"`
+		StorageCleanupLimit         int    `env:"SCHEDULER_STORAGE_CLEANUP_LIMIT" env-default:"100"`
+		MessageQueueCleanupSpec     string `env:"SCHEDULER_MESSAGE_QUEUE_CLEANUP_SPEC" env-default:"0 3 * * *"`
+		MessageQueueCleanupLimit    int    `env:"SCHEDULER_MESSAGE_QUEUE_CLEANUP_LIMIT" env-default:"500"`
+		MessageQueueRetentionHours  int    `env:"SCHEDULER_MESSAGE_QUEUE_RETENTION_HOURS" env-default:"168"`
+		RenewalSpec                 string `env:"SCHEDULER_RENEWAL_SPEC" env-default:"0 */6 * * *"`
+		RenewalBatchLimit           int    `env:"SCHEDULER_RENEWAL_BATCH_LIMIT" env-default:"50"`
+		RenewalGraceDays            int    `env:"SCHEDULER_RENEWAL_GRACE_DAYS" env-default:"14"`
+		DunningSpec                 string `env:"SCHEDULER_DUNNING_SPEC" env-default:"0 */2 * * *"`
+		DunningBatchLimit           int    `env:"SCHEDULER_DUNNING_BATCH_LIMIT" env-default:"50"`
 	}
 	Storage struct {
 		Key            string `env:"STORAGE_KEY"`

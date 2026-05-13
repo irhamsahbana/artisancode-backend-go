@@ -132,3 +132,9 @@ type DokuCheckoutResponseEnvelope struct {
 		} `json:"payment"`
 	} `json:"response"`
 }
+
+type DokuCancelOrderResponse struct {
+	InvoiceNumber string   `json:"invoice_number"`
+	Status        string   `json:"status"`
+	Message       []string `json:"message,omitempty"`
+}

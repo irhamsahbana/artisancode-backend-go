@@ -15,6 +15,9 @@ import (
 
 	"github.com/go-co-op/gocron/v2"
 	"github.com/rs/zerolog/log"
+
+	internaltenantbilling "codebase-app/internal/framework/secondary/db/postgres/internaltenantbilling"
+	schedulerbilling "codebase-app/internal/scheduler/billing"
 )
 
 func RunScheduler(cmd *flag.FlagSet, args []string) {
@@ -113,6 +116,43 @@ func RunScheduler(cmd *flag.FlagSet, args []string) {
 		log.Fatal().Err(err).Str("spec", envs.Scheduler.MessageQueueCleanupSpec).Msg("Failed to register message queue cleanup scheduler")
 	}
 
+	billingRepo := internaltenantbilling.NewInternalTenantBillingRepository(
+		internaltenantbilling.Config{DB: adapter.Adapters.Postgres},
+	)
+	billingScheduler := schedulerbilling.New(billingRepo, envs.Scheduler.RenewalBatchLimit, envs.Scheduler.RenewalGraceDays)
+
+	_, err = scheduler.NewJob(
+		gocron.CronJob(envs.Scheduler.RenewalSpec, false),
+		gocron.NewTask(
+			func() {
+				ctx := context.Background()
+				if err := billingScheduler.ProcessRenewals(ctx); err != nil {
+					log.Error().Err(err).Msg("Failed to process renewals")
+				}
+			},
+		),
+		gocron.WithSingletonMode(gocron.LimitModeReschedule),
+	)
+	if err != nil {
+		log.Fatal().Err(err).Str("spec", envs.Scheduler.RenewalSpec).Msg("Failed to register renewal scheduler")
+	}
+
+	_, err = scheduler.NewJob(
+		gocron.CronJob(envs.Scheduler.DunningSpec, false),
+		gocron.NewTask(
+			func() {
+				ctx := context.Background()
+				if err := billingScheduler.ProcessDunningEscalation(ctx); err != nil {
+					log.Error().Err(err).Msg("Failed to process dunning escalation")
+				}
+			},
+		),
+		gocron.WithSingletonMode(gocron.LimitModeReschedule),
+	)
+	if err != nil {
+		log.Fatal().Err(err).Str("spec", envs.Scheduler.DunningSpec).Msg("Failed to register dunning scheduler")
+	}
+
 	scheduler.Start()
 
 	log.Info().
@@ -121,6 +161,9 @@ func RunScheduler(cmd *flag.FlagSet, args []string) {
 		Str("message_queue_cleanup_spec", envs.Scheduler.MessageQueueCleanupSpec).
 		Int("message_queue_cleanup_limit", envs.Scheduler.MessageQueueCleanupLimit).
 		Int("message_queue_retention_hours", envs.Scheduler.MessageQueueRetentionHours).
+		Str("renewal_spec", envs.Scheduler.RenewalSpec).
+		Int("renewal_batch_limit", envs.Scheduler.RenewalBatchLimit).
+		Str("dunning_spec", envs.Scheduler.DunningSpec).
 		Msg("Scheduler is running")
 
 	waitForSchedulerShutdown()

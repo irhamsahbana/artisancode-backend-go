@@ -15,6 +15,16 @@ func (c *userCore) CreateUser(ctx context.Context, data coreentity.User) (*coree
 	ctx, span := tracing.StartSpan(ctx, "internal:core:user:create_user:CreateUser")
 	defer span.End()
 
+	if c.billingCore != nil {
+		count, err := c.repo.CountUsersByTenant(ctx, data.TenantID)
+		if err != nil {
+			return nil, err
+		}
+		if err := c.billingCore.CheckUsageLimit(ctx, coreentity.ResourceTypeUsers, count); err != nil {
+			return nil, err
+		}
+	}
+
 	emailExists, err := c.repo.ExistsActiveUserByEmailAndTenant(ctx, data.Email, data.TenantID)
 	if err != nil {
 		return nil, err

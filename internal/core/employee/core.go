@@ -10,19 +10,22 @@ import (
 var _ corePorts.EmployeeCore = &employeeCore{}
 
 type employeeCore struct {
-	repo     portsRepo.EmployeeRepository
-	userRepo portsRepo.UserRepository
+	repo        portsRepo.EmployeeRepository
+	userRepo    portsRepo.UserRepository
+	billingCore corePorts.InternalTenantBillingCore
 }
 
 type Config struct {
-	Repo     portsRepo.EmployeeRepository
-	UserRepo portsRepo.UserRepository
+	Repo        portsRepo.EmployeeRepository
+	UserRepo    portsRepo.UserRepository
+	BillingCore corePorts.InternalTenantBillingCore
 }
 
 func NewEmployeeCore(cfg Config) *employeeCore {
 	return &employeeCore{
-		repo:     cfg.Repo,
-		userRepo: cfg.UserRepo,
+		repo:        cfg.Repo,
+		userRepo:    cfg.UserRepo,
+		billingCore: cfg.BillingCore,
 	}
 }
 

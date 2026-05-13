@@ -14,6 +14,7 @@ type DOKUWebhookVerifier interface {
 type DokuClient interface {
 	CreatePayment(ctx context.Context, req restentity.DokuCreatePaymentRequest) (*restentity.DokuCreatePaymentResponse, error)
 	CheckStatus(ctx context.Context, invoiceNumber string) (*restentity.DokuCheckStatusResponse, error)
+	CancelOrder(ctx context.Context, invoiceNumber string) (*restentity.DokuCancelOrderResponse, error)
 	VerifyWebhookSignature(headers http.Header, body []byte, targetPath string) bool
 	VerifyWebhookSignatureHeaders(headers coreentity.DOKUWebhookSignatureHeaders, body []byte, targetPath string) bool
 	DecodedPublicKey() string

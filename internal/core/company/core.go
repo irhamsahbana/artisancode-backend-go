@@ -10,17 +10,22 @@ import (
 )
 
 type companyCore struct {
-	repo portsRepo.CompanyRepository
+	repo        portsRepo.CompanyRepository
+	billingCore corePorts.InternalTenantBillingCore
 }
 
 type Config struct {
-	Repo portsRepo.CompanyRepository
+	Repo        portsRepo.CompanyRepository
+	BillingCore corePorts.InternalTenantBillingCore
 }
 
 var _ corePorts.CompanyCore = &companyCore{}
 
 func NewCompanyCore(cfg Config) *companyCore {
-	return &companyCore{repo: cfg.Repo}
+	return &companyCore{
+		repo:        cfg.Repo,
+		billingCore: cfg.BillingCore,
+	}
 }
 
 func (c *companyCore) GetCompanies(

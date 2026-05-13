@@ -16,6 +16,16 @@ func (c *companyCore) CreateCompany(ctx context.Context, data coreentity.Company
 	ctx, span := tracing.StartSpan(ctx, "internal:core:company:create_company:CreateCompany")
 	defer span.End()
 
+	if c.billingCore != nil {
+		count, err := c.repo.CountCompaniesByTenant(ctx, data.TenantID)
+		if err != nil {
+			return nil, err
+		}
+		if err := c.billingCore.CheckUsageLimit(ctx, coreentity.ResourceTypeBranches, count); err != nil {
+			return nil, err
+		}
+	}
+
 	// Validate code uniqueness
 	exists, err := c.repo.ExistsCompanyByCode(ctx, data.TenantID, data.Code, "")
 	if err != nil {

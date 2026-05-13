@@ -124,3 +124,121 @@ func tenantBillingAddOnFromCoreToRest(item coreentity.TenantBillingAddOn) resten
 		BillingCycle: item.BillingCycle,
 	}
 }
+
+func TenantBillingInvoiceDetailFromCoreToRest(
+	item coreentity.TenantBillingInvoiceDetail,
+) restentity.TenantBillingInvoiceDetail {
+	attempts := make([]restentity.TenantBillingPaymentAttempt, 0, len(item.PaymentAttempts))
+	for _, a := range item.PaymentAttempts {
+		attempts = append(attempts, TenantBillingPaymentAttemptFromCoreToRest(a))
+	}
+
+	return restentity.TenantBillingInvoiceDetail{
+		ID:               item.ID,
+		InvoiceNumber:    item.InvoiceNumber,
+		Status:           item.Status,
+		Amount:           item.Amount,
+		Currency:         item.CurrencyCode,
+		AmountPaid:       item.AmountPaid,
+		AmountOutstanding: item.AmountOutstanding,
+		SourceType:       item.SourceType,
+		DueAt:            item.DueAt,
+		PaidAt:           item.PaidAt,
+		ExpiredAt:        item.ExpiredAt,
+		CreatedAt:        item.CreatedAt,
+		PaymentAttempts:  attempts,
+	}
+}
+
+func TenantBillingPaymentAttemptFromCoreToRest(
+	item coreentity.TenantBillingPaymentAttemptView,
+) restentity.TenantBillingPaymentAttempt {
+	return restentity.TenantBillingPaymentAttempt{
+		ID:                 item.ID,
+		Provider:           item.Provider,
+		PaymentMethodType:  item.PaymentMethodType,
+		PaymentChannelCode: item.PaymentChannelCode,
+		ProviderReference:  item.ProviderReference,
+		PaymentURL:         item.PaymentURL,
+		Status:             item.Status,
+		RequestedAmount:    item.RequestedAmount,
+		PaidAmount:         item.PaidAmount,
+		ExpiredAt:          item.ExpiredAt,
+		PaidAt:             item.PaidAt,
+		FailedAt:           item.FailedAt,
+		CreatedAt:          item.CreatedAt,
+	}
+}
+
+func TenantBillingInvoiceActionFromRest(
+	req restentity.ExecuteTenantBillingInvoiceActionReq,
+) coreentity.TenantBillingInvoiceActionInput {
+	return coreentity.TenantBillingInvoiceActionInput{
+		ID:     req.ID,
+		Action: req.Action,
+		Reason: req.Reason,
+	}
+}
+
+func TenantBillingInvoiceActionResultFromCoreToRest(
+	item coreentity.TenantBillingInvoiceActionResult,
+) restentity.ExecuteTenantBillingInvoiceActionResp {
+	return restentity.ExecuteTenantBillingInvoiceActionResp{
+		InvoiceID: item.InvoiceID,
+		Status:    item.Status,
+	}
+}
+
+func TenantBillingPaymentAttemptActionFromRest(
+	req restentity.ExecuteTenantBillingPaymentAttemptActionReq,
+) coreentity.TenantBillingPaymentAttemptActionInput {
+	return coreentity.TenantBillingPaymentAttemptActionInput{
+		ID:     req.ID,
+		Action: req.Action,
+	}
+}
+
+func TenantBillingPaymentAttemptActionResultFromCoreToRest(
+	item coreentity.TenantBillingPaymentAttemptActionResult,
+) restentity.ExecuteTenantBillingPaymentAttemptActionResp {
+	return restentity.ExecuteTenantBillingPaymentAttemptActionResp{
+		PaymentAttemptID: item.PaymentAttemptID,
+		Status:           item.Status,
+		PaymentURL:       item.PaymentURL,
+	}
+}
+
+func TenantBillingSubscriptionActionFromRest(
+	req restentity.ExecuteTenantBillingSubscriptionActionReq,
+) coreentity.TenantBillingSubscriptionActionInput {
+	return coreentity.TenantBillingSubscriptionActionInput{
+		Action: req.Action,
+	}
+}
+
+func TenantBillingSubscriptionActionResultFromCoreToRest(
+	item coreentity.TenantBillingSubscriptionActionResult,
+) restentity.ExecuteTenantBillingSubscriptionActionResp {
+	return restentity.ExecuteTenantBillingSubscriptionActionResp{
+		SubscriptionID: item.SubscriptionID,
+		Status:         item.Status,
+	}
+}
+
+func TenantBillingAddOnsActionFromRest(
+	req restentity.ExecuteTenantBillingAddOnsActionReq,
+) coreentity.TenantBillingAddOnsActionInput {
+	return coreentity.TenantBillingAddOnsActionInput{
+		Action:   req.Action,
+		AddOnIDs: req.AddOnIDs,
+	}
+}
+
+func TenantBillingAddOnsActionResultFromCoreToRest(
+	item coreentity.TenantBillingAddOnsActionResult,
+) restentity.ExecuteTenantBillingAddOnsActionResp {
+	return restentity.ExecuteTenantBillingAddOnsActionResp{
+		SubscriptionID: item.SubscriptionID,
+		AddOnIDs:       item.AddOnIDs,
+	}
+}

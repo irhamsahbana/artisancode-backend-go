@@ -15,6 +15,16 @@ func (c *employeeCore) CreateEmployee(ctx context.Context, data coreentity.Emplo
 	ctx, span := tracing.StartSpan(ctx, "internal:core:employee:create_employee:CreateEmployee")
 	defer span.End()
 
+	if c.billingCore != nil {
+		count, err := c.repo.CountEmployeesByTenant(ctx, data.TenantID)
+		if err != nil {
+			return nil, err
+		}
+		if err := c.billingCore.CheckUsageLimit(ctx, coreentity.ResourceTypeEmployees, count); err != nil {
+			return nil, err
+		}
+	}
+
 	err := normalizeEmployeeJoinDate(&data)
 	if err != nil {
 		log.Ctx(ctx).Warn().Err(err).Any(common.LogKeyPayload, map[string]any{

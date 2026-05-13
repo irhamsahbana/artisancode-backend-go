@@ -33,6 +33,7 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, data coreentity.User) (*coreentity.User, error)
 	UpdateUser(ctx context.Context, data coreentity.User) error
 	DeleteUser(ctx context.Context, filter coreentity.UserDeleteFilter) error
+	CountUsersByTenant(ctx context.Context, tenantID string) (int64, error)
 
 	InitializeTenant(ctx context.Context, tenantID string, companyName string, preferredLanguage string) (string, error)
 }

@@ -15,6 +15,7 @@ type userCore struct {
 	tokenCache           tokencache.TokenCacheContract
 	bus                  integrationPorts.MessagePublisher
 	googleTokenValidator integrationPorts.GoogleIDTokenValidator
+	billingCore          corePorts.InternalTenantBillingCore
 }
 
 type Config struct {
@@ -23,6 +24,7 @@ type Config struct {
 	TokenCache           tokencache.TokenCacheContract
 	Bus                  integrationPorts.MessagePublisher
 	GoogleTokenValidator integrationPorts.GoogleIDTokenValidator
+	BillingCore          corePorts.InternalTenantBillingCore
 }
 
 func NewUserCore(cfg Config) *userCore {
@@ -32,5 +34,6 @@ func NewUserCore(cfg Config) *userCore {
 		tokenCache:           cfg.TokenCache,
 		bus:                  cfg.Bus,
 		googleTokenValidator: cfg.GoogleTokenValidator,
+		billingCore:          cfg.BillingCore,
 	}
 }

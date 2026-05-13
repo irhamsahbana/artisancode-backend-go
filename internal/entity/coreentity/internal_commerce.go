@@ -40,6 +40,9 @@ const (
 	PaymentReceiptStatusAccepted            = "accepted"
 	PaymentReceiptStatusRejected            = "rejected"
 
+	PaymentReceiptActionAccept = "accept"
+	PaymentReceiptActionReject = "reject"
+
 	PaymentProviderDOKU   = "doku"
 	PaymentProviderManual = "manual"
 

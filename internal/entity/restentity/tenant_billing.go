@@ -102,3 +102,84 @@ type CreateTenantBillingCheckoutResp struct {
 	TargetSubscriptionState string `json:"target_subscription_state"`
 	CheckoutReused          bool   `json:"checkout_reused"`
 }
+
+type GetTenantBillingResourceReq struct {
+	ID string `params:"id" validate:"required"`
+}
+
+type TenantBillingInvoiceDetail struct {
+	ID               string                        `json:"id"`
+	InvoiceNumber    string                        `json:"invoice_number"`
+	Status           string                        `json:"status"`
+	Amount           string                        `json:"amount"`
+	Currency         string                        `json:"currency"`
+	AmountPaid       string                        `json:"amount_paid"`
+	AmountOutstanding string                       `json:"amount_outstanding"`
+	SourceType       string                        `json:"source_type"`
+	DueAt            *string                       `json:"due_at,omitempty"`
+	PaidAt           *string                       `json:"paid_at,omitempty"`
+	ExpiredAt        *string                       `json:"expired_at,omitempty"`
+	CreatedAt        string                        `json:"created_at"`
+	PaymentAttempts  []TenantBillingPaymentAttempt `json:"payment_attempts"`
+}
+
+type TenantBillingPaymentAttempt struct {
+	ID                 string  `json:"id"`
+	Provider           string  `json:"provider"`
+	PaymentMethodType  string  `json:"payment_method_type"`
+	PaymentChannelCode string  `json:"payment_channel_code,omitempty"`
+	ProviderReference  string  `json:"provider_reference,omitempty"`
+	PaymentURL         string  `json:"payment_url,omitempty"`
+	Status             string  `json:"status"`
+	RequestedAmount    string  `json:"requested_amount"`
+	PaidAmount         string  `json:"paid_amount"`
+	ExpiredAt          *string `json:"expired_at,omitempty"`
+	PaidAt             *string `json:"paid_at,omitempty"`
+	FailedAt           *string `json:"failed_at,omitempty"`
+	CreatedAt          string  `json:"created_at"`
+}
+
+type GetTenantBillingPaymentAttemptsResp struct {
+	Items []TenantBillingPaymentAttempt `json:"items"`
+}
+
+type ExecuteTenantBillingInvoiceActionReq struct {
+	ID     string `params:"id" validate:"required"`
+	Action string `json:"action" validate:"required"`
+	Reason string `json:"reason"`
+}
+
+type ExecuteTenantBillingInvoiceActionResp struct {
+	InvoiceID string `json:"invoice_id"`
+	Status    string `json:"status"`
+}
+
+type ExecuteTenantBillingPaymentAttemptActionReq struct {
+	ID     string `params:"id" validate:"required"`
+	Action string `json:"action" validate:"required"`
+}
+
+type ExecuteTenantBillingPaymentAttemptActionResp struct {
+	PaymentAttemptID string `json:"payment_attempt_id"`
+	Status           string `json:"status"`
+	PaymentURL       string `json:"payment_url"`
+}
+
+type ExecuteTenantBillingSubscriptionActionReq struct {
+	Action string `json:"action" validate:"required"`
+}
+
+type ExecuteTenantBillingSubscriptionActionResp struct {
+	SubscriptionID string `json:"subscription_id"`
+	Status         string `json:"status"`
+}
+
+type ExecuteTenantBillingAddOnsActionReq struct {
+	Action    string   `json:"action" validate:"required"`
+	AddOnIDs  []string `json:"add_on_ids"`
+}
+
+type ExecuteTenantBillingAddOnsActionResp struct {
+	SubscriptionID string   `json:"subscription_id"`
+	AddOnIDs       []string `json:"add_on_ids"`
+}

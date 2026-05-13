@@ -111,6 +111,25 @@ When adding a new consumer:
 4. register a dedicated Watermill router consumer handler in `internal/framework/primary/consumer/postgres/build.go`
 5. place handlers in the matching feature consumer folder instead of dropping all handler files into the root `consumer/postgres` folder
 
+## Scheduler Registration Pattern
+
+The scheduler runtime is separate from both HTTP and consumer bootstraps. `cmd/scheduler.go` builds the gocron runtime, wires repository dependencies, and registers long-running jobs.
+
+Current scheduler jobs include:
+
+- storage cleanup
+- message queue cleanup
+- billing renewal processing
+- billing dunning escalation
+
+Billing scheduler logic currently lives under `internal/scheduler/billing/`.
+
+When adding a new scheduler job:
+
+1. register the job in `cmd/scheduler.go`
+2. keep domain execution logic under `internal/scheduler/<domain>/`
+3. drive cadence and batch or grace limits from config/env instead of hardcoding them in the job body
+
 ## Cross-Module Dependencies
 
 Use interfaces from `internal/ports/...` for cross-module dependencies.

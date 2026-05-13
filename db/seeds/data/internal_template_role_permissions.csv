@@ -28,3 +28,8 @@ manager,attendance.read
 manager,report.read
 employee,master.read
 employee,attendance.read
+finance,billing.read
+finance,billing.manage
+finance,report.read
+operations,billing.read
+operations,report.read

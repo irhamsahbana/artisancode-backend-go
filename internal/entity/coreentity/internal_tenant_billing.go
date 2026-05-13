@@ -1,6 +1,10 @@
 package coreentity
 
-import "codebase-app/internal/entity/common"
+import (
+	"encoding/json"
+
+	"codebase-app/internal/entity/common"
+)
 
 const (
 	InternalTenantSubscriptionStatusFree              = "free"
@@ -10,6 +14,10 @@ const (
 	InternalTenantSubscriptionStatusSuspended         = "suspended"
 	InternalTenantSubscriptionStatusCancelled         = "cancelled"
 	InternalTenantSubscriptionStatusExpired           = "expired"
+
+	ResourceTypeEmployees = "employees"
+	ResourceTypeBranches  = "branches"
+	ResourceTypeUsers     = "users"
 
 	InternalTenantSubscriptionTriggerInitialize                    = "initialize"
 	InternalTenantSubscriptionTriggerCheckoutCreated               = "checkout_created"
@@ -22,6 +30,8 @@ const (
 	InternalTenantSubscriptionTriggerPeriodEnded                   = "period_ended"
 	InternalTenantSubscriptionTriggerOutstandingPaidAndReactivated = "outstanding_paid_and_reactivated"
 	InternalTenantSubscriptionTriggerAccountClosedWithoutRecovery  = "account_closed_without_recovery"
+	InternalTenantSubscriptionTriggerAddOnAdded                     = "add_on_added"
+	InternalTenantSubscriptionTriggerAddOnRemoved                   = "add_on_removed"
 
 	InternalTenantBillingAccountStatusOpen      = "open"
 	InternalTenantBillingAccountStatusSuspended = "suspended"
@@ -43,9 +53,11 @@ const (
 	InternalBillingLedgerEntryTypeAdjustment         = "adjustment"
 
 	InternalBillingSourceTypeSelfServeCheckout = "self_serve_checkout"
+	InternalBillingSourceTypeManualInvoice     = "manual_invoice"
 	InternalBillingSourceTypeAssistedManual    = "assisted_manual"
 	InternalBillingSourceTypeDOKUWebhook       = "doku_webhook"
 	InternalBillingSourceTypeRenewalScheduler  = "renewal_scheduler"
+	InternalBillingSourceTypeSelfServeUpgrade   = "self_serve_upgrade"
 
 	InternalBillingReconciliationCaseStatusOpen      = "open"
 	InternalBillingReconciliationCaseStatusInReview  = "in_review"
@@ -242,11 +254,14 @@ type TenantBillingPlanPrice struct {
 
 type TenantBillingAddOn struct {
 	ID           string
+	Code         string
+	PricingID    string
 	Name         string
 	Description  string
 	Amount       string
 	Currency     string
 	BillingCycle string
+	RawMetadata  *json.RawMessage
 }
 
 type TenantBillingSubscriptionView struct {
@@ -371,4 +386,180 @@ type InternalBillingPaymentStatusNormalization struct {
 	PaymentAttemptStatus string
 	PaymentEventStatus   string
 	IsTerminal           bool
+}
+
+const (
+	TenantBillingInvoiceActionCancelCheckout = "cancel_checkout_order"
+)
+
+const (
+	TenantBillingPaymentAttemptActionRetry = "retry"
+)
+
+const (
+	TenantBillingSubscriptionActionCancel     = "cancel"
+	TenantBillingSubscriptionActionReactivate = "reactivate"
+)
+
+const (
+	TenantBillingAddOnsActionAdd    = "add"
+	TenantBillingAddOnsActionRemove = "remove"
+)
+
+const (
+	InternalTenantInvoiceStatusPending     = "pending"
+	InternalTenantInvoiceStatusPaid        = "paid"
+	InternalTenantInvoiceStatusVoided      = "voided"
+	InternalTenantInvoiceStatusOverdue     = "overdue"
+	InternalTenantInvoiceStatusCancelled   = "cancelled"
+	InternalTenantInvoiceStatusPastDue     = "past_due"
+)
+
+const (
+	InternalTenantPaymentAttemptStatusInitiated  = "initiated"
+	InternalTenantPaymentAttemptStatusPending    = "pending"
+	InternalTenantPaymentAttemptStatusPaid       = "paid"
+	InternalTenantPaymentAttemptStatusFailed     = "failed"
+	InternalTenantPaymentAttemptStatusExpired    = "expired"
+	InternalTenantPaymentAttemptStatusCancelled  = "cancelled"
+)
+
+type TenantBillingInvoiceDetail struct {
+	ID                                 string
+	InvoiceNumber                      string
+	Status                             string
+	CurrencyCode                       string
+	Amount                             string
+	AmountPaid                         string
+	AmountOutstanding                  string
+	SourceType                         string
+	DueAt                              *string
+	PaidAt                             *string
+	ExpiredAt                          *string
+	CreatedAt                          string
+	PaymentAttempts                    []TenantBillingPaymentAttemptView
+}
+
+type TenantBillingPaymentAttemptView struct {
+	ID                 string  `db:"id"`
+	Provider           string  `db:"provider"`
+	PaymentMethodType  string  `db:"payment_method_type"`
+	PaymentChannelCode string  `db:"payment_channel_code"`
+	ProviderReference  string  `db:"provider_reference"`
+	PaymentURL         string  `db:"provider_payment_url"`
+	Status             string  `db:"status"`
+	RequestedAmount    string  `db:"requested_amount"`
+	PaidAmount         string  `db:"paid_amount"`
+	ExpiredAt          *string `db:"expired_at"`
+	PaidAt             *string `db:"paid_at"`
+	FailedAt           *string `db:"failed_at"`
+	CreatedAt          string  `db:"created_at"`
+}
+
+type TenantBillingInvoiceActionInput struct {
+	UserCtx common.UserContext
+	ID      string
+	Action  string
+	Reason  string
+}
+
+type TenantBillingInvoiceActionResult struct {
+	InvoiceID string
+	Status    string
+}
+
+type TenantBillingPaymentAttemptActionInput struct {
+	UserCtx common.UserContext
+	ID      string
+	Action  string
+}
+
+type TenantBillingPaymentAttemptActionResult struct {
+	PaymentAttemptID string
+	Status           string
+	PaymentURL       string
+}
+
+type TenantBillingSubscriptionActionInput struct {
+	UserCtx common.UserContext
+	Action  string
+}
+
+type TenantBillingSubscriptionActionResult struct {
+	SubscriptionID string
+	Status         string
+}
+
+type TenantBillingAddOnsActionInput struct {
+	UserCtx common.UserContext
+	Action   string
+	AddOnIDs []string
+}
+
+type TenantBillingAddOnsActionResult struct {
+	SubscriptionID string
+	AddOnIDs       []string
+}
+
+type InternalBillingInvoiceListFilter struct {
+	TenantID *string
+	Status   string
+	FromDate string
+	ToDate   string
+	Page     int
+	Size     int
+}
+
+type InternalBillingManualInvoiceInput struct {
+	UserCtx     common.UserContext
+	TenantID    string
+	Amount      string
+	Currency    string
+	Description string
+	DueAt       string
+	Items       []ManualInvoiceItem
+}
+
+type ManualInvoiceItem struct {
+	Description string
+	Amount      string
+	Quantity    int
+}
+
+type InternalBillingManualInvoiceResult struct {
+	Invoice          InternalTenantInvoice
+	PaymentAttemptID string
+	PaymentURL       *string
+}
+
+type InternalBillingPaymentReceiptActionResult struct {
+	Receipt InternalPaymentReceipt
+	Status  string
+}
+
+type InternalBillingPaymentReceiptActionInput struct {
+	UserCtx common.UserContext
+	ID      string
+	Action  string
+	Reason  string
+}
+
+type InternalBillingLedgerListFilter struct {
+	EntryTypes []string
+	FromDate   string
+	ToDate     string
+	Page       int
+	Size       int
+}
+
+type InternalBillingReconciliationCaseFilter struct {
+	Status string
+	Page   int
+	Size   int
+}
+
+type PricingInfo struct {
+	Amount       string
+	CurrencyCode string
+	BillingCycle string
 }

@@ -157,6 +157,111 @@ func (billingRepoStub) GetPaymentAttemptByProviderRef(
 	}, nil
 }
 
+func (billingRepoStub) GetInvoice(
+	ctx context.Context, tenantID, id string,
+) (*coreentity.TenantBillingInvoiceDetail, error) {
+	return &coreentity.TenantBillingInvoiceDetail{
+		ID:             id,
+		InvoiceNumber:  "TINV-001",
+		Status:         coreentity.InvoiceStatusOpen,
+		Amount:         "999000",
+		CurrencyCode:   "IDR",
+		PaymentAttempts: []coreentity.TenantBillingPaymentAttemptView{},
+	}, nil
+}
+
+func (billingRepoStub) GetPaymentAttemptsByInvoice(
+	ctx context.Context, tenantID, invoiceID string,
+) ([]coreentity.TenantBillingPaymentAttemptView, error) {
+	return nil, nil
+}
+
+func (billingRepoStub) GetInvoiceRaw(
+	ctx context.Context, tenantID, id string,
+) (*coreentity.InternalTenantInvoice, error) {
+	return &coreentity.InternalTenantInvoice{
+		ID:            id,
+		TenantID:      tenantID,
+		Status:        coreentity.InvoiceStatusOpen,
+		InvoiceNumber: "TINV-001",
+	}, nil
+}
+
+func (billingRepoStub) GetPaymentAttemptByID(
+	ctx context.Context, tenantID, id string,
+) (*coreentity.InternalTenantPaymentAttempt, error) {
+	return &coreentity.InternalTenantPaymentAttempt{
+		ID:     id,
+		Status: coreentity.PaymentAttemptStatusFailed,
+	}, nil
+}
+
+func (billingRepoStub) CancelInvoice(ctx context.Context, tenantID, id string) error {
+	return nil
+}
+
+func (billingRepoStub) CancelPaymentAttempt(ctx context.Context, tenantID, id string) error {
+	return nil
+}
+
+func (billingRepoStub) SetSubscriptionStatus(
+	ctx context.Context, tenantID, subscriptionID, status string,
+) error {
+	return nil
+}
+
+func (billingRepoStub) GetAddOnsByIDs(
+	ctx context.Context, addOnIDs []string,
+) ([]coreentity.TenantBillingAddOn, error) {
+	items := make([]coreentity.TenantBillingAddOn, 0, len(addOnIDs))
+	for _, id := range addOnIDs {
+		items = append(items, coreentity.TenantBillingAddOn{
+			ID:           id,
+			Name:         "Test AddOn",
+			Amount:       "50000",
+			Currency:     "IDR",
+			BillingCycle: "monthly",
+		})
+	}
+	return items, nil
+}
+
+func (billingRepoStub) GetAllInvoices(ctx context.Context, filter coreentity.InternalBillingInvoiceListFilter) ([]coreentity.InternalTenantInvoice, error) {
+	return nil, nil
+}
+func (billingRepoStub) GetInvoiceByID(ctx context.Context, id string) (*coreentity.InternalTenantInvoice, error) {
+	return nil, nil
+}
+func (billingRepoStub) GetLedgerEntries(ctx context.Context, tenantID string, filter coreentity.InternalBillingLedgerListFilter) ([]coreentity.InternalBillingLedgerEntry, error) {
+	return nil, nil
+}
+func (billingRepoStub) GetReconciliationCases(ctx context.Context, filter coreentity.InternalBillingReconciliationCaseFilter) ([]coreentity.InternalBillingReconciliationCase, error) {
+	return nil, nil
+}
+func (billingRepoStub) CreateInternalInvoice(ctx context.Context, data coreentity.InternalTenantInvoice) (*coreentity.InternalTenantInvoice, error) {
+	data.ID = "internal-inv-1"
+	return &data, nil
+}
+func (billingRepoStub) CreatePaymentReceipt(ctx context.Context, data coreentity.InternalPaymentReceipt) (*coreentity.InternalPaymentReceipt, error) {
+	data.ID = "receipt-1"
+	return &data, nil
+}
+func (billingRepoStub) GetPaymentReceipt(ctx context.Context, id string) (*coreentity.InternalPaymentReceipt, error) {
+	return nil, nil
+}
+func (billingRepoStub) UpdatePaymentReceipt(ctx context.Context, data coreentity.InternalPaymentReceipt) (*coreentity.InternalPaymentReceipt, error) {
+	return &data, nil
+}
+func (billingRepoStub) GetSubscriptionsPastPeriodEnd(ctx context.Context, limit int) ([]coreentity.InternalTenantSubscription, error) {
+	return nil, nil
+}
+func (billingRepoStub) GetSubscriptionsInGracePastDue(ctx context.Context, limit int) ([]coreentity.InternalTenantSubscription, error) {
+	return nil, nil
+}
+func (billingRepoStub) GetPricingInfo(ctx context.Context, pricingID string) (*coreentity.PricingInfo, error) {
+	return &coreentity.PricingInfo{Amount: "100000", CurrencyCode: "IDR", BillingCycle: "monthly"}, nil
+}
+
 func (currencyRepoStub) GetInternalCurrencies(
 	ctx context.Context,
 	filter coreentity.InternalCurrencyListFilter,

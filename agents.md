@@ -63,7 +63,9 @@ Do not document `internal/module/<module>` as the primary backend pattern when y
 - When port interfaces or mock-backed unit tests change, regenerate expecter mocks with `make mock` instead of invoking `mockery` ad hoc.
 - For local PostgreSQL restore from `./backups/`, use `make restore file=<backup-file>` instead of ad hoc `pg_restore`; it runs with `--clean`, so only use it when the task explicitly calls for rehydrating local data.
 - `Taskfile.yml` still exposes `task clear-data confirm=DELETE_ALL_DATA` for destructive local data resets. There is no Make wrapper for it; only use it when a task explicitly calls for wiping local application data.
-- When changing queued email templates or copy, render previews with `go run ./cmd/bin/main.go email-preview`.
+- `Taskfile.yml` also exposes `task consumer` and `task consumer-postgres` as wrappers for `go run ./cmd/bin/main.go consumer`. There is no Make wrapper, so prefer the direct `go run` command when documenting routine local consumer startup.
+- `make scheduler` runs the long-lived gocron runtime from `cmd/scheduler.go`; it currently registers storage cleanup, message queue cleanup, billing renewal, and billing dunning escalation jobs, and writes scheduler logs to `logs/scheduler.log`.
+- When changing queued email templates or copy, render previews with `go run ./cmd/bin/main.go email-preview`. Use `-out=./tmp/email-previews` to keep artifacts local, and add `-lang`, `-tenant-name`, or `-user-name` when you need realistic localized preview data.
 - When changing storage upload cleanup or message queue cleanup behavior, use the existing helpers:
   - `make test-storage-upload`
   - `make cleanup-storage-orphans`
@@ -178,5 +180,11 @@ internal/framework/primary/http/attendance/
   - `cleanup-expired-storage-files`
   - `process-export-jobs`
   - `cleanup-processed-message-queue`
+- The long-running scheduler started by `make scheduler` currently registers:
+  - storage cleanup
+  - message queue cleanup
+  - billing renewal processing
+  - billing dunning escalation
+  Billing scheduler code lives under `internal/scheduler/billing/` and uses `envs.Scheduler.*` config for cadence and limits.
 
-If you add a new consumer or cron task, document it in `docs/module_integration.md` or the relevant domain document.
+If you add a new consumer, cron task, or scheduler job, document it in `docs/module_integration.md` or the relevant domain document.
