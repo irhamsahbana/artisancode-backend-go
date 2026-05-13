@@ -8,6 +8,7 @@ If a task changes backend workflow, coding conventions, or agent behavior, updat
 
 - [README](./docs/README.md)
 - [Architecture](./docs/architecture.md)
+- [Categories](./docs/categories.md)
 - [Data Layers](./docs/data_layers.md)
 - [DB & Migration](./docs/db_migration.md)
 - [HTTP & Validation](./docs/http_validation.md)
