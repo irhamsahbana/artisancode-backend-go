@@ -10,20 +10,20 @@ import (
 	"codebase-app/pkg/response"
 	"codebase-app/pkg/types"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func (h *internalUserHandler) getInternalUsers(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internaluser:handler:getInternalUsers")
+func (h *internalUserHandler) getInternalUsers(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internaluser:handler:getInternalUsers")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx = c.UserContext()
+		ctx = c.Context()
 		req = new(restentity.GetInternalUsersReq)
 		v   = adapter.Adapters.Validator
 	)
-	if err := c.QueryParser(req); err != nil {
+	if err := c.Bind().Query(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 	req.SetDefault()

@@ -11,22 +11,22 @@ import (
 	"codebase-app/pkg/response"
 	"codebase-app/pkg/types"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *orgUnitHandler) getOrgUnits(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:orgunit:handler:getOrgUnits")
+func (h *orgUnitHandler) getOrgUnits(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:orgunit:handler:getOrgUnits")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx = c.UserContext()
+		ctx = c.Context()
 		req = new(restentity.GetOrgUnitsReq)
 		v   = adapter.Adapters.Validator
 	)
 
-	if err := c.QueryParser(req); err != nil {
+	if err := c.Bind().Query(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse query params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

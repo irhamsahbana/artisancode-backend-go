@@ -11,22 +11,22 @@ import (
 	"codebase-app/pkg/response"
 	"codebase-app/pkg/types"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *rbacHandler) getRoles(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:rbac:handler:getRoles")
+func (h *rbacHandler) getRoles(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:rbac:handler:getRoles")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx = c.UserContext()
+		ctx = c.Context()
 		req = new(restentity.GetRolesReq)
 		v   = adapter.Adapters.Validator
 	)
 
-	if err := c.QueryParser(req); err != nil {
+	if err := c.Bind().Query(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse query params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

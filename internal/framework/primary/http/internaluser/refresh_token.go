@@ -8,23 +8,28 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func (h *internalUserHandler) refreshToken(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internaluser:handler:refreshToken")
+func (h *internalUserHandler) refreshToken(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internaluser:handler:refreshToken")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx = c.UserContext()
+		ctx = c.Context()
 		req = new(restentity.InternalUserRefreshTokenReq)
 		v   = adapter.Adapters.Validator
 	)
 
-	if err := c.BodyParser(req); err != nil {
+	if err := c.Bind().Body(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
+
+	if handled, err := h.limitAuthenticationRequest(c, "internal-user-refresh-token"); err != nil || handled {
+		return err
+	}
+
 	if err := v.Validate(req); err != nil {
 		code, errs := errmsg.Errors(ctx, err, req)
 		return c.Status(code).JSON(response.Error(errs))

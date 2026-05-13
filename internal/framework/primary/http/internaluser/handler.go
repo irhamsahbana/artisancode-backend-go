@@ -1,22 +1,28 @@
 package handler
 
 import (
+	"codebase-app/internal/integration/ratelimit"
 	"codebase-app/internal/middleware"
 	corePorts "codebase-app/internal/ports/core"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type internalUserHandler struct {
-	core corePorts.InternalUserCore
+	core        corePorts.InternalUserCore
+	rateLimiter ratelimit.AttemptLimiter
 }
 
 type Config struct {
-	Core corePorts.InternalUserCore
+	Core        corePorts.InternalUserCore
+	RateLimiter ratelimit.AttemptLimiter
 }
 
 func NewInternalUserHandler(cfg Config) *internalUserHandler {
-	return &internalUserHandler{core: cfg.Core}
+	return &internalUserHandler{
+		core:        cfg.Core,
+		rateLimiter: cfg.RateLimiter,
+	}
 }
 
 func (h *internalUserHandler) Register(router fiber.Router) {

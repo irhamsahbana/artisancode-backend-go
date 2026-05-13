@@ -9,6 +9,7 @@ import (
 	internalQuotationCore "codebase-app/internal/core/internalquotation"
 	internalTenantBillingCore "codebase-app/internal/core/internaltenantbilling"
 	internalUserCore "codebase-app/internal/core/internaluser"
+	internalBillingHandler "codebase-app/internal/framework/primary/http/internalbilling"
 	internalClientHandler "codebase-app/internal/framework/primary/http/internalclient"
 	internalCurrencyHandler "codebase-app/internal/framework/primary/http/internalcurrency"
 	internalInvoiceHandler "codebase-app/internal/framework/primary/http/internalinvoice"
@@ -164,8 +165,12 @@ func (deps httpDependencies) registerInternalRoutes() {
 		},
 	).Register(internalCommerceGroup)
 
+	internalBillingHandler.NewInternalBillingHandler(
+		deps.internalTenantBillingCore,
+	).Register(deps.app.Group(""))
 	internalUserHandler.NewInternalUserHandler(internalUserHandler.Config{
-		Core: deps.internalUserCore,
+		Core:        deps.internalUserCore,
+		RateLimiter: deps.authRateLimiter,
 	}).Register(deps.app.Group("/internal-users"))
 }
 

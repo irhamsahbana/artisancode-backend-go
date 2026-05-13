@@ -9,20 +9,20 @@ import (
 	"codebase-app/pkg/response"
 	"codebase-app/pkg/types"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *internalCurrencyHandler) getInternalCurrencies(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internalcurrency:get_currencies:getInternalCurrencies")
+func (h *internalCurrencyHandler) getInternalCurrencies(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internalcurrency:get_currencies:getInternalCurrencies")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	req := new(restentity.GetInternalCurrenciesReq)
 	req.SetDefault()
 
-	if err := c.QueryParser(req); err != nil {
+	if err := c.Bind().Query(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse internal currency query")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

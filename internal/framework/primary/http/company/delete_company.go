@@ -9,22 +9,22 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *companyHandler) deleteCompany(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:company:handler:deleteCompany")
+func (h *companyHandler) deleteCompany(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:company:handler:deleteCompany")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx = c.UserContext()
+		ctx = c.Context()
 		req = new(restentity.DeleteCompanyReq)
 		v   = adapter.Adapters.Validator
 	)
 
-	if err := c.ParamsParser(req); err != nil {
+	if err := c.Bind().URI(req); err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to parse params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

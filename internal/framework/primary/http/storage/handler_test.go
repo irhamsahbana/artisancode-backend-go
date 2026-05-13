@@ -26,7 +26,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -532,12 +532,12 @@ func newTestApp(t *testing.T, register func(app *fiber.App)) *fiber.App {
 	t.Helper()
 
 	app := fiber.New()
-	app.Use(func(c *fiber.Ctx) error {
-		ctx := context.WithValue(c.UserContext(), common.UserContextKeyClaims, common.UserContext{
+	app.Use(func(c fiber.Ctx) error {
+		ctx := context.WithValue(c.Context(), common.UserContextKeyClaims, common.UserContext{
 			UserID:   "user-1",
 			TenantID: "tenant-1",
 		})
-		c.SetUserContext(ctx)
+		c.SetContext(ctx)
 		return c.Next()
 	})
 
@@ -549,7 +549,7 @@ func newTestApp(t *testing.T, register func(app *fiber.App)) *fiber.App {
 func performJSONRequest(t *testing.T, app *fiber.App, req *http.Request) (*http.Response, map[string]any) {
 	t.Helper()
 
-	resp, err := app.Test(req, -1)
+	resp, err := app.Test(req, fiber.TestConfig{Timeout: 0, FailOnTimeout: false})
 	require.NoError(t, err)
 
 	bodyBytes, err := io.ReadAll(resp.Body)

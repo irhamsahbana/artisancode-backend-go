@@ -8,27 +8,21 @@ import (
 	"codebase-app/internal/entity/restentity"
 )
 
-func InternalUserLoginReqToCore(ctx context.Context, req restentity.InternalUserLoginReq) coreentity.InternalUser {
-	uc := common.GetUserContext(ctx)
+func InternalUserLoginReqToCore(_ context.Context, req restentity.InternalUserLoginReq) coreentity.InternalUser {
 	return coreentity.InternalUser{
-		UserCtx:  uc,
 		Email:    req.Email,
 		Password: req.Password,
 	}
 }
 
-func InternalUserRefreshTokenReqToCore(ctx context.Context, req restentity.InternalUserRefreshTokenReq) coreentity.InternalUser {
-	uc := common.GetUserContext(ctx)
+func InternalUserRefreshTokenReqToCore(_ context.Context, req restentity.InternalUserRefreshTokenReq) coreentity.InternalUser {
 	return coreentity.InternalUser{
-		UserCtx:      uc,
 		RefreshToken: req.RefreshToken,
 	}
 }
 
-func InternalUserLogoutReqToCore(ctx context.Context, req restentity.InternalUserLogoutReq) coreentity.InternalUser {
-	uc := common.GetUserContext(ctx)
+func InternalUserLogoutReqToCore(_ context.Context, req restentity.InternalUserLogoutReq) coreentity.InternalUser {
 	return coreentity.InternalUser{
-		UserCtx:      uc,
 		RefreshToken: req.RefreshToken,
 	}
 }

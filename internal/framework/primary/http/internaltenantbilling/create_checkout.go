@@ -8,21 +8,21 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *internalTenantBillingHandler) createCheckout(c *fiber.Ctx) error {
+func (h *internalTenantBillingHandler) createCheckout(c fiber.Ctx) error {
 	tracedCtx, span := tracing.StartSpan(
-		c.UserContext(),
+		c.Context(),
 		"internal:framework:primary:http:internaltenantbilling:create_checkout:createCheckout",
 	)
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	req := new(restentity.CreateTenantBillingCheckoutReq)
-	if err := c.BodyParser(req); err != nil {
+	if err := c.Bind().Body(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse tenant billing checkout body")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

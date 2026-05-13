@@ -6,11 +6,11 @@ import (
 
 	"codebase-app/pkg/errmsg"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func LocalizeJSONResponse() fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		err := c.Next()
 		if err != nil {
 			return err
@@ -32,7 +32,7 @@ func LocalizeJSONResponse() fiber.Handler {
 			return nil
 		}
 
-		lang := errmsg.LanguageFromContext(c.UserContext())
+		lang := errmsg.LanguageFromContext(c.Context())
 
 		if message, ok := payload["message"].(string); ok {
 			payload["message"] = errmsg.TranslateText(lang, message)

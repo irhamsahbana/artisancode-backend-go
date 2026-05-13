@@ -7,11 +7,11 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/pkg/jwthandler"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func Auth(c *fiber.Ctx) error {
+func Auth(c fiber.Ctx) error {
 	AccessToken := c.Get("Authorization")
 	unauthorizedResponse := fiber.Map{
 		"message": "Unauthorized",
@@ -25,7 +25,7 @@ func Auth(c *fiber.Ctx) error {
 
 	AccessToken = strings.TrimPrefix(AccessToken, "Bearer ")
 
-	claims, err := jwthandler.ParseTokenString(c.UserContext(), AccessToken)
+	claims, err := jwthandler.ParseTokenString(c.Context(), AccessToken)
 	if err != nil {
 		log.Error().Err(err).Msg("Error while parsing token")
 		return c.Status(fiber.StatusUnauthorized).JSON(unauthorizedResponse)
@@ -48,7 +48,7 @@ func Auth(c *fiber.Ctx) error {
 		CompanyName: claims.CompanyName,
 	}
 
-	c.SetUserContext(context.WithValue(c.UserContext(), common.UserContextKeyClaims, userCtx))
+	c.SetContext(context.WithValue(c.Context(), common.UserContextKeyClaims, userCtx))
 
 	return c.Next()
 }

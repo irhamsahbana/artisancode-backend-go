@@ -3,8 +3,8 @@ package middleware
 import (
 	"codebase-app/internal/infrastructure/tracing"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -14,13 +14,13 @@ import (
 )
 
 func WithTracing(appName string) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		header := make(propagation.HeaderCarrier)
 		for k, v := range c.GetReqHeaders() {
 			header[k] = v
 		}
 
-		ctx := otel.GetTextMapPropagator().Extract(c.UserContext(), header)
+		ctx := otel.GetTextMapPropagator().Extract(c.Context(), header)
 		spanName := c.Method() + " " + c.Path()
 		ctx, span := tracing.StartSpan(ctx, spanName,
 			oteltrace.WithSpanKind(oteltrace.SpanKindServer),
@@ -33,7 +33,7 @@ func WithTracing(appName string) fiber.Handler {
 		)
 		defer span.End()
 
-		c.SetUserContext(ctx)
+		c.SetContext(ctx)
 
 		if sc := span.SpanContext(); sc.HasTraceID() {
 			c.Set("X-Trace-ID", sc.TraceID().String())

@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func ValidateSignedURL(c *fiber.Ctx) error {
+func ValidateSignedURL(c fiber.Ctx) error {
 	// Parse expiration time and signature from query parameters
 	var (
 		expiresStr     = c.Query("expires")

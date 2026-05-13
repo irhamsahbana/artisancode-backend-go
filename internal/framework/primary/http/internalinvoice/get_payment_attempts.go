@@ -8,17 +8,17 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func (h *internalInvoiceHandler) getPaymentAttempts(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internalinvoice:get_payment_attempts:getPaymentAttempts")
+func (h *internalInvoiceHandler) getPaymentAttempts(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internalinvoice:get_payment_attempts:getPaymentAttempts")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	req := new(restentity.GetInternalCommerceResourceReq)
-	if err := c.ParamsParser(req); err != nil {
+	if err := c.Bind().URI(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 	if err := adapter.Adapters.Validator.Validate(req); err != nil {

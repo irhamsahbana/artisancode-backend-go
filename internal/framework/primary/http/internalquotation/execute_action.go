@@ -8,20 +8,20 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func (h *internalQuotationHandler) executeAction(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internalquotation:execute_action:executeAction")
+func (h *internalQuotationHandler) executeAction(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internalquotation:execute_action:executeAction")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	req := new(restentity.ExecuteQuotationActionReq)
-	if err := c.ParamsParser(req); err != nil {
+	if err := c.Bind().URI(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
-	if err := c.BodyParser(req); err != nil {
+	if err := c.Bind().Body(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
 	if err := adapter.Adapters.Validator.Validate(req); err != nil {

@@ -8,7 +8,7 @@ import (
 	"codebase-app/internal/setup"
 	"codebase-app/pkg/validator"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 

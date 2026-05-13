@@ -6,16 +6,16 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *internalTenantBillingHandler) getEntitlements(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internaltenantbilling:get_entitlements:getEntitlements")
+func (h *internalTenantBillingHandler) getEntitlements(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internaltenantbilling:get_entitlements:getEntitlements")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	item, err := h.core.GetEntitlements(ctx)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get tenant billing entitlements")

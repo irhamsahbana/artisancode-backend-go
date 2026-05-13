@@ -8,20 +8,16 @@ import (
 	"codebase-app/internal/entity/restentity"
 )
 
-func LoginReqToCore(ctx context.Context, req restentity.LoginReq) coreentity.User {
-	uc := common.GetUserContext(ctx)
+func LoginReqToCore(_ context.Context, req restentity.LoginReq) coreentity.User {
 	return coreentity.User{
-		UserCtx:    uc,
 		Email:      req.Email,
 		Password:   req.Password,
 		TenantCode: req.TenantCode,
 	}
 }
 
-func RegisterReqToCore(ctx context.Context, req restentity.RegisterReq) coreentity.User {
-	uc := common.GetUserContext(ctx)
+func RegisterReqToCore(_ context.Context, req restentity.RegisterReq) coreentity.User {
 	return coreentity.User{
-		UserCtx:    uc,
 		Name:       req.Name,
 		UserName:   req.UserName,
 		Email:      req.Email,
@@ -30,69 +26,56 @@ func RegisterReqToCore(ctx context.Context, req restentity.RegisterReq) coreenti
 	}
 }
 
-func RegisterReqToTenant(ctx context.Context, req restentity.RegisterReq) coreentity.Tenant {
-	uc := common.GetUserContext(ctx)
+func RegisterReqToTenant(_ context.Context, req restentity.RegisterReq) coreentity.Tenant {
 	preferredLanguage := req.Language
 	if preferredLanguage == "" {
 		preferredLanguage = "id"
 	}
 	return coreentity.Tenant{
-		UserCtx:           uc,
 		Name:              req.TenantName,
 		Code:              req.TenantCode,
 		PreferredLanguage: preferredLanguage,
 	}
 }
 
-func RefreshTokenReqToCore(ctx context.Context, req restentity.RefreshTokenReq) coreentity.User {
-	uc := common.GetUserContext(ctx)
+func RefreshTokenReqToCore(_ context.Context, req restentity.RefreshTokenReq) coreentity.User {
 	return coreentity.User{
-		UserCtx:      uc,
 		RefreshToken: req.RefreshToken,
 	}
 }
 
-func LogoutReqToCore(ctx context.Context, req restentity.LogoutReq) coreentity.User {
-	uc := common.GetUserContext(ctx)
+func LogoutReqToCore(_ context.Context, req restentity.LogoutReq) coreentity.User {
 	return coreentity.User{
-		UserCtx:      uc,
 		RefreshToken: req.RefreshToken,
 	}
 }
 
-func VerifyEmailReqToCore(ctx context.Context, req restentity.VerifyEmailReq) coreentity.UserActionToken {
-	_ = common.GetUserContext(ctx)
+func VerifyEmailReqToCore(_ context.Context, req restentity.VerifyEmailReq) coreentity.UserActionToken {
 	return coreentity.UserActionToken{
 		Token:   req.Token,
 		Purpose: coreentity.UserActionTokenPurposeEmailVerification,
 	}
 }
 
-func ResendVerificationEmailReqToCore(ctx context.Context, req restentity.ResendVerificationEmailReq) coreentity.User {
-	uc := common.GetUserContext(ctx)
+func ResendVerificationEmailReqToCore(_ context.Context, req restentity.ResendVerificationEmailReq) coreentity.User {
 	return coreentity.User{
-		UserCtx:    uc,
 		Email:      req.Email,
 		TenantCode: req.TenantCode,
 	}
 }
 
-func ForgotPasswordReqToCore(ctx context.Context, req restentity.ForgotPasswordReq) coreentity.User {
-	uc := common.GetUserContext(ctx)
+func ForgotPasswordReqToCore(_ context.Context, req restentity.ForgotPasswordReq) coreentity.User {
 	return coreentity.User{
-		UserCtx:    uc,
 		Email:      req.Email,
 		TenantCode: req.TenantCode,
 	}
 }
 
-func ResetPasswordReqToCore(ctx context.Context, req restentity.ResetPasswordReq) (coreentity.UserActionToken, coreentity.User) {
-	uc := common.GetUserContext(ctx)
+func ResetPasswordReqToCore(_ context.Context, req restentity.ResetPasswordReq) (coreentity.UserActionToken, coreentity.User) {
 	return coreentity.UserActionToken{
 			Token:   req.Token,
 			Purpose: coreentity.UserActionTokenPurposePasswordReset,
 		}, coreentity.User{
-			UserCtx:  uc,
 			Password: req.Password,
 		}
 }
@@ -104,8 +87,7 @@ func AuthTokensToLoginResp(tokens coreentity.AuthTokens) restentity.LoginResp {
 	}
 }
 
-func GoogleRegisterReqToCore(ctx context.Context, req restentity.GoogleRegisterReq) coreentity.GoogleRegisterInput {
-	_ = common.GetUserContext(ctx)
+func GoogleRegisterReqToCore(_ context.Context, req restentity.GoogleRegisterReq) coreentity.GoogleRegisterInput {
 	preferredLanguage := req.Language
 	if preferredLanguage == "" {
 		preferredLanguage = "id"
@@ -121,8 +103,7 @@ func GoogleRegisterReqToCore(ctx context.Context, req restentity.GoogleRegisterR
 	}
 }
 
-func GoogleLoginReqToCore(ctx context.Context, req restentity.GoogleLoginReq) coreentity.GoogleLoginInput {
-	_ = common.GetUserContext(ctx)
+func GoogleLoginReqToCore(_ context.Context, req restentity.GoogleLoginReq) coreentity.GoogleLoginInput {
 	return coreentity.GoogleLoginInput{
 		IDToken: req.IDToken,
 		Nonce:   req.Nonce,
@@ -130,10 +111,9 @@ func GoogleLoginReqToCore(ctx context.Context, req restentity.GoogleLoginReq) co
 }
 
 func GoogleRegisterInitReqToCore(
-	ctx context.Context,
+	_ context.Context,
 	req restentity.GoogleRegisterInitReq,
 ) coreentity.GoogleRegisterInitInput {
-	_ = common.GetUserContext(ctx)
 	return coreentity.GoogleRegisterInitInput{
 		IDToken: req.IDToken,
 		Nonce:   req.Nonce,

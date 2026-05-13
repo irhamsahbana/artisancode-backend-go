@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,10 +18,10 @@ func TestWithHTTPMetricsExposesPrometheusMetrics(t *testing.T) {
 
 	app.Use(WithHTTPMetrics(metricRegistry))
 	app.Get("/metrics", metricRegistry.Handler())
-	app.Get("/companies/:id", func(c *fiber.Ctx) error {
+	app.Get("/companies/:id", func(c fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusCreated)
 	})
-	app.Get("/fail", func(c *fiber.Ctx) error {
+	app.Get("/fail", func(c fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "bad request")
 	})
 

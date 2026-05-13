@@ -12,7 +12,7 @@ import (
 	firebase "firebase.google.com/go"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/dropbox/dropbox-sdk-go-unofficial/v6/dropbox/files"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/jmoiron/sqlx"
 	"github.com/openai/openai-go/v3"
 	"github.com/rs/zerolog/log"

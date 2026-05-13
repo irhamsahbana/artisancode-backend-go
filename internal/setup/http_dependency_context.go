@@ -14,7 +14,7 @@ import (
 	integrationPorts "codebase-app/internal/ports/integration"
 	repositoryPorts "codebase-app/internal/ports/secondary/db"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -69,9 +69,9 @@ func newHTTPDependencies() httpDependencies {
 		authRateLimiter: ctx.authRateLimiter,
 	}
 
+	buildInternalDependencies(&deps, &ctx)
 	buildPeopleDependencies(&deps, &ctx)
 	buildAttendanceDependencies(&deps, &ctx)
-	buildInternalDependencies(&deps, &ctx)
 	buildUtilityDependencies(&deps, &ctx)
 
 	return deps

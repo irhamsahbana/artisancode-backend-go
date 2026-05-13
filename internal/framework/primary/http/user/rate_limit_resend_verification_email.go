@@ -8,7 +8,7 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 	resendVerificationEmailWindow   = 15 * time.Minute
 )
 
-func (h *userHandler) limitResendVerificationEmail(c *fiber.Ctx, email, tenantCode string) error {
+func (h *userHandler) limitResendVerificationEmail(c fiber.Ctx, email, tenantCode string) error {
 	if h.rateLimiter == nil {
 		return nil
 	}

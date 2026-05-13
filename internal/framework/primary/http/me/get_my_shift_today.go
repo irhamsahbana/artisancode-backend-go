@@ -8,16 +8,16 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *meHandler) getMyShiftToday(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:me:get_my_shift_today:getMyShiftToday")
+func (h *meHandler) getMyShiftToday(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:me:get_my_shift_today:getMyShiftToday")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	uc := common.GetUserContext(ctx)
 
 	item, err := h.core.GetMyShiftToday(ctx, coreentity.SelfFilter{

@@ -3,11 +3,11 @@ package middleware
 // import (
 // 	"codebase-app/internal/repositories/pg"
 
-// 	"github.com/gofiber/fiber/v2"
+// 	"github.com/gofiber/fiber/v3"
 // 	"github.com/rs/zerolog/log"
 // )
 
-// func VerifiedEmailMiddleware(c *fiber.Ctx) error {
+// func VerifiedEmailMiddleware(c fiber.Ctx) error {
 // 	var (
 // 		ctx = c.Context()
 // 	)

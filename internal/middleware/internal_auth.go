@@ -7,11 +7,11 @@ import (
 	"codebase-app/internal/entity/common"
 	"codebase-app/pkg/jwthandler"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func InternalAuth(c *fiber.Ctx) error {
+func InternalAuth(c fiber.Ctx) error {
 	accessToken := c.Get("Authorization")
 	unauthorizedResponse := fiber.Map{
 		"message": "Unauthorized",
@@ -25,7 +25,7 @@ func InternalAuth(c *fiber.Ctx) error {
 
 	accessToken = strings.TrimPrefix(accessToken, "Bearer ")
 
-	claims, err := jwthandler.ParseInternalUserTokenString(c.UserContext(), accessToken)
+	claims, err := jwthandler.ParseInternalUserTokenString(c.Context(), accessToken)
 	if err != nil {
 		log.Error().Err(err).Msg("Error while parsing internal auth token")
 		return c.Status(fiber.StatusUnauthorized).JSON(unauthorizedResponse)
@@ -40,7 +40,7 @@ func InternalAuth(c *fiber.Ctx) error {
 	c.Locals("user_id", claims.UserID)
 	c.Locals("roles", claims.Roles)
 	c.Locals("user_name", claims.UserName)
-	c.SetUserContext(context.WithValue(c.UserContext(), common.UserContextKeyClaims, userCtx))
+	c.SetContext(context.WithValue(c.Context(), common.UserContextKeyClaims, userCtx))
 
 	return c.Next()
 }

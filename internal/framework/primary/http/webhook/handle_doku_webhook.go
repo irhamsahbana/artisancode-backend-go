@@ -11,17 +11,17 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *webhookHandler) handleDOKUWebhook(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:webhook:handle_doku_webhook:handleDOKUWebhook")
+func (h *webhookHandler) handleDOKUWebhook(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:webhook:handle_doku_webhook:handleDOKUWebhook")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx        = c.UserContext()
+		ctx        = c.Context()
 		rawBody    = append([]byte(nil), c.Body()...)
 		targetPath = c.Path()
 		req        restentity.DOKUWebhookNotification

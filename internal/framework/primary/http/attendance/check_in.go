@@ -8,30 +8,30 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *attendanceHandler) checkIn(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:attendance:check_in:checkIn")
+func (h *attendanceHandler) checkIn(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:attendance:check_in:checkIn")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	return h.handleAttendanceAction(c, "check_in")
 }
 
-func (h *attendanceHandler) handleAttendanceAction(c *fiber.Ctx, actionType string) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:attendance:check_in:handleAttendanceAction")
+func (h *attendanceHandler) handleAttendanceAction(c fiber.Ctx, actionType string) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:attendance:check_in:handleAttendanceAction")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx = c.UserContext()
+		ctx = c.Context()
 		req = new(restentity.CheckAttendanceReq)
 		v   = adapter.Adapters.Validator
 	)
 
-	if err := c.BodyParser(req); err != nil {
+	if err := c.Bind().Body(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Invalid request body")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

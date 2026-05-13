@@ -10,22 +10,22 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *attendanceHandler) getOwnerAttendanceDashboard(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:attendance:get_owner_attendance_dashboard:getOwnerAttendanceDashboard")
+func (h *attendanceHandler) getOwnerAttendanceDashboard(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:attendance:get_owner_attendance_dashboard:getOwnerAttendanceDashboard")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx = c.UserContext()
+		ctx = c.Context()
 		req = new(restentity.GetOwnerAttendanceDashboardReq)
 		v   = adapter.Adapters.Validator
 	)
 
-	if err := c.QueryParser(req); err != nil {
+	if err := c.Bind().Query(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse owner attendance dashboard query params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

@@ -1,14 +1,16 @@
 package middleware
 
 import (
+	"context"
+
 	"codebase-app/internal/entity/common"
 	"codebase-app/pkg/jwthandler"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func AuthMiddleware(c *fiber.Ctx) error {
+func AuthMiddleware(c fiber.Ctx) error {
 	cookie := c.Cookies("access_token")
 
 	if cookie == "" {
@@ -19,7 +21,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 		})
 	}
 
-	claims, err := jwthandler.ParseTokenString(c.UserContext(), cookie)
+	claims, err := jwthandler.ParseTokenString(c.Context(), cookie)
 	if err != nil {
 		log.Error().Err(err).Msg("Error while parsing token")
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -44,7 +46,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 		CompanyID:   claims.CompanyID,
 		CompanyName: claims.CompanyName,
 	}
-	c.Context().SetUserValue(common.UserContextKeyClaims, userCtx)
+	c.SetContext(context.WithValue(c.Context(), common.UserContextKeyClaims, userCtx))
 
 	return c.Next()
 }

@@ -3,7 +3,7 @@ package handler
 import (
 	orgUnitPorts "codebase-app/internal/ports/core"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type orgUnitHandler struct {

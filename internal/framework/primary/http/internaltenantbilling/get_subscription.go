@@ -6,16 +6,16 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *internalTenantBillingHandler) getSubscription(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internaltenantbilling:get_subscription:getSubscription")
+func (h *internalTenantBillingHandler) getSubscription(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internaltenantbilling:get_subscription:getSubscription")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	item, err := h.core.GetSubscription(ctx)
 	if err != nil {
 		log.Ctx(ctx).Error().Err(err).Msg("Failed to get tenant billing subscription")

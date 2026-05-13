@@ -10,22 +10,22 @@ import (
 	"codebase-app/pkg/response"
 	"codebase-app/pkg/types"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *internalClientHandler) getInternalClients(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internalclient:handler:getInternalClients")
+func (h *internalClientHandler) getInternalClients(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internalclient:handler:getInternalClients")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx = c.UserContext()
+		ctx = c.Context()
 		req = new(restentity.GetInternalClientsReq)
 		v   = adapter.Adapters.Validator
 	)
 
-	if err := c.QueryParser(req); err != nil {
+	if err := c.Bind().Query(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse internal client query params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

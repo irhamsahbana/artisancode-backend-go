@@ -8,16 +8,16 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *attendanceHandler) getAttendancePolicy(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:attendance:get_attendance_policy:getAttendancePolicy")
+func (h *attendanceHandler) getAttendancePolicy(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:attendance:get_attendance_policy:getAttendancePolicy")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	uc := common.GetUserContext(ctx)
 
 	item, err := h.core.GetAttendancePolicy(ctx, coreentity.SelfFilter{

@@ -8,18 +8,18 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *internalCurrencyHandler) deleteInternalCurrency(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:internalcurrency:delete_currency:deleteInternalCurrency")
+func (h *internalCurrencyHandler) deleteInternalCurrency(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:internalcurrency:delete_currency:deleteInternalCurrency")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 	req := new(restentity.DeleteInternalCurrencyReq)
-	if err := c.ParamsParser(req); err != nil {
+	if err := c.Bind().URI(req); err != nil {
 		log.Ctx(ctx).Warn().Err(err).Msg("Failed to parse internal currency params")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}

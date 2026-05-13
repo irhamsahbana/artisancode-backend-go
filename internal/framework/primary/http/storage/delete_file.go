@@ -7,17 +7,17 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *storageHandler) deleteFile(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:storage:delete_file:deleteFile")
+func (h *storageHandler) deleteFile(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:storage:delete_file:deleteFile")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx      = c.UserContext()
+		ctx      = c.Context()
 		filename = c.Params("*")
 		uc       = common.GetUserContext(ctx)
 	)

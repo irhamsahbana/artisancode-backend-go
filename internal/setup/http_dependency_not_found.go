@@ -5,15 +5,15 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func (deps httpDependencies) registerRouteNotFound() {
-	deps.app.Use(func(c *fiber.Ctx) error {
+	deps.app.Use(func(c fiber.Ctx) error {
 		var (
 			method = c.Method()
 			path   = c.Path()
-			query  = c.Context().QueryArgs().String()
+			query  = c.RequestCtx().QueryArgs().String()
 			ua     = c.Get("User-Agent")
 			ip     = c.IP()
 		)

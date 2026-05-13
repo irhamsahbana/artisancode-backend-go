@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func WithHTTPMetrics(metricRegistry *metrics.Metrics) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		if c.Path() == "/metrics" {
 			return c.Next()
 		}
@@ -41,8 +41,8 @@ func WithHTTPMetrics(metricRegistry *metrics.Metrics) fiber.Handler {
 	}
 }
 
-func approximateRequestSize(c *fiber.Ctx) int {
-	size := len(c.Method()) + len(c.Path()) + len(c.Context().QueryArgs().String()) + len(c.Request().Body())
+func approximateRequestSize(c fiber.Ctx) int {
+	size := len(c.Method()) + len(c.Path()) + len(c.RequestCtx().QueryArgs().String()) + len(c.Request().Body())
 	c.Request().Header.VisitAll(func(key []byte, value []byte) {
 		size += len(key) + len(value)
 	})
@@ -50,7 +50,7 @@ func approximateRequestSize(c *fiber.Ctx) int {
 	return size
 }
 
-func normalizedMetricRoute(c *fiber.Ctx, fallback string) string {
+func normalizedMetricRoute(c fiber.Ctx, fallback string) string {
 	if c.Route() == nil {
 		return fallback
 	}
@@ -70,7 +70,7 @@ func normalizeMetricRoute(route string) string {
 	return route
 }
 
-func resolveMetricStatusCode(c *fiber.Ctx, err error) int {
+func resolveMetricStatusCode(c fiber.Ctx, err error) int {
 	status := c.Response().StatusCode()
 	if status >= fiber.StatusBadRequest {
 		return status

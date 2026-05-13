@@ -72,9 +72,11 @@ func buildPeopleDependencies(deps *httpDependencies, ctx *httpBootstrapContext) 
 		TokenCache:           ctx.tokenCache,
 		Bus:                  ctx.bus,
 		GoogleTokenValidator: ctx.googleTokenValidator,
+		BillingCore:          deps.internalTenantBillingCore,
 	})
 	deps.companyCore = companyCore.NewCompanyCore(companyCore.Config{
-		Repo: companyRepository,
+		Repo:        companyRepository,
+		BillingCore: deps.internalTenantBillingCore,
 	})
 	deps.orgUnitCore = orgunitCore.NewOrgUnitCore(orgunitCore.Config{
 		Repo: orgUnitRepository,
@@ -92,8 +94,9 @@ func buildPeopleDependencies(deps *httpDependencies, ctx *httpBootstrapContext) 
 		Repo: workShiftRepository,
 	})
 	deps.employeeCore = employeeCore.NewEmployeeCore(employeeCore.Config{
-		Repo:     employeeRepository,
-		UserRepo: userRepository,
+		Repo:        employeeRepository,
+		UserRepo:    userRepository,
+		BillingCore: deps.internalTenantBillingCore,
 	})
 	deps.userInvitationCore = userInvitationCore.NewUserInvitationCore(
 		userInvitationCore.Config{

@@ -7,17 +7,17 @@ import (
 	"codebase-app/pkg/errmsg"
 	"codebase-app/pkg/response"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func (h *storageHandler) getPrivateFile(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:storage:get_private_file:getPrivateFile")
+func (h *storageHandler) getPrivateFile(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:storage:get_private_file:getPrivateFile")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
 	var (
-		ctx      = c.UserContext()
+		ctx      = c.Context()
 		filename = c.Params("*")
 		tenantID = c.Query("tenant_id")
 		folder   = c.Query("folder")

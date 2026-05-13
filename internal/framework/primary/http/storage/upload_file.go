@@ -10,17 +10,17 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 	"github.com/valyala/fasthttp"
 )
 
-func (h *storageHandler) uploadFile(c *fiber.Ctx) error {
-	tracedCtx, span := tracing.StartSpan(c.UserContext(), "internal:framework:primary:http:storage:upload_file:uploadFile")
+func (h *storageHandler) uploadFile(c fiber.Ctx) error {
+	tracedCtx, span := tracing.StartSpan(c.Context(), "internal:framework:primary:http:storage:upload_file:uploadFile")
 	defer span.End()
-	c.SetUserContext(tracedCtx)
+	c.SetContext(tracedCtx)
 
-	ctx := c.UserContext()
+	ctx := c.Context()
 
 	file, err := c.FormFile("file")
 	if err != nil {

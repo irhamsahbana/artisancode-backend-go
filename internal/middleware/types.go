@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
@@ -14,7 +14,7 @@ type Locals struct {
 	IsVerified bool
 }
 
-func GetLocals(c *fiber.Ctx) Locals {
+func GetLocals(c fiber.Ctx) Locals {
 	l := Locals{}
 	userId, ok := c.Locals("user_id").(string)
 	if ok {

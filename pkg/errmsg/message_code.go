@@ -44,6 +44,8 @@ const (
 	MessageInvalidOrExpiredPasswordResetToken                                    = "invalid_or_expired_password_reset_token"
 	MessageTooManyVerificationEmailRequestsPleaseWaitBeforeTryingAgain           = "too_many_verification_email_requests_please_wait_before_trying_again"
 	MessageTooManyPasswordResetRequestsPleaseWaitBeforeTryingAgain               = "too_many_password_reset_requests_please_wait_before_trying_again"
+	MessageTooManyAuthenticationRequestsPleaseWaitBeforeTryingAgain              = "too_many_authentication_requests_please_wait_before_trying_again"
+	MessageTooManyRegistrationRequestsPleaseWaitBeforeTryingAgain                = "too_many_registration_requests_please_wait_before_trying_again"
 	MessageEmployeeNotFound                                                      = "employee_not_found"
 	MessageWorkLocationNotFound                                                  = "work_location_not_found"
 	MessageWorkShiftNotFound                                                     = "work_shift_not_found"
@@ -165,8 +167,14 @@ const (
 	MessageTenantIsRequired                                                      = "tenant_is_required"
 	MessageUnsupportedInvoiceAction                                              = "unsupported_invoice_action"
 	MessageUnsupportedPaymentAttemptAction                                       = "unsupported_payment_attempt_action"
+	MessageUnsupportedSubscriptionAction                                         = "unsupported_subscription_action"
+	MessageUnsupportedAddOnsAction                                               = "unsupported_add_ons_action"
 	MessageUnsupportedQuotationAction                                            = "unsupported_quotation_action"
+	MessageAddOnsNotFound                                                        = "add_ons_not_found"
+	MessageAddOnsIncompatible                                                    = "add_ons_incompatible"
+	MessageSubscriptionNotFound                                                  = "subscription_not_found"
 	MessageUserActionTokenNotFound                                               = "user_action_token_not_found"
+	MessageUsageLimitExceeded                                                    = "usage_limit_exceeded"
 	MessageWebhookProcessed                                                      = "webhook_processed"
 	MessageYouAreNotAuthorizedToInviteUsers                                      = "you_are_not_authorized_to_invite_users"
 	MessageYouAreNotAuthorizedToManageInternalClientPermissions                  = "you_are_not_authorized_to_manage_internal_client_permissions"
@@ -246,6 +254,8 @@ var AllMessageCodes = []string{
 	MessageInvalidOrExpiredPasswordResetToken,
 	MessageTooManyVerificationEmailRequestsPleaseWaitBeforeTryingAgain,
 	MessageTooManyPasswordResetRequestsPleaseWaitBeforeTryingAgain,
+	MessageTooManyAuthenticationRequestsPleaseWaitBeforeTryingAgain,
+	MessageTooManyRegistrationRequestsPleaseWaitBeforeTryingAgain,
 	MessageEmployeeNotFound,
 	MessageWorkLocationNotFound,
 	MessageWorkShiftNotFound,
@@ -367,8 +377,14 @@ var AllMessageCodes = []string{
 	MessageTenantIsRequired,
 	MessageUnsupportedInvoiceAction,
 	MessageUnsupportedPaymentAttemptAction,
+	MessageUnsupportedSubscriptionAction,
+	MessageUnsupportedAddOnsAction,
 	MessageUnsupportedQuotationAction,
+	MessageAddOnsNotFound,
+	MessageAddOnsIncompatible,
+	MessageSubscriptionNotFound,
 	MessageUserActionTokenNotFound,
+	MessageUsageLimitExceeded,
 	MessageWebhookProcessed,
 	MessageYouAreNotAuthorizedToInviteUsers,
 	MessageYouAreNotAuthorizedToManageInternalClientPermissions,

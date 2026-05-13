@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog/log"
 )
 
-func AuthRole(authorizedRoles []string) func(*fiber.Ctx) error {
-	return func(c *fiber.Ctx) error {
+func AuthRole(authorizedRoles []string) func(fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		forbiddenResponse := fiber.Map{
 			"message": "Terlarang: role anda tidak diizinkan untuk mengakses resource ini",
 			"success": false,

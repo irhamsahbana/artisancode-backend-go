@@ -9,7 +9,7 @@ import (
 
 	"codebase-app/pkg/errmsg"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 func TestWithRequestLanguageResolvesAcceptLanguage(t *testing.T) {
@@ -17,9 +17,9 @@ func TestWithRequestLanguageResolvesAcceptLanguage(t *testing.T) {
 
 	app := fiber.New()
 	app.Use(WithRequestLanguage())
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("/", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
-			"language": string(errmsg.LanguageFromContext(c.UserContext())),
+			"language": string(errmsg.LanguageFromContext(c.Context())),
 		})
 	})
 
@@ -48,7 +48,7 @@ func TestLocalizeJSONResponseLocalizesMessageAndNestedErrors(t *testing.T) {
 	app := fiber.New()
 	app.Use(WithRequestLanguage())
 	app.Use(LocalizeJSONResponse())
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("/", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"message": errmsg.MessageCompanyNotFound,
 			"errors": fiber.Map{
@@ -90,7 +90,7 @@ func TestLocalizeJSONResponseLeavesNonJSONResponse(t *testing.T) {
 	app := fiber.New()
 	app.Use(WithRequestLanguage())
 	app.Use(LocalizeJSONResponse())
-	app.Get("/", func(c *fiber.Ctx) error {
+	app.Get("/", func(c fiber.Ctx) error {
 		c.Type("text")
 		return c.SendString(errmsg.MessageCompanyNotFound)
 	})
